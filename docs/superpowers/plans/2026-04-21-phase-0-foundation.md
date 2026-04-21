@@ -1546,7 +1546,7 @@ final class TargetRegistryTest extends TestCase {
 		$registry = new TargetRegistry();
 		$registry->register( $this->fake_target( 'post' ) );
 
-		$this->expectException( \RuntimeException::class );
+		$this->expectException( \LogicException::class );
 		$registry->register( $this->fake_target( 'post' ) );
 	}
 
@@ -1593,7 +1593,7 @@ composer test:unit -- --filter TargetRegistryTest
 namespace ContentOps\Registry;
 
 use ContentOps\Contracts\TargetInterface;
-use RuntimeException;
+use LogicException;
 
 final class TargetRegistry {
 
@@ -1603,7 +1603,7 @@ final class TargetRegistry {
 	public function register( TargetInterface $target ): void {
 		$slug = $target->slug();
 		if ( isset( $this->targets[ $slug ] ) ) {
-			throw new RuntimeException( sprintf( 'Target "%s" already registered.', $slug ) );
+			throw new LogicException( sprintf( 'Target "%s" already registered.', $slug ) );
 		}
 
 		$this->targets[ $slug ] = $target;
@@ -1663,7 +1663,7 @@ final class OperationRegistryTest extends TestCase {
 		$registry = new OperationRegistry();
 		$registry->register( $this->fake_operation( 'delete' ) );
 
-		$this->expectException( \RuntimeException::class );
+		$this->expectException( \LogicException::class );
 		$registry->register( $this->fake_operation( 'delete' ) );
 	}
 
@@ -1703,7 +1703,7 @@ final class OperationRegistryTest extends TestCase {
 namespace ContentOps\Registry;
 
 use ContentOps\Contracts\OperationInterface;
-use RuntimeException;
+use LogicException;
 
 final class OperationRegistry {
 
@@ -1713,7 +1713,7 @@ final class OperationRegistry {
 	public function register( OperationInterface $operation ): void {
 		$slug = $operation->slug();
 		if ( isset( $this->operations[ $slug ] ) ) {
-			throw new RuntimeException( sprintf( 'Operation "%s" already registered.', $slug ) );
+			throw new LogicException( sprintf( 'Operation "%s" already registered.', $slug ) );
 		}
 
 		$this->operations[ $slug ] = $operation;

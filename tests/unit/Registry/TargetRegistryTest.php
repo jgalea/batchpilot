@@ -22,7 +22,7 @@ final class TargetRegistryTest extends TestCase {
 		$registry = new TargetRegistry();
 		$registry->register( $this->fake_target( 'post' ) );
 
-		$this->expectException( \RuntimeException::class );
+		$this->expectException( \LogicException::class );
 		$registry->register( $this->fake_target( 'post' ) );
 	}
 

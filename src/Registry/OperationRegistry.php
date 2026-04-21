@@ -2,7 +2,7 @@
 namespace ContentOps\Registry;
 
 use ContentOps\Contracts\OperationInterface;
-use RuntimeException;
+use LogicException;
 
 final class OperationRegistry {
 
@@ -12,7 +12,7 @@ final class OperationRegistry {
 	public function register( OperationInterface $operation ): void {
 		$slug = $operation->slug();
 		if ( isset( $this->operations[ $slug ] ) ) {
-			throw new RuntimeException( sprintf( 'Operation "%s" already registered.', $slug ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Developer-facing exception; slug is an internal identifier.
+			throw new LogicException( sprintf( 'Operation "%s" already registered.', $slug ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Developer-facing exception; slug is an internal identifier.
 		}
 
 		$this->operations[ $slug ] = $operation;
