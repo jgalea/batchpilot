@@ -26,7 +26,7 @@ final class OperationRegistryTest extends TestCase {
 		$registry = new OperationRegistry();
 		$registry->register( $this->fake_operation( 'delete' ) );
 
-		$this->expectException( \RuntimeException::class );
+		$this->expectException( \LogicException::class );
 		$registry->register( $this->fake_operation( 'delete' ) );
 	}
 

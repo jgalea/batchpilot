@@ -2,7 +2,7 @@
 namespace ContentOps\Registry;
 
 use ContentOps\Contracts\TargetInterface;
-use RuntimeException;
+use LogicException;
 
 final class TargetRegistry {
 
@@ -12,7 +12,7 @@ final class TargetRegistry {
 	public function register( TargetInterface $target ): void {
 		$slug = $target->slug();
 		if ( isset( $this->targets[ $slug ] ) ) {
-			throw new RuntimeException( sprintf( 'Target "%s" already registered.', $slug ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Developer-facing exception; slug is an internal identifier.
+			throw new LogicException( sprintf( 'Target "%s" already registered.', $slug ) ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Developer-facing exception; slug is an internal identifier.
 		}
 
 		$this->targets[ $slug ] = $target;
