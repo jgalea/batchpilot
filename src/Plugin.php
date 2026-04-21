@@ -65,6 +65,10 @@ final class Plugin {
 		$cli_registrar->register();
 		$this->set( 'cli.registrar', $cli_registrar );
 
+		$abilities_bridge = new \ContentOps\Abilities\AbilitiesBridge( $action_scheduler_bridge );
+		$abilities_bridge->register();
+		$this->set( 'abilities.bridge', $abilities_bridge );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
