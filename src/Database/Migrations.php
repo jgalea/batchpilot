@@ -1,4 +1,11 @@
 <?php
+/**
+ * Schema migration runner.
+ *
+ * v1.0.0 is a single install step via Schema::install().
+ * Future versions will register per-version migration callbacks here.
+ */
+
 namespace ContentOps\Database;
 
 final class Migrations {

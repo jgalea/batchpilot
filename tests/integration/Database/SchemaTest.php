@@ -19,10 +19,34 @@ final class SchemaTest extends TestCase {
 	}
 
 	public function test_install_is_idempotent(): void {
+		global $wpdb;
 		Schema::install();
 		Schema::install();
 
-		$this->assertTrue( true );
+		$this->assertTableExists( $wpdb->prefix . 'co_operations' );
+		$this->assertSame( Schema::VERSION, get_option( Schema::VERSION_OPTION ) );
+	}
+
+	public function test_drop_all_removes_tables_and_option(): void {
+		global $wpdb;
+		Schema::install();
+
+		Schema::drop_all();
+
+		$this->assertNull( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'co_operations' ) ) );
+		$this->assertNull( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'co_snapshots' ) ) );
+		$this->assertNull( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'co_schedules' ) ) );
+		$this->assertFalse( get_option( Schema::VERSION_OPTION ) );
+	}
+
+	public function test_indices_exist_on_co_operations(): void {
+		global $wpdb;
+		Schema::install();
+
+		$rows    = $wpdb->get_results( "SHOW INDEX FROM {$wpdb->prefix}co_operations", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$indices = array_column( is_array( $rows ) ? $rows : [], 'Key_name' );
+		$this->assertContains( 'user_created', $indices );
+		$this->assertContains( 'status', $indices );
 	}
 
 	public function test_co_operations_has_expected_columns(): void {

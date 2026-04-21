@@ -16,14 +16,14 @@ final class Schema {
 
 		$operations = "CREATE TABLE {$wpdb->prefix}co_operations (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-			type VARCHAR(32) NOT NULL,
+			type VARCHAR(64) NOT NULL,
 			target VARCHAR(64) NOT NULL,
 			user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			filters_json LONGTEXT NULL,
 			params_json LONGTEXT NULL,
 			affected_count INT UNSIGNED NOT NULL DEFAULT 0,
 			affected_ids_json LONGTEXT NULL,
-			status VARCHAR(16) NOT NULL DEFAULT 'pending',
+			status VARCHAR(32) NOT NULL DEFAULT 'pending',
 			error_message TEXT NULL,
 			created_at DATETIME NOT NULL,
 			completed_at DATETIME NULL,
@@ -47,7 +47,7 @@ final class Schema {
 		$schedules = "CREATE TABLE {$wpdb->prefix}co_schedules (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			name VARCHAR(255) NOT NULL,
-			operation_type VARCHAR(32) NOT NULL,
+			operation_type VARCHAR(64) NOT NULL,
 			target_type VARCHAR(64) NOT NULL,
 			filters_json LONGTEXT NULL,
 			params_json LONGTEXT NULL,
