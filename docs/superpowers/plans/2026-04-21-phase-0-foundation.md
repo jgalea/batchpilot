@@ -1152,7 +1152,7 @@ final class ResultsTest extends TestCase {
 	public function test_validation_ok(): void {
 		$result = ValidationResult::ok();
 		$this->assertTrue( $result->is_ok() );
-		$this->assertNull( $result->error() );
+		$this->assertNull( $result->get_error() );
 	}
 
 	public function test_validation_error(): void {
@@ -1160,7 +1160,7 @@ final class ResultsTest extends TestCase {
 		$result = ValidationResult::error( $error );
 
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( $error, $result->error() );
+		$this->assertSame( $error, $result->get_error() );
 	}
 
 	public function test_preview_carries_count_and_sample(): void {
@@ -1232,7 +1232,7 @@ final class ValidationResult {
 		return $this->ok;
 	}
 
-	public function error(): ?ContentOpsError {
+	public function get_error(): ?ContentOpsError {
 		return $this->error;
 	}
 }
@@ -1284,7 +1284,7 @@ final class PreviewResult {
 	public function sample_ids(): array { return $this->sample_ids; }
 	public function preview_token(): string { return $this->preview_token; }
 	public function warnings(): array { return $this->warnings; }
-	public function error(): ?ContentOpsError { return $this->error; }
+	public function get_error(): ?ContentOpsError { return $this->error; }
 }
 ```
 
@@ -1334,7 +1334,7 @@ final class BatchResult {
 	public function succeeded(): int { return $this->succeeded; }
 	public function failed(): int { return $this->failed; }
 	public function item_errors(): array { return $this->item_errors; }
-	public function error(): ?ContentOpsError { return $this->error; }
+	public function get_error(): ?ContentOpsError { return $this->error; }
 }
 ```
 
@@ -1368,7 +1368,7 @@ final class UndoResult {
 
 	public function is_ok(): bool { return $this->ok; }
 	public function restored(): int { return $this->restored; }
-	public function error(): ?ContentOpsError { return $this->error; }
+	public function get_error(): ?ContentOpsError { return $this->error; }
 }
 ```
 
