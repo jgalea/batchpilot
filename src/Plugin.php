@@ -47,12 +47,24 @@ final class Plugin {
 	private function register_hooks(): void {
 		\register_activation_hook( $this->plugin_file, [ Activator::class, 'activate' ] );
 		\register_deactivation_hook( $this->plugin_file, [ Deactivator::class, 'deactivate' ] );
-		\add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ] );
+		\add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ], -1 );
 	}
 
 	public function on_plugins_loaded(): void {
 		\load_plugin_textdomain( 'content-ops', false, dirname( \plugin_basename( $this->plugin_file ) ) . '/languages' );
+		$this->load_action_scheduler();
 		\do_action( 'content_ops_booted', $this );
+	}
+
+	private function load_action_scheduler(): void {
+		if ( \function_exists( 'as_schedule_single_action' ) ) {
+			return;
+		}
+
+		$bundled = $this->plugin_dir() . 'vendor/woocommerce/action-scheduler/action-scheduler.php';
+		if ( \file_exists( $bundled ) ) {
+			require_once $bundled;
+		}
 	}
 
 	public static function reset_for_tests(): void {
