@@ -61,6 +61,10 @@ final class Plugin {
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
 
+		$cli_registrar = new \ContentOps\CLI\CommandRegistrar( $action_scheduler_bridge );
+		$cli_registrar->register();
+		$this->set( 'cli.registrar', $cli_registrar );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
