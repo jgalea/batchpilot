@@ -1,8 +1,11 @@
 <?php
 namespace ContentOps;
 
+use ContentOps\Database\Migrations;
+
 final class Activator {
+
 	public static function activate(): void {
-		// Task 12 wires schema install and capabilities here.
+		Migrations::maybe_migrate();
 	}
 }
