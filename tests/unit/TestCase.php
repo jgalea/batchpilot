@@ -10,17 +10,19 @@ abstract class TestCase extends BaseTestCase {
 		parent::setUp();
 		Monkey\setUp();
 
-		Monkey\Functions\stubs( [
-			'__',
-			'_e',
-			'esc_html__',
-			'esc_html_e',
-			'esc_attr__',
-			'wp_parse_args',
-		] );
+		Monkey\Functions\stubs(
+			[
+				'__',
+				'_e',
+				'esc_html__',
+				'esc_html_e',
+				'esc_attr__',
+				'wp_parse_args',
+			]
+		);
 
 		Monkey\Functions\when( 'wp_json_encode' )->alias(
-			static fn ( $value, $flags = 0 ) => json_encode( $value, $flags | JSON_UNESCAPED_SLASHES )
+			static fn ( $value, $flags = 0 ) => json_encode( $value, $flags | JSON_UNESCAPED_SLASHES ) // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- Alias implementing wp_json_encode for Brain Monkey.
 		);
 	}
 
