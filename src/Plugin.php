@@ -53,6 +53,14 @@ final class Plugin {
 	public function on_plugins_loaded(): void {
 		\load_plugin_textdomain( 'content-ops', false, dirname( \plugin_basename( $this->plugin_file ) ) . '/languages' );
 		$this->load_action_scheduler();
+
+		$action_scheduler_bridge = new \ContentOps\Async\ActionSchedulerBridge();
+		$this->set( 'async.action_scheduler', $action_scheduler_bridge );
+
+		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge );
+		$rest_registrar->register();
+		$this->set( 'rest.registrar', $rest_registrar );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
