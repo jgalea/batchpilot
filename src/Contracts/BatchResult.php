@@ -1,0 +1,62 @@
+<?php
+namespace ContentOps\Contracts;
+
+use ContentOps\Errors\ContentOpsError;
+
+final class BatchResult {
+
+	private bool $ok;
+	private int $processed;
+	private int $succeeded;
+	private int $failed;
+	private array $item_errors;
+	private ?ContentOpsError $error;
+
+	private function __construct(
+		bool $ok,
+		int $processed,
+		int $succeeded,
+		int $failed,
+		array $item_errors,
+		?ContentOpsError $error
+	) {
+		$this->ok          = $ok;
+		$this->processed   = $processed;
+		$this->succeeded   = $succeeded;
+		$this->failed      = $failed;
+		$this->item_errors = $item_errors;
+		$this->error       = $error;
+	}
+
+	public static function of( int $processed, int $succeeded, int $failed, array $item_errors = [] ): self {
+		return new self( true, $processed, $succeeded, $failed, $item_errors, null );
+	}
+
+	public static function error( ContentOpsError $error ): self {
+		return new self( false, 0, 0, 0, [], $error );
+	}
+
+	public function is_ok(): bool {
+		return $this->ok;
+	}
+
+	public function processed(): int {
+		return $this->processed;
+	}
+
+	public function succeeded(): int {
+		return $this->succeeded;
+	}
+
+	public function failed(): int {
+		return $this->failed;
+	}
+
+	public function item_errors(): array {
+		return $this->item_errors;
+	}
+
+	public function get_error(): ?ContentOpsError {
+		return $this->error;
+	}
+}
