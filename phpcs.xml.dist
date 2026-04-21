@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset name="Content Ops">
+	<description>Content Ops coding standards — WordPress-Extra minus the bits that fight modern PHP.</description>
+
+	<file>src</file>
+	<file>tests</file>
+	<file>content-ops.php</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/assets/build/*</exclude-pattern>
+
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg name="parallel" value="8"/>
+	<arg value="ps"/>
+
+	<rule ref="WordPress-Extra">
+		<exclude name="WordPress.Files.FileName"/>
+		<exclude name="Universal.Files.SeparateFunctionsFromOO"/>
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+	</rule>
+
+	<config name="minimum_supported_wp_version" value="6.3"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="content-ops"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

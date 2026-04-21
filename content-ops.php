@@ -23,11 +23,14 @@ define( 'CONTENT_OPS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 
 $content_ops_autoload = CONTENT_OPS_PLUGIN_DIR . 'vendor/autoload.php';
 if ( ! file_exists( $content_ops_autoload ) ) {
-	add_action( 'admin_notices', static function () {
-		echo '<div class="notice notice-error"><p>';
-		esc_html_e( 'Content Ops: run `composer install` in the plugin directory before activating.', 'content-ops' );
-		echo '</p></div>';
-	} );
+	add_action(
+		'admin_notices',
+		static function () {
+			echo '<div class="notice notice-error"><p>';
+			esc_html_e( 'Content Ops: run `composer install` in the plugin directory before activating.', 'content-ops' );
+			echo '</p></div>';
+		}
+	);
 	return;
 }
 require $content_ops_autoload;
