@@ -157,4 +157,35 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertSame( 'pending', get_post_status( $new_id ) );
 		$this->assertSame( get_post( $source )->post_title, get_post( $new_id )->post_title );
 	}
+
+	public function test_undo_deletes_the_duplicate_posts(): void {
+		global $wpdb;
+		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$op     = $this->op();
+		$op->execute_batch( [ $source ], [], new PostTarget( 'post' ) );
+		$new_ids = $op->last_new_ids();
+
+		$saved = $repo->create(
+			\ContentOps\History\Operation::newly_created( 'duplicate', 'post', 0, [], [] )
+		);
+		$repo->mark_completed( $saved->id(), $new_ids );
+
+		$result = $op->undo( $saved->id() );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( count( $new_ids ), $result->restored() );
+		foreach ( $new_ids as $id ) {
+			$this->assertNull( get_post( $id ) );
+		}
+		$this->assertNotNull( get_post( $source ) );
+	}
+
+	public function test_undo_missing_operation_returns_error(): void {
+		$op     = $this->op();
+		$result = $op->undo( 999999 );
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
+	}
 }

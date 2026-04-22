@@ -20,7 +20,6 @@ final class DuplicateOperation implements OperationInterface {
 
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
-	/** @phpstan-ignore-next-line property.onlyWritten (wired for undo() impl in Task 10) */
 	private OperationRepository $operations;
 
 	/** @var int[] */
@@ -207,8 +206,24 @@ final class DuplicateOperation implements OperationInterface {
 	}
 
 	public function undo( int $operation_id ): UndoResult {
-		return UndoResult::error(
-			new ContentOpsError( 'co.undo.not_implemented', 'Not implemented yet.' )
-		);
+		$op = $this->operations->find( $operation_id );
+		if ( null === $op ) {
+			return UndoResult::error(
+				new ContentOpsError(
+					'co.undo.not_found',
+					'Operation not found.',
+					[ 'operation_id' => $operation_id ]
+				)
+			);
+		}
+
+		$restored = 0;
+		foreach ( $op->affected_ids() as $id ) {
+			if ( wp_delete_post( (int) $id, true ) ) {
+				++$restored;
+			}
+		}
+
+		return UndoResult::of( $restored );
 	}
 }
