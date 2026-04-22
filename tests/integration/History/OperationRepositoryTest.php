@@ -52,4 +52,25 @@ final class OperationRepositoryTest extends TestCase {
 		$repo = new OperationRepository( $GLOBALS['wpdb'] );
 		$this->assertNull( $repo->find( 999999 ) );
 	}
+
+	public function test_mark_running_transitions_status(): void {
+		$repo = new OperationRepository( $GLOBALS['wpdb'] );
+		$op   = $repo->create( Operation::newly_created( 'delete', 'post', 1, [], [] ) );
+
+		$repo->mark_running( $op->id() );
+
+		$this->assertSame( 'running', $repo->find( $op->id() )->status() );
+	}
+
+	public function test_mark_failed_records_error_and_completes_at(): void {
+		$repo = new OperationRepository( $GLOBALS['wpdb'] );
+		$op   = $repo->create( Operation::newly_created( 'delete', 'post', 1, [], [] ) );
+
+		$repo->mark_failed( $op->id(), 'Something broke.' );
+
+		$reloaded = $repo->find( $op->id() );
+		$this->assertSame( 'failed', $reloaded->status() );
+		$this->assertSame( 'Something broke.', $reloaded->error_message() );
+		$this->assertNotNull( $reloaded->completed_at() );
+	}
 }
