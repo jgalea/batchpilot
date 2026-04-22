@@ -43,6 +43,6 @@
     "test:integration": "phpunit -c phpunit-integration.xml.dist",
     "lint": "phpcs",
     "lint:fix": "phpcbf",
-    "stan": "phpstan analyze"
+    "stan": "phpstan analyze --memory-limit=512M"
   }
 }
