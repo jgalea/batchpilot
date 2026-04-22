@@ -36,6 +36,12 @@ final class BatchResult {
 	 * @param array<int|string, string> $item_errors
 	 */
 	public static function of( int $processed, int $succeeded, int $failed, array $item_errors = [] ): self {
+		if ( $processed !== $succeeded + $failed ) {
+			throw new \InvalidArgumentException( 'BatchResult: processed must equal succeeded + failed.' );
+		}
+		if ( count( $item_errors ) > $failed ) {
+			throw new \InvalidArgumentException( 'BatchResult: item_errors count cannot exceed failed count.' );
+		}
 		return new self( true, $processed, $succeeded, $failed, $item_errors, null );
 	}
 

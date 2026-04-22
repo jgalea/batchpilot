@@ -28,6 +28,7 @@ interface OperationInterface {
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult;
 
+	/** Self-declared capability: can this Operation be undone via undo()? */
 	public function supports_undo(): bool;
 
 	public function undo( int $operation_id ): UndoResult;
