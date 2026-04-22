@@ -10,8 +10,17 @@ use ContentOps\Tests\Integration\TestCase;
 
 final class DeleteOperationTest extends TestCase {
 
+	public static function wpSetUpBeforeClass( \WP_UnitTest_Factory $factory ): void {
+		\ContentOps\Database\Schema::install();
+	}
+
 	private function op(): DeleteOperation {
-		return new DeleteOperation( new TokenGenerator( 'test-salt' ), new TokenStore( 300 ) );
+		global $wpdb;
+		return new DeleteOperation(
+			new TokenGenerator( 'test-salt' ),
+			new TokenStore( 300 ),
+			new \ContentOps\History\OperationRepository( $wpdb )
+		);
 	}
 
 	public function test_slug_and_label(): void {
@@ -102,5 +111,56 @@ final class DeleteOperationTest extends TestCase {
 		$this->assertSame( 1, $result->succeeded() );
 		$this->assertSame( 1, $result->failed() );
 		$this->assertArrayHasKey( 999999, $result->item_errors() );
+	}
+
+	public function test_undo_restores_trashed_posts(): void {
+		global $wpdb;
+		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+
+		$ids = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
+		foreach ( $ids as $id ) {
+			wp_trash_post( $id );
+		}
+
+		$saved = $repo->create(
+			\ContentOps\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => false ] )
+		);
+		$repo->mark_completed( $saved->id(), $ids );
+
+		$op     = new DeleteOperation( new TokenGenerator( 'test-salt' ), new TokenStore( 300 ), $repo );
+		$result = $op->undo( $saved->id() );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->restored() );
+		foreach ( $ids as $id ) {
+			$this->assertNotSame( 'trash', get_post_status( $id ) );
+		}
+	}
+
+	public function test_undo_rejects_permanent_deletes(): void {
+		global $wpdb;
+		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+
+		$saved = $repo->create(
+			\ContentOps\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => true ] )
+		);
+		$repo->mark_completed( $saved->id(), [ 123 ] );
+
+		$op     = new DeleteOperation( new TokenGenerator( 'test-salt' ), new TokenStore( 300 ), $repo );
+		$result = $op->undo( $saved->id() );
+
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'co.undo.permanent_delete', $result->get_error()->code() );
+	}
+
+	public function test_undo_rejects_missing_operation(): void {
+		global $wpdb;
+		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+
+		$op     = new DeleteOperation( new TokenGenerator( 'test-salt' ), new TokenStore( 300 ), $repo );
+		$result = $op->undo( 999999 );
+
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
 	}
 }
