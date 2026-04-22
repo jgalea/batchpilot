@@ -25,3 +25,6 @@ parameters:
     # WP-CLI\Utils\format_items ships with WP-CLI at runtime; not in phpstan-wordpress.
     - message: '#Function WP_CLI\\Utils\\format_items not found\.#'
       path: src/CLI/DoctorCommand.php
+    # ExecutionService holds dependencies required by later features (snapshots, preview tokens).
+    - message: '#Property ContentOps\\Execution\\ExecutionService::\$(snapshots_repo|token_generator|token_store) is never read, only written\.#'
+      path: src/Execution/ExecutionService.php
