@@ -81,7 +81,33 @@ final class DeleteOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult {
-		return BatchResult::of( 0, 0, 0 );
+		$permanent   = ! empty( $params['permanent'] );
+		$succeeded   = 0;
+		$failed      = 0;
+		$item_errors = [];
+
+		foreach ( $ids as $id ) {
+			$id   = (int) $id;
+			$post = get_post( $id );
+
+			if ( null === $post ) {
+				++$failed;
+				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			$result = $permanent ? wp_delete_post( $id, true ) : wp_trash_post( $id );
+
+			if ( false === $result || null === $result ) {
+				++$failed;
+				$item_errors[ $id ] = $permanent ? 'wp_delete_post returned false.' : 'wp_trash_post returned false.';
+				continue;
+			}
+
+			++$succeeded;
+		}
+
+		return BatchResult::of( count( $ids ), $succeeded, $failed, $item_errors );
 	}
 
 	public function supports_undo(): bool {

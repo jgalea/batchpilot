@@ -61,4 +61,46 @@ final class DeleteOperationTest extends TestCase {
 	public function test_supports_undo_is_true(): void {
 		$this->assertTrue( $this->op()->supports_undo() );
 	}
+
+	public function test_execute_batch_trashes_by_default(): void {
+		$ids    = self::factory()->post->create_many( 3, [ 'post_status' => 'publish' ] );
+		$target = new PostTarget( 'post' );
+
+		$result = $this->op()->execute_batch( $ids, [ 'permanent' => false ], $target );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 3, $result->processed() );
+		$this->assertSame( 3, $result->succeeded() );
+		$this->assertSame( 0, $result->failed() );
+
+		foreach ( $ids as $id ) {
+			$this->assertSame( 'trash', get_post_status( $id ) );
+		}
+	}
+
+	public function test_execute_batch_hard_deletes_when_permanent(): void {
+		$ids    = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
+		$target = new PostTarget( 'post' );
+
+		$result = $this->op()->execute_batch( $ids, [ 'permanent' => true ], $target );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->succeeded() );
+
+		foreach ( $ids as $id ) {
+			$this->assertNull( get_post( $id ) );
+		}
+	}
+
+	public function test_execute_batch_records_failures_for_missing_ids(): void {
+		$ok_id  = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$target = new PostTarget( 'post' );
+
+		$result = $this->op()->execute_batch( [ $ok_id, 999999 ], [ 'permanent' => false ], $target );
+
+		$this->assertSame( 2, $result->processed() );
+		$this->assertSame( 1, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertArrayHasKey( 999999, $result->item_errors() );
+	}
 }
