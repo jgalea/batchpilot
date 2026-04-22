@@ -20,10 +20,7 @@ final class BulkEditOperation implements OperationInterface {
 
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
-
-	/** @phpstan-ignore-next-line property.onlyWritten */
 	private OperationRepository $operations;
-
 	private SnapshotRepository $snapshots;
 
 	public function __construct(
@@ -248,6 +245,44 @@ final class BulkEditOperation implements OperationInterface {
 	}
 
 	public function undo( int $operation_id ): UndoResult {
-		return UndoResult::error( new ContentOpsError( 'co.undo.not_implemented', 'Not implemented yet.' ) );
+		$op = $this->operations->find( $operation_id );
+		if ( null === $op ) {
+			return UndoResult::error( new ContentOpsError( 'co.undo.not_found', 'Operation not found.', [ 'operation_id' => $operation_id ] ) );
+		}
+
+		$snaps = $this->snapshots->for_operation( $operation_id );
+		$by_id = [];
+		foreach ( $snaps as $snap ) {
+			$by_id[ $snap->object_id() ][ $snap->field() ] = $snap->old_value();
+		}
+
+		$restored = 0;
+		foreach ( $by_id as $post_id => $fields ) {
+			$update = [ 'ID' => (int) $post_id ];
+			foreach ( $fields as $field => $old_value ) {
+				if ( 0 === strpos( $field, 'taxonomy:' ) ) {
+					$taxonomy = substr( $field, strlen( 'taxonomy:' ) );
+					$term_ids = json_decode( (string) $old_value, true );
+					wp_set_object_terms( (int) $post_id, is_array( $term_ids ) ? array_map( 'intval', $term_ids ) : [], $taxonomy );
+					continue;
+				}
+				if ( in_array( $field, [ 'menu_order', 'post_author' ], true ) ) {
+					$update[ $field ] = (int) $old_value;
+				} else {
+					$update[ $field ] = (string) $old_value;
+				}
+			}
+			if ( count( $update ) > 1 ) {
+				/** @phpstan-ignore-next-line argument.type */
+				$result = wp_update_post( $update, true );
+				if ( ! is_wp_error( $result ) && 0 !== (int) $result ) {
+					++$restored;
+				}
+			} else {
+				++$restored;
+			}
+		}
+
+		return UndoResult::of( $restored );
 	}
 }

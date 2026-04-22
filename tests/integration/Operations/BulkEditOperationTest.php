@@ -169,4 +169,63 @@ final class BulkEditOperationTest extends TestCase {
 		$terms = wp_get_post_terms( $id, 'category', [ 'fields' => 'ids' ] );
 		$this->assertContains( $term_id, array_map( 'intval', $terms ) );
 	}
+
+	public function test_undo_restores_status_from_snapshot(): void {
+		global $wpdb;
+		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [ 'set_status' => 'draft' ] ) );
+		$ids    = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
+
+		$op = $this->op();
+		$op->execute_batch(
+			$ids,
+			[
+				'set_status'     => 'draft',
+				'__operation_id' => $op_row->id(),
+			],
+			new PostTarget( 'post' )
+		);
+		$repo->mark_completed( $op_row->id(), $ids );
+
+		$result = $op->undo( $op_row->id() );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->restored() );
+		foreach ( $ids as $id ) {
+			$this->assertSame( 'publish', get_post_status( $id ) );
+		}
+	}
+
+	public function test_undo_restores_taxonomy_terms(): void {
+		global $wpdb;
+		$repo    = new \ContentOps\History\OperationRepository( $wpdb );
+		$op_row  = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$id      = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$term_id = (int) self::factory()->term->create( [ 'taxonomy' => 'category' ] );
+
+		$op = $this->op();
+		$op->execute_batch(
+			[ $id ],
+			[
+				'taxonomy_add'   => [
+					'taxonomy' => 'category',
+					'term_ids' => [ $term_id ],
+				],
+				'__operation_id' => $op_row->id(),
+			],
+			new PostTarget( 'post' )
+		);
+		$repo->mark_completed( $op_row->id(), [ $id ] );
+
+		$op->undo( $op_row->id() );
+
+		$terms = wp_get_post_terms( $id, 'category', [ 'fields' => 'ids' ] );
+		$this->assertNotContains( $term_id, array_map( 'intval', $terms ) );
+	}
+
+	public function test_undo_missing_operation_returns_error(): void {
+		$result = $this->op()->undo( 999999 );
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
+	}
 }
