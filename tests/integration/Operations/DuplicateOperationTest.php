@@ -14,6 +14,10 @@ final class DuplicateOperationTest extends TestCase {
 		\ContentOps\Database\Schema::install();
 	}
 
+	public static function wpTearDownAfterClass(): void {
+		\ContentOps\Database\Schema::drop_all();
+	}
+
 	private function op(): DuplicateOperation {
 		global $wpdb;
 		return new DuplicateOperation(

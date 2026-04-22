@@ -14,6 +14,10 @@ final class DeleteOperationTest extends TestCase {
 		\ContentOps\Database\Schema::install();
 	}
 
+	public static function wpTearDownAfterClass(): void {
+		\ContentOps\Database\Schema::drop_all();
+	}
+
 	private function op(): DeleteOperation {
 		global $wpdb;
 		return new DeleteOperation(
