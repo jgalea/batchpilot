@@ -85,4 +85,76 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertArrayHasKey( 'title_suffix', $schema['properties'] );
 		$this->assertArrayHasKey( 'include_children', $schema['properties'] );
 	}
+
+	public function test_execute_batch_duplicates_posts_with_suffix_and_draft(): void {
+		$source = (int) self::factory()->post->create(
+			[
+				'post_title'   => 'Hello',
+				'post_content' => 'Body',
+				'post_status'  => 'publish',
+			]
+		);
+
+		$op     = $this->op();
+		$target = new PostTarget( 'post' );
+
+		$result = $op->execute_batch( [ $source ], [], $target );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 1, $result->succeeded() );
+		$this->assertSame( 0, $result->failed() );
+
+		$new_ids = $op->last_new_ids();
+		$this->assertCount( 1, $new_ids );
+		$copy = get_post( $new_ids[0] );
+		$this->assertSame( 'Hello (Copy)', $copy->post_title );
+		$this->assertSame( 'Body', $copy->post_content );
+		$this->assertSame( 'draft', $copy->post_status );
+	}
+
+	public function test_execute_batch_copies_meta_and_thumbnail_but_skips_edit_lock(): void {
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		update_post_meta( $source, 'custom_field', 'value' );
+		update_post_meta( $source, '_thumbnail_id', 42 );
+		update_post_meta( $source, '_edit_lock', '1234567890:1' );
+
+		$op = $this->op();
+		$op->execute_batch( [ $source ], [], new PostTarget( 'post' ) );
+		$new_id = $op->last_new_ids()[0];
+
+		$this->assertSame( 'value', get_post_meta( $new_id, 'custom_field', true ) );
+		$this->assertSame( '42', (string) get_post_meta( $new_id, '_thumbnail_id', true ) );
+		$this->assertSame( '', get_post_meta( $new_id, '_edit_lock', true ) );
+	}
+
+	public function test_execute_batch_copies_taxonomies(): void {
+		$source  = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$term_id = (int) self::factory()->term->create( [ 'taxonomy' => 'category' ] );
+		wp_set_post_terms( $source, [ $term_id ], 'category' );
+
+		$op = $this->op();
+		$op->execute_batch( [ $source ], [], new PostTarget( 'post' ) );
+		$new_id = $op->last_new_ids()[0];
+
+		$terms = wp_get_post_terms( $new_id, 'category', [ 'fields' => 'ids' ] );
+		$this->assertSame( [ $term_id ], array_map( 'intval', $terms ) );
+	}
+
+	public function test_execute_batch_uses_target_status_param(): void {
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+
+		$op = $this->op();
+		$op->execute_batch(
+			[ $source ],
+			[
+				'target_status' => 'pending',
+				'title_suffix'  => '',
+			],
+			new PostTarget( 'post' )
+		);
+		$new_id = $op->last_new_ids()[0];
+
+		$this->assertSame( 'pending', get_post_status( $new_id ) );
+		$this->assertSame( get_post( $source )->post_title, get_post( $new_id )->post_title );
+	}
 }
