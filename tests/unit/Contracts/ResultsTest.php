@@ -68,4 +68,25 @@ final class ResultsTest extends TestCase {
 		$this->assertTrue( $undo->is_ok() );
 		$this->assertSame( 10, $undo->restored() );
 	}
+
+	public function test_batch_error_exposes_zero_state(): void {
+		$error = new ContentOpsError( 'co.batch.failed', 'Batch failed.' );
+		$batch = BatchResult::error( $error );
+
+		$this->assertFalse( $batch->is_ok() );
+		$this->assertSame( $error, $batch->get_error() );
+		$this->assertSame( 0, $batch->processed() );
+		$this->assertSame( 0, $batch->succeeded() );
+		$this->assertSame( 0, $batch->failed() );
+		$this->assertSame( [], $batch->item_errors() );
+	}
+
+	public function test_undo_error_exposes_zero_state(): void {
+		$error = new ContentOpsError( 'co.undo.failed', 'Undo failed.' );
+		$undo  = UndoResult::error( $error );
+
+		$this->assertFalse( $undo->is_ok() );
+		$this->assertSame( $error, $undo->get_error() );
+		$this->assertSame( 0, $undo->restored() );
+	}
 }

@@ -20,5 +20,6 @@ interface TargetInterface {
 	 */
 	public function get_display( int $id ): array;
 
+	/** Target-side veto: does this Target accept this Operation? */
 	public function supports_operation( string $operation_slug ): bool;
 }
