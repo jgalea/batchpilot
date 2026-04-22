@@ -1,0 +1,27 @@
+includes:
+  - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+  level: 6
+  paths:
+    - src
+    - content-ops.php
+    - uninstall.php
+  excludePaths:
+    - vendor
+    - node_modules
+    - assets/build
+    - tests
+  bootstrapFiles:
+    - vendor/autoload.php
+  treatPhpDocTypesAsCertain: false
+  ignoreErrors:
+    # Action Scheduler is loaded at runtime (bundled in vendor/woocommerce/action-scheduler)
+    # but its functions and classes aren't shipped in phpstan-wordpress stubs.
+    - message: '#Function as_schedule_(single|recurring)_action not found\.#'
+      path: src/Async/ActionSchedulerBridge.php
+    - message: '#Class ActionScheduler_NullAction not found\.#'
+      path: src/Async/ActionSchedulerBridge.php
+    # WP-CLI\Utils\format_items ships with WP-CLI at runtime; not in phpstan-wordpress.
+    - message: '#Function WP_CLI\\Utils\\format_items not found\.#'
+      path: src/CLI/DoctorCommand.php
