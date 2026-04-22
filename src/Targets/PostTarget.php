@@ -28,7 +28,30 @@ final class PostTarget implements TargetInterface {
 	}
 
 	public function get_filters(): array {
-		return [];
+		return [
+			new FilterDefinition( 'post_type', __( 'Post type', 'content-ops' ), 'enum', [ 'default' => $this->post_type ] ),
+			new FilterDefinition( 'status', __( 'Status', 'content-ops' ), 'enum', [ 'multiple' => true ] ),
+			new FilterDefinition( 'author', __( 'Author', 'content-ops' ), 'user' ),
+			new FilterDefinition( 'modified_before', __( 'Modified before', 'content-ops' ), 'date' ),
+			new FilterDefinition( 'modified_after', __( 'Modified after', 'content-ops' ), 'date' ),
+			new FilterDefinition( 'published_before', __( 'Published before', 'content-ops' ), 'date' ),
+			new FilterDefinition( 'published_after', __( 'Published after', 'content-ops' ), 'date' ),
+			new FilterDefinition(
+				'taxonomy',
+				__( 'Taxonomy term', 'content-ops' ),
+				'taxonomy',
+				[
+					'shape' => [
+						'taxonomy' => 'string',
+						'term_ids' => 'int[]',
+					],
+				]
+			),
+			new FilterDefinition( 'has_comments', __( 'Has comments', 'content-ops' ), 'bool' ),
+			new FilterDefinition( 'has_featured_image', __( 'Has featured image', 'content-ops' ), 'bool' ),
+			new FilterDefinition( 'post_parent', __( 'Post parent', 'content-ops' ), 'post' ),
+			new FilterDefinition( 'has_children', __( 'Has children', 'content-ops' ), 'bool' ),
+		];
 	}
 
 	public function query( QueryArgs $args, int $limit = 0, int $offset = 0 ): array {

@@ -35,4 +35,44 @@ final class PostTargetUnitTest extends TestCase {
 		$this->assertTrue( $target->supports_operation( 'edit' ) );
 		$this->assertFalse( $target->supports_operation( 'move' ) );
 	}
+
+	public function test_get_filters_returns_expected_keys(): void {
+		$target  = new PostTarget( 'post' );
+		$filters = $target->get_filters();
+
+		$keys = array_map( static fn ( $f ) => $f->key(), $filters );
+
+		$this->assertSame(
+			[
+				'post_type',
+				'status',
+				'author',
+				'modified_before',
+				'modified_after',
+				'published_before',
+				'published_after',
+				'taxonomy',
+				'has_comments',
+				'has_featured_image',
+				'post_parent',
+				'has_children',
+			],
+			$keys
+		);
+	}
+
+	public function test_get_filters_types_are_declared(): void {
+		$target = new PostTarget( 'post' );
+		$by_key = [];
+		foreach ( $target->get_filters() as $filter ) {
+			$by_key[ $filter->key() ] = $filter->type();
+		}
+
+		$this->assertSame( 'enum', $by_key['status'] );
+		$this->assertSame( 'user', $by_key['author'] );
+		$this->assertSame( 'date', $by_key['modified_before'] );
+		$this->assertSame( 'taxonomy', $by_key['taxonomy'] );
+		$this->assertSame( 'bool', $by_key['has_comments'] );
+		$this->assertSame( 'post', $by_key['post_parent'] );
+	}
 }
