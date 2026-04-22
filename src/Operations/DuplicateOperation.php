@@ -23,6 +23,14 @@ final class DuplicateOperation implements OperationInterface {
 	/** @phpstan-ignore-next-line property.onlyWritten (wired for undo() impl in Task 10) */
 	private OperationRepository $operations;
 
+	/** @var int[] */
+	private array $last_new_ids = [];
+
+	/** @return int[] */
+	public function last_new_ids(): array {
+		return $this->last_new_ids;
+	}
+
 	public function __construct(
 		TokenGenerator $token_generator,
 		TokenStore $token_store,
@@ -127,7 +135,71 @@ final class DuplicateOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult {
-		return BatchResult::of( 0, 0, 0 );
+		$this->last_new_ids = [];
+		$target_status      = isset( $params['target_status'] ) ? (string) $params['target_status'] : 'draft';
+		$reassign_author    = isset( $params['reassign_author'] ) ? (int) $params['reassign_author'] : 0;
+		$title_suffix       = array_key_exists( 'title_suffix', $params ) ? (string) $params['title_suffix'] : self::DEFAULT_SUFFIX;
+
+		$succeeded   = 0;
+		$failed      = 0;
+		$item_errors = [];
+
+		foreach ( $ids as $id ) {
+			$id     = (int) $id;
+			$source = get_post( $id );
+			if ( null === $source ) {
+				++$failed;
+				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			$new_post = [
+				'post_title'   => $source->post_title . $title_suffix,
+				'post_content' => $source->post_content,
+				'post_excerpt' => $source->post_excerpt,
+				'post_type'    => $source->post_type,
+				'post_status'  => $target_status,
+				'post_author'  => $reassign_author > 0 ? $reassign_author : (int) $source->post_author,
+				'post_parent'  => (int) $source->post_parent,
+				'menu_order'   => (int) $source->menu_order,
+			];
+
+			$new_id = wp_insert_post( $new_post, true );
+			if ( is_wp_error( $new_id ) || 0 === (int) $new_id ) {
+				++$failed;
+				$item_errors[ $id ] = is_wp_error( $new_id ) ? $new_id->get_error_message() : 'wp_insert_post returned 0.';
+				continue;
+			}
+
+			$this->copy_meta( $id, (int) $new_id );
+			$this->copy_taxonomies( $id, (int) $new_id, $source->post_type );
+
+			$this->last_new_ids[] = (int) $new_id;
+			++$succeeded;
+		}
+
+		return BatchResult::of( count( $ids ), $succeeded, $failed, $item_errors );
+	}
+
+	private function copy_meta( int $source_id, int $new_id ): void {
+		$meta = get_post_meta( $source_id );
+		foreach ( $meta as $key => $values ) {
+			if ( in_array( $key, [ '_edit_lock', '_edit_last' ], true ) ) {
+				continue;
+			}
+			foreach ( (array) $values as $value ) {
+				add_post_meta( $new_id, $key, maybe_unserialize( $value ) );
+			}
+		}
+	}
+
+	private function copy_taxonomies( int $source_id, int $new_id, string $post_type ): void {
+		foreach ( get_object_taxonomies( $post_type ) as $taxonomy ) {
+			$terms = wp_get_object_terms( $source_id, $taxonomy, [ 'fields' => 'ids' ] );
+			if ( is_array( $terms ) && ! empty( $terms ) ) {
+				wp_set_object_terms( $new_id, array_map( 'intval', $terms ), $taxonomy );
+			}
+		}
 	}
 
 	public function supports_undo(): bool {
