@@ -24,7 +24,6 @@ final class BulkEditOperation implements OperationInterface {
 	/** @phpstan-ignore-next-line property.onlyWritten */
 	private OperationRepository $operations;
 
-	/** @phpstan-ignore-next-line property.onlyWritten */
 	private SnapshotRepository $snapshots;
 
 	public function __construct(
@@ -156,7 +155,92 @@ final class BulkEditOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult {
-		return BatchResult::of( 0, 0, 0 );
+		$operation_id = isset( $params['__operation_id'] ) ? (int) $params['__operation_id'] : 0;
+		$succeeded    = 0;
+		$failed       = 0;
+		$item_errors  = [];
+		$snapshots    = [];
+
+		foreach ( $ids as $id ) {
+			$id   = (int) $id;
+			$post = get_post( $id );
+			if ( null === $post ) {
+				++$failed;
+				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			$update = [ 'ID' => $id ];
+
+			if ( isset( $params['set_status'] ) ) {
+				$snapshots[]           = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_status', (string) $post->post_status );
+				$update['post_status'] = (string) $params['set_status'];
+			}
+			if ( isset( $params['reassign_author'] ) ) {
+				$snapshots[]           = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_author', (string) $post->post_author );
+				$update['post_author'] = (int) $params['reassign_author'];
+			}
+			if ( isset( $params['shift_dates_days'] ) ) {
+				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_date', (string) $post->post_date );
+				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_date_gmt', (string) $post->post_date_gmt );
+				$shifted                 = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
+				$shifted_gmt             = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date_gmt ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
+				$update['post_date']     = $shifted;
+				$update['post_date_gmt'] = $shifted_gmt;
+			}
+			if ( isset( $params['password'] ) ) {
+				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_password', (string) $post->post_password );
+				$update['post_password'] = (string) $params['password'];
+			}
+			if ( isset( $params['comment_status'] ) ) {
+				$snapshots[]              = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'comment_status', (string) $post->comment_status );
+				$update['comment_status'] = (string) $params['comment_status'];
+			}
+			if ( isset( $params['menu_order'] ) ) {
+				$snapshots[]          = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'menu_order', (string) $post->menu_order );
+				$update['menu_order'] = (int) $params['menu_order'];
+			}
+
+			$result = wp_update_post( $update, true );
+			if ( is_wp_error( $result ) || 0 === (int) $result ) {
+				++$failed;
+				$item_errors[ $id ] = is_wp_error( $result ) ? $result->get_error_message() : 'wp_update_post failed.';
+				continue;
+			}
+
+			if ( isset( $params['taxonomy_add'] ) ) {
+				$tax         = $params['taxonomy_add'];
+				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
+				$snapshots[] = new \ContentOps\History\Snapshot(
+					$operation_id,
+					'post',
+					$id,
+					'taxonomy:' . (string) $tax['taxonomy'],
+					(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
+				);
+				wp_set_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'], true );
+			}
+			if ( isset( $params['taxonomy_remove'] ) ) {
+				$tax         = $params['taxonomy_remove'];
+				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
+				$snapshots[] = new \ContentOps\History\Snapshot(
+					$operation_id,
+					'post',
+					$id,
+					'taxonomy:' . (string) $tax['taxonomy'],
+					(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
+				);
+				wp_remove_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'] );
+			}
+
+			++$succeeded;
+		}
+
+		if ( $operation_id > 0 && ! empty( $snapshots ) ) {
+			$this->snapshots->bulk_insert( $snapshots );
+		}
+
+		return BatchResult::of( count( $ids ), $succeeded, $failed, $item_errors );
 	}
 
 	public function supports_undo(): bool {

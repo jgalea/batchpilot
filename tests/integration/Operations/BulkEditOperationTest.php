@@ -93,4 +93,80 @@ final class BulkEditOperationTest extends TestCase {
 		$this->assertTrue( $preview->is_ok() );
 		$this->assertSame( 4, $preview->count() );
 	}
+
+	public function test_execute_batch_changes_status_and_snapshots_old_value(): void {
+		global $wpdb;
+		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$ids    = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
+
+		$result = $this->op()->execute_batch(
+			$ids,
+			[
+				'set_status'     => 'draft',
+				'__operation_id' => $op_row->id(),
+			],
+			new PostTarget( 'post' )
+		);
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->succeeded() );
+		foreach ( $ids as $id ) {
+			$this->assertSame( 'draft', get_post_status( $id ) );
+		}
+
+		$snapshots = ( new \ContentOps\History\SnapshotRepository( $wpdb ) )->for_operation( $op_row->id() );
+		$this->assertCount( 2, $snapshots );
+		foreach ( $snapshots as $snap ) {
+			$this->assertSame( 'post_status', $snap->field() );
+			$this->assertSame( 'publish', $snap->old_value() );
+		}
+	}
+
+	public function test_execute_batch_shifts_dates(): void {
+		global $wpdb;
+		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$id     = (int) self::factory()->post->create(
+			[
+				'post_status'   => 'publish',
+				'post_date'     => '2024-06-01 10:00:00',
+				'post_date_gmt' => '2024-06-01 10:00:00',
+			]
+		);
+
+		$this->op()->execute_batch(
+			[ $id ],
+			[
+				'shift_dates_days' => 7,
+				'__operation_id'   => $op_row->id(),
+			],
+			new PostTarget( 'post' )
+		);
+
+		$this->assertSame( '2024-06-08 10:00:00', get_post( $id )->post_date );
+	}
+
+	public function test_execute_batch_adds_taxonomy_terms(): void {
+		global $wpdb;
+		$repo    = new \ContentOps\History\OperationRepository( $wpdb );
+		$op_row  = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$id      = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$term_id = (int) self::factory()->term->create( [ 'taxonomy' => 'category' ] );
+
+		$this->op()->execute_batch(
+			[ $id ],
+			[
+				'taxonomy_add'   => [
+					'taxonomy' => 'category',
+					'term_ids' => [ $term_id ],
+				],
+				'__operation_id' => $op_row->id(),
+			],
+			new PostTarget( 'post' )
+		);
+
+		$terms = wp_get_post_terms( $id, 'category', [ 'fields' => 'ids' ] );
+		$this->assertContains( $term_id, array_map( 'intval', $terms ) );
+	}
 }
