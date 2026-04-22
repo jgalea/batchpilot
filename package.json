@@ -3,12 +3,18 @@
   "version": "0.1.0-alpha",
   "private": true,
   "scripts": {
+    "build": "wp-scripts build --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js",
+    "start": "wp-scripts start --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js",
+    "lint:js": "wp-scripts lint-js assets/src",
+    "lint:js:fix": "wp-scripts lint-js --fix assets/src",
+    "test:js": "wp-scripts test-unit-js",
     "env:start": "wp-env start",
     "env:stop": "wp-env stop",
     "env:destroy": "wp-env destroy",
     "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/content-ops composer test:integration"
   },
   "devDependencies": {
-    "@wordpress/env": "^10.0.0"
+    "@wordpress/env": "^10.0.0",
+    "@wordpress/scripts": "^30.0.0"
   }
 }
