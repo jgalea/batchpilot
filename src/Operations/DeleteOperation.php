@@ -9,6 +9,7 @@ use ContentOps\Contracts\TargetInterface;
 use ContentOps\Contracts\UndoResult;
 use ContentOps\Contracts\ValidationResult;
 use ContentOps\Errors\ContentOpsError;
+use ContentOps\History\OperationRepository;
 use ContentOps\PreviewToken\TokenGenerator;
 use ContentOps\PreviewToken\TokenStore;
 
@@ -18,10 +19,16 @@ final class DeleteOperation implements OperationInterface {
 
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
+	private OperationRepository $operations;
 
-	public function __construct( TokenGenerator $token_generator, TokenStore $token_store ) {
+	public function __construct(
+		TokenGenerator $token_generator,
+		TokenStore $token_store,
+		OperationRepository $operations
+	) {
 		$this->token_generator = $token_generator;
 		$this->token_store     = $token_store;
+		$this->operations      = $operations;
 	}
 
 	public function slug(): string {
@@ -115,6 +122,34 @@ final class DeleteOperation implements OperationInterface {
 	}
 
 	public function undo( int $operation_id ): UndoResult {
-		return UndoResult::error( new ContentOpsError( 'co.undo.not_implemented', 'Not implemented yet.' ) );
+		$op = $this->operations->find( $operation_id );
+		if ( null === $op ) {
+			return UndoResult::error(
+				new ContentOpsError(
+					'co.undo.not_found',
+					'Operation not found.',
+					[ 'operation_id' => $operation_id ]
+				)
+			);
+		}
+
+		if ( ! empty( $op->params()['permanent'] ) ) {
+			return UndoResult::error(
+				new ContentOpsError(
+					'co.undo.permanent_delete',
+					'Permanent deletions cannot be undone.',
+					[ 'operation_id' => $operation_id ]
+				)
+			);
+		}
+
+		$restored = 0;
+		foreach ( $op->affected_ids() as $id ) {
+			if ( false !== wp_untrash_post( (int) $id ) ) {
+				++$restored;
+			}
+		}
+
+		return UndoResult::of( $restored );
 	}
 }
