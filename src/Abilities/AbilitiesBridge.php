@@ -45,7 +45,6 @@ final class AbilitiesBridge {
 				'category'            => 'content-ops',
 				'input_schema'        => [
 					'type'                 => 'object',
-					// phpcs:ignore Universal.CodeAnalysis.NoEchoSprintf.Found, WordPress.PHP.DevelopmentFunctions
 					'properties'           => new \stdClass(),
 					'additionalProperties' => false,
 				],
