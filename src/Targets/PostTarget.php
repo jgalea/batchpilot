@@ -79,7 +79,29 @@ final class PostTarget implements TargetInterface {
 	}
 
 	public function get_display( int $id ): array {
-		return [];
+		$post = get_post( $id );
+		if ( null === $post ) {
+			return [
+				'id'            => $id,
+				'title'         => '',
+				'status'        => 'missing',
+				'date'          => '',
+				'edit_url'      => '',
+				'thumbnail_url' => null,
+			];
+		}
+
+		$thumb_id  = (int) get_post_thumbnail_id( $post );
+		$thumb_url = 0 === $thumb_id ? null : (string) wp_get_attachment_image_url( $thumb_id, 'thumbnail' );
+
+		return [
+			'id'            => (int) $post->ID,
+			'title'         => (string) $post->post_title,
+			'status'        => (string) $post->post_status,
+			'date'          => (string) $post->post_date,
+			'edit_url'      => (string) get_edit_post_link( $post->ID, 'raw' ),
+			'thumbnail_url' => $thumb_url,
+		];
 	}
 
 	public function supports_operation( string $operation_slug ): bool {
