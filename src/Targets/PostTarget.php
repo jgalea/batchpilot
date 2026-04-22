@@ -55,11 +55,27 @@ final class PostTarget implements TargetInterface {
 	}
 
 	public function query( QueryArgs $args, int $limit = 0, int $offset = 0 ): array {
-		return [];
+		$query_args                     = $this->build_wp_query_args( $args );
+		$query_args['fields']           = 'ids';
+		$query_args['posts_per_page']   = $limit > 0 ? $limit : -1;
+		$query_args['offset']           = $offset;
+		$query_args['no_found_rows']    = true;
+		$query_args['suppress_filters'] = false;
+
+		$query = new \WP_Query( $query_args );
+
+		return array_map( 'intval', (array) $query->posts );
 	}
 
 	public function count( QueryArgs $args ): int {
-		return 0;
+		$query_args                   = $this->build_wp_query_args( $args );
+		$query_args['fields']         = 'ids';
+		$query_args['posts_per_page'] = 1;
+		$query_args['no_found_rows']  = false;
+
+		$query = new \WP_Query( $query_args );
+
+		return (int) $query->found_posts;
 	}
 
 	public function get_display( int $id ): array {
@@ -68,5 +84,104 @@ final class PostTarget implements TargetInterface {
 
 	public function supports_operation( string $operation_slug ): bool {
 		return in_array( $operation_slug, self::SUPPORTED, true );
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function build_wp_query_args( QueryArgs $args ): array {
+		$query = [
+			'post_type'   => $this->post_type,
+			'post_status' => 'any',
+		];
+
+		if ( $args->has( 'status' ) ) {
+			$query['post_status'] = $args->get( 'status' );
+		}
+
+		if ( $args->has( 'author' ) ) {
+			$query['author'] = (int) $args->get( 'author' );
+		}
+
+		$date_query = [];
+		if ( $args->has( 'published_before' ) ) {
+			$date_query[] = [
+				'before'    => (string) $args->get( 'published_before' ),
+				'column'    => 'post_date',
+				'inclusive' => true,
+			];
+		}
+		if ( $args->has( 'published_after' ) ) {
+			$date_query[] = [
+				'after'     => (string) $args->get( 'published_after' ),
+				'column'    => 'post_date',
+				'inclusive' => true,
+			];
+		}
+		if ( $args->has( 'modified_before' ) ) {
+			$date_query[] = [
+				'before'    => (string) $args->get( 'modified_before' ),
+				'column'    => 'post_modified',
+				'inclusive' => true,
+			];
+		}
+		if ( $args->has( 'modified_after' ) ) {
+			$date_query[] = [
+				'after'     => (string) $args->get( 'modified_after' ),
+				'column'    => 'post_modified',
+				'inclusive' => true,
+			];
+		}
+		if ( ! empty( $date_query ) ) {
+			$query['date_query'] = $date_query;
+		}
+
+		$meta_query = [];
+		if ( $args->has( 'has_featured_image' ) ) {
+			$meta_query[] = true === $args->get( 'has_featured_image' )
+				? [
+					'key'     => '_thumbnail_id',
+					'compare' => 'EXISTS',
+				]
+				: [
+					'key'     => '_thumbnail_id',
+					'compare' => 'NOT EXISTS',
+				];
+		}
+		if ( ! empty( $meta_query ) ) {
+			$query['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+
+		if ( $args->has( 'taxonomy' ) ) {
+			$tax = $args->get( 'taxonomy' );
+			if ( is_array( $tax ) && ! empty( $tax['taxonomy'] ) && ! empty( $tax['term_ids'] ) ) {
+				$query['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					[
+						'taxonomy' => (string) $tax['taxonomy'],
+						'field'    => 'term_id',
+						'terms'    => array_map( 'intval', (array) $tax['term_ids'] ),
+					],
+				];
+			}
+		}
+
+		if ( $args->has( 'post_parent' ) ) {
+			$query['post_parent'] = (int) $args->get( 'post_parent' );
+		}
+
+		if ( $args->has( 'has_comments' ) ) {
+			$query['comment_count'] = true === $args->get( 'has_comments' )
+				? [
+					'value'   => 0,
+					'compare' => '>',
+				]
+				: 0;
+		}
+
+		if ( $args->has( 'has_children' ) ) {
+			$query['co_has_children'] = (bool) $args->get( 'has_children' );
+		}
+
+		return $query;
 	}
 }
