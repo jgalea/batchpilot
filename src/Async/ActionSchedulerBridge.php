@@ -7,6 +7,9 @@ final class ActionSchedulerBridge {
 		return function_exists( 'as_schedule_single_action' );
 	}
 
+	/**
+	 * @param array<int|string, mixed> $args
+	 */
 	public function schedule_single_action( int $timestamp, string $hook, array $args, string $group ): int {
 		if ( ! $this->is_available() ) {
 			return 0;
@@ -14,6 +17,9 @@ final class ActionSchedulerBridge {
 		return (int) as_schedule_single_action( $timestamp, $hook, $args, $group );
 	}
 
+	/**
+	 * @param array<int|string, mixed> $args
+	 */
 	public function schedule_recurring_action( int $timestamp, int $interval_in_seconds, string $hook, array $args, string $group ): int {
 		if ( ! $this->is_available() ) {
 			return 0;

@@ -27,6 +27,9 @@ final class DoctorCommand {
 	 * ---
 	 *
 	 * @when after_wp_load
+	 *
+	 * @param string[]             $args
+	 * @param array<string, mixed> $assoc_args
 	 */
 	public function __invoke( array $args, array $assoc_args ): void {
 		$format = $assoc_args['format'] ?? 'table';
@@ -37,7 +40,10 @@ final class DoctorCommand {
 			return;
 		}
 
-		$rows    = [];
+		$rows = [];
+		/**
+		 * @var callable(string, array<int|string, mixed>): void $flatten
+		 */
 		$flatten = static function ( string $prefix, array $value ) use ( &$flatten, &$rows ): void {
 			foreach ( $value as $k => $v ) {
 				$key = '' === $prefix ? (string) $k : $prefix . '.' . $k;
@@ -56,6 +62,9 @@ final class DoctorCommand {
 		\WP_CLI\Utils\format_items( 'table', $rows, [ 'check', 'value' ] );
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function collect_report(): array {
 		return $this->controller->collect_report();
 	}

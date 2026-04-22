@@ -9,9 +9,13 @@ final class BatchResult {
 	private int $processed;
 	private int $succeeded;
 	private int $failed;
+	/** @var array<int|string, string> */
 	private array $item_errors;
 	private ?ContentOpsError $error;
 
+	/**
+	 * @param array<int|string, string> $item_errors
+	 */
 	private function __construct(
 		bool $ok,
 		int $processed,
@@ -28,6 +32,9 @@ final class BatchResult {
 		$this->error       = $error;
 	}
 
+	/**
+	 * @param array<int|string, string> $item_errors
+	 */
 	public static function of( int $processed, int $succeeded, int $failed, array $item_errors = [] ): self {
 		return new self( true, $processed, $succeeded, $failed, $item_errors, null );
 	}
@@ -52,6 +59,9 @@ final class BatchResult {
 		return $this->failed;
 	}
 
+	/**
+	 * @return array<int|string, string>
+	 */
 	public function item_errors(): array {
 		return $this->item_errors;
 	}

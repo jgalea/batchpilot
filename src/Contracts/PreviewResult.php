@@ -7,11 +7,17 @@ final class PreviewResult {
 
 	private bool $ok;
 	private int $count;
+	/** @var int[] */
 	private array $sample_ids;
 	private string $preview_token;
+	/** @var string[] */
 	private array $warnings;
 	private ?ContentOpsError $error;
 
+	/**
+	 * @param int[]    $sample_ids
+	 * @param string[] $warnings
+	 */
 	private function __construct(
 		bool $ok,
 		int $count,
@@ -28,6 +34,10 @@ final class PreviewResult {
 		$this->error         = $error;
 	}
 
+	/**
+	 * @param int[]    $sample_ids
+	 * @param string[] $warnings
+	 */
 	public static function of( int $count, array $sample_ids, string $preview_token, array $warnings = [] ): self {
 		return new self( true, $count, $sample_ids, $preview_token, $warnings, null );
 	}
@@ -44,6 +54,9 @@ final class PreviewResult {
 		return $this->count;
 	}
 
+	/**
+	 * @return int[]
+	 */
 	public function sample_ids(): array {
 		return $this->sample_ids;
 	}
@@ -52,6 +65,9 @@ final class PreviewResult {
 		return $this->preview_token;
 	}
 
+	/**
+	 * @return string[]
+	 */
 	public function warnings(): array {
 		return $this->warnings;
 	}

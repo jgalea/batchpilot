@@ -7,6 +7,7 @@ final class Plugin {
 
 	private string $plugin_file;
 
+	/** @var array<string, object> */
 	private array $services = [];
 
 	private function __construct( string $plugin_file ) {

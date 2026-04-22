@@ -47,6 +47,9 @@ final class OperationRepository {
 		);
 	}
 
+	/**
+	 * @param int[] $affected_ids
+	 */
 	public function mark_completed( int $id, array $affected_ids ): void {
 		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$this->table(),

@@ -11,10 +11,16 @@ final class TokenStore {
 		$this->ttl_seconds = $ttl_seconds;
 	}
 
+	/**
+	 * @param array<int|string, mixed> $payload
+	 */
 	public function store( string $token, array $payload ): void {
 		set_transient( self::TRANSIENT_PREFIX . $token, $payload, $this->ttl_seconds );
 	}
 
+	/**
+	 * @return array<int|string, mixed>|null
+	 */
 	public function retrieve( string $token ): ?array {
 		$payload = get_transient( self::TRANSIENT_PREFIX . $token );
 		return is_array( $payload ) ? $payload : null;

@@ -11,6 +11,9 @@ abstract class RestController {
 		return new WP_REST_Response( $error->to_array(), $status );
 	}
 
+	/**
+	 * @return true|WP_Error
+	 */
 	public function require_capability( string $capability ) {
 		if ( current_user_can( $capability ) ) {
 			return true;
