@@ -102,4 +102,35 @@ final class PostTargetTest extends TestCase {
 		$this->assertCount( 2, $page_2 );
 		$this->assertSame( [], array_intersect( $page_1, $page_2 ) );
 	}
+
+	public function test_get_display_returns_summary(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+
+		$post_id = self::factory()->post->create(
+			[
+				'post_title'  => 'Hello world',
+				'post_status' => 'draft',
+				'post_date'   => '2024-06-15 10:00:00',
+			]
+		);
+
+		$target = new PostTarget( 'post' );
+		$row    = $target->get_display( (int) $post_id );
+
+		$this->assertSame( (int) $post_id, $row['id'] );
+		$this->assertSame( 'Hello world', $row['title'] );
+		$this->assertSame( 'draft', $row['status'] );
+		$this->assertSame( '2024-06-15 10:00:00', $row['date'] );
+		$this->assertStringContainsString( 'post.php', (string) $row['edit_url'] );
+		$this->assertNull( $row['thumbnail_url'] );
+	}
+
+	public function test_get_display_missing_post_returns_placeholder(): void {
+		$target = new PostTarget( 'post' );
+		$row    = $target->get_display( 999999 );
+
+		$this->assertSame( 999999, $row['id'] );
+		$this->assertSame( '', $row['title'] );
+		$this->assertSame( 'missing', $row['status'] );
+	}
 }
