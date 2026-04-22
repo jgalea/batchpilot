@@ -7,8 +7,12 @@ final class ContentOpsError {
 
 	private string $code;
 	private string $message;
+	/** @var array<string, mixed> */
 	private array $context;
 
+	/**
+	 * @param array<string, mixed> $context
+	 */
 	public function __construct( string $code, string $message, array $context = [] ) {
 		if ( '' === $code ) {
 			throw new InvalidArgumentException( 'ContentOpsError code must be a non-empty string.' );
@@ -27,10 +31,16 @@ final class ContentOpsError {
 		return $this->message;
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function context(): array {
 		return $this->context;
 	}
 
+	/**
+	 * @return array{code: string, message: string, context: array<string, mixed>}
+	 */
 	public function to_array(): array {
 		return [
 			'code'    => $this->code,

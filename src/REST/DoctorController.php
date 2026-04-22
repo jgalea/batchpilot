@@ -14,6 +14,9 @@ final class DoctorController extends RestController {
 		$this->action_scheduler = $action_scheduler;
 	}
 
+	/**
+	 * @return true|\WP_Error
+	 */
 	public function check_permission() {
 		return $this->require_capability( 'manage_options' );
 	}
@@ -22,6 +25,9 @@ final class DoctorController extends RestController {
 		return new WP_REST_Response( $this->collect_report() );
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function collect_report(): array {
 		global $wpdb;
 

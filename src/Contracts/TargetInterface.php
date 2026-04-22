@@ -15,6 +15,9 @@ interface TargetInterface {
 
 	public function count( QueryArgs $args ): int;
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function get_display( int $id ): array;
 
 	public function supports_operation( string $operation_slug ): bool;

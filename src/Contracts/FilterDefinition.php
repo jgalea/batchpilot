@@ -8,8 +8,12 @@ final class FilterDefinition {
 	private string $key;
 	private string $label;
 	private string $type;
+	/** @var array<string, mixed> */
 	private array $schema;
 
+	/**
+	 * @param array<string, mixed> $schema
+	 */
 	public function __construct( string $key, string $label, string $type, array $schema = [] ) {
 		if ( '' === $key ) {
 			throw new InvalidArgumentException( 'FilterDefinition key must be non-empty.' );
@@ -33,10 +37,16 @@ final class FilterDefinition {
 		return $this->type;
 	}
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function schema(): array {
 		return $this->schema;
 	}
 
+	/**
+	 * @return array{key: string, label: string, type: string, schema: array<string, mixed>}
+	 */
 	public function to_array(): array {
 		return [
 			'key'    => $this->key,

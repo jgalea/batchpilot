@@ -7,13 +7,25 @@ interface OperationInterface {
 
 	public function label(): string;
 
+	/**
+	 * @return array<string, mixed>
+	 */
 	public function get_params_schema(): array;
 
+	/**
+	 * @param array<string, mixed> $params
+	 */
 	public function validate( QueryArgs $args, array $params ): ValidationResult;
 
+	/**
+	 * @param array<string, mixed> $params
+	 */
 	public function preview( QueryArgs $args, array $params, TargetInterface $target ): PreviewResult;
 
-	/** @param int[] $ids */
+	/**
+	 * @param int[]                $ids
+	 * @param array<string, mixed> $params
+	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult;
 
 	public function supports_undo(): bool;
