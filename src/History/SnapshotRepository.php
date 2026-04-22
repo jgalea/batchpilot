@@ -17,18 +17,29 @@ final class SnapshotRepository {
 
 	/** @param Snapshot[] $snapshots */
 	public function bulk_insert( array $snapshots ): void {
-		foreach ( $snapshots as $snapshot ) {
-			$this->db->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-				$this->table(),
-				[
-					'operation_id' => $snapshot->operation_id(),
-					'object_type'  => $snapshot->object_type(),
-					'object_id'    => $snapshot->object_id(),
-					'field'        => $snapshot->field(),
-					'old_value'    => $snapshot->old_value(),
-				],
-				[ '%d', '%s', '%d', '%s', '%s' ]
-			);
+		if ( empty( $snapshots ) ) {
+			return;
+		}
+
+		foreach ( array_chunk( $snapshots, 500 ) as $chunk ) {
+			$placeholders = [];
+			$values       = [];
+			foreach ( $chunk as $snapshot ) {
+				$old_value       = $snapshot->old_value();
+				$old_placeholder = null === $old_value ? 'NULL' : '%s';
+				$placeholders[]  = "(%d, %s, %d, %s, {$old_placeholder})";
+				$values[]        = $snapshot->operation_id();
+				$values[]        = $snapshot->object_type();
+				$values[]        = $snapshot->object_id();
+				$values[]        = $snapshot->field();
+				if ( null !== $old_value ) {
+					$values[] = $old_value;
+				}
+			}
+
+			$sql = "INSERT INTO {$this->table()} (operation_id, object_type, object_id, field, old_value) VALUES " . implode( ', ', $placeholders );
+
+			$this->db->query( $this->db->prepare( $sql, $values ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared
 		}
 	}
 
