@@ -46,7 +46,6 @@ const RecentOperationsList = ( { api } ) => {
 
 	return (
 		<div>
-			<h2>{ __( 'Recent operations', 'content-ops' ) }</h2>
 			{ notice && (
 				<Notice
 					status={ notice.status }
@@ -56,26 +55,36 @@ const RecentOperationsList = ( { api } ) => {
 				</Notice>
 			) }
 			{ ops.length === 0 && (
-				<p>{ __( 'No operations yet.', 'content-ops' ) }</p>
+				<p className="co-empty">
+					{ __( 'No operations yet.', 'content-ops' ) }
+				</p>
 			) }
-			<ul>
-				{ ops.map( ( op ) => (
-					<li key={ op.id }>
-						<strong>{ op.type }</strong> — { op.target } —{ ' ' }
-						{ op.affected_count } { __( 'items', 'content-ops' ) } —{ ' ' }
-						{ op.status }
-						{ UNDOABLE.includes( op.type ) &&
-							op.status === 'completed' && (
-								<Button
-									variant="secondary"
-									onClick={ () => undo( op.id ) }
-								>
-									{ __( 'Undo', 'content-ops' ) }
-								</Button>
-							) }
-					</li>
-				) ) }
-			</ul>
+			{ ops.length > 0 && (
+				<ul className="recent-operations">
+					{ ops.map( ( op ) => (
+						<li key={ op.id }>
+							<span className="co-chip co-chip--accent">
+								{ op.type }
+							</span>
+							<span className="co-chip">{ op.target }</span>
+							<time>
+								{ op.affected_count }{ ' ' }
+								{ __( 'items', 'content-ops' ) } · { op.status }
+							</time>
+							{ UNDOABLE.includes( op.type ) &&
+								op.status === 'completed' && (
+									<Button
+										variant="secondary"
+										onClick={ () => undo( op.id ) }
+										style={ { marginLeft: 'auto' } }
+									>
+										{ __( 'Undo', 'content-ops' ) }
+									</Button>
+								) }
+						</li>
+					) ) }
+				</ul>
+			) }
 		</div>
 	);
 };

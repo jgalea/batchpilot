@@ -1,5 +1,5 @@
 import { useEffect, useState } from '@wordpress/element';
-import { Card, CardBody, CardHeader, Spinner } from '@wordpress/components';
+import { Spinner } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 const StatsCard = ( { api } ) => {
@@ -20,7 +20,6 @@ const StatsCard = ( { api } ) => {
 		if ( ! s ) {
 			return NaN;
 		}
-		// ISO strings already carry a timezone marker (Z or +/-HH:MM).
 		const hasTz = /[zZ]|[+-]\d{2}:?\d{2}$/.test( s );
 		return Date.parse( hasTz ? s : s + 'Z' );
 	};
@@ -33,27 +32,52 @@ const StatsCard = ( { api } ) => {
 	);
 
 	return (
-		<Card>
-			<CardHeader>{ __( 'This week', 'content-ops' ) }</CardHeader>
-			<CardBody>
-				<p>
-					<span data-testid="stats-ops-this-week">
-						{ thisWeek.length }
-					</span>{ ' ' }
-					{ __( 'operations', 'content-ops' ) }
+		<div className="co-metrics">
+			<div className="co-metric">
+				<p className="co-metric__label">
+					{ __( 'Operations', 'content-ops' ) }
 				</p>
-				<p>
-					<span data-testid="stats-items-affected">{ items }</span>{ ' ' }
-					{ __( 'items affected', 'content-ops' ) }
+				<p
+					className="co-metric__value"
+					data-testid="stats-ops-this-week"
+				>
+					{ thisWeek.length }
 				</p>
-				<p data-testid="stats-active-schedules">
-					{ __( 'Active schedules: N/A', 'content-ops' ) }
+			</div>
+			<div className="co-metric">
+				<p className="co-metric__label">
+					{ __( 'Items affected', 'content-ops' ) }
 				</p>
-				<p data-testid="stats-next-run">
-					{ __( 'Next scheduled run: N/A', 'content-ops' ) }
+				<p
+					className="co-metric__value"
+					data-testid="stats-items-affected"
+				>
+					{ items }
 				</p>
-			</CardBody>
-		</Card>
+			</div>
+			<div className="co-metric">
+				<p className="co-metric__label">
+					{ __( 'Active schedules', 'content-ops' ) }
+				</p>
+				<p
+					className="co-metric__value co-metric__value--muted"
+					data-testid="stats-active-schedules"
+				>
+					{ __( 'N/A', 'content-ops' ) }
+				</p>
+			</div>
+			<div className="co-metric">
+				<p className="co-metric__label">
+					{ __( 'Next scheduled run', 'content-ops' ) }
+				</p>
+				<p
+					className="co-metric__value co-metric__value--muted"
+					data-testid="stats-next-run"
+				>
+					{ __( 'N/A', 'content-ops' ) }
+				</p>
+			</div>
+		</div>
 	);
 };
 

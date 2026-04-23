@@ -1,12 +1,6 @@
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	Spinner,
-	Notice,
-} from '@wordpress/components';
+import { Card, CardBody, Spinner, Notice } from '@wordpress/components';
 import { normalizeError } from '../api';
 
 const hposDetail = ( hpos ) => {
@@ -111,9 +105,6 @@ const HealthPanel = ( { api } ) => {
 
 	return (
 		<Card>
-			<CardHeader>
-				{ __( 'Environment health', 'content-ops' ) }
-			</CardHeader>
 			<CardBody>
 				<ul className="content-ops-health-list">
 					{ items.map( ( item ) => (

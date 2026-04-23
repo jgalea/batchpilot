@@ -1,38 +1,162 @@
+// Content Ops admin — refined operator aesthetic.
+// System fonts for base UI (fast, familiar). Monospace accent for counts,
+// IDs, timestamps, tags. Deep teal accent (#0f766e) used sparingly.
+
+:root {
+	--co-accent: #0f766e;
+	--co-accent-hover: #115e59;
+	--co-accent-ink: #042f2e;
+	--co-accent-soft: #ccfbf1;
+
+	--co-ink: #1e1e1e;
+	--co-ink-2: #3c434a;
+	--co-ink-3: #50575e;
+	--co-ink-4: #8c8f94;
+
+	--co-surface: #ffffff;
+	--co-surface-alt: #fafbfb;
+	--co-surface-soft: #f5f6f7;
+
+	--co-border: #e3e5e8;
+	--co-border-strong: #c3c7ce;
+
+	--co-ok: #047857;
+	--co-warn: #b45309;
+	--co-error: #b91c1c;
+
+	--co-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+		"Liberation Mono", monospace;
+
+	--co-radius: 6px;
+	--co-radius-sm: 4px;
+}
+
 .content-ops-app {
 	max-width: 1200px;
-	margin: 16px 0 48px;
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+	margin: 16px 0 56px;
+	color: var(--co-ink);
+	font-size: 14px;
+	line-height: 1.5;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
+	// ---------- Page header pattern ----------
+	.co-page-header {
+		margin: 0 0 28px;
+	}
+
+	.co-eyebrow {
+		display: inline-block;
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: var(--co-ink-3);
+		margin-bottom: 8px;
+	}
 
 	h1 {
-		margin: 0 0 8px;
-		font-size: 24px;
+		font-size: 28px;
 		font-weight: 500;
-		line-height: 1.3;
+		line-height: 1.2;
+		letter-spacing: -0.01em;
+		margin: 0 0 6px;
+		color: var(--co-ink);
 	}
 
-	h2 {
-		margin: 8px 0 12px;
-		font-size: 18px;
-		font-weight: 600;
-	}
-
-	// @wordpress/components Card padding overrides
-	.components-card {
+	.co-page-subtitle {
+		color: var(--co-ink-3);
+		font-size: 14px;
+		max-width: 65ch;
 		margin: 0;
 	}
 
-	.components-card__header {
+	// ---------- Section rhythm ----------
+	.co-stack {
+		display: flex;
+		flex-direction: column;
+		gap: 28px;
+	}
+
+	.co-section-title {
+		font-size: 11px;
 		font-weight: 600;
-		padding: 12px 20px;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: var(--co-ink-3);
+		margin: 0 0 10px;
 	}
 
-	.components-card__body {
-		padding: 16px 20px;
+	// ---------- Card base ----------
+	.components-card,
+	.co-card {
+		background: var(--co-surface);
+		border: 1px solid var(--co-border);
+		border-radius: var(--co-radius);
+		box-shadow: none;
+		overflow: hidden;
 	}
 
-	// Health panel
+	.components-card__header,
+	.co-card__header {
+		padding: 14px 20px;
+		border-bottom: 1px solid var(--co-border);
+		background: var(--co-surface-alt);
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: var(--co-ink-3);
+	}
+
+	.components-card__body,
+	.co-card__body {
+		padding: 18px 20px;
+	}
+
+	// ---------- Metrics grid (StatsCard) ----------
+	.co-metrics {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 16px;
+	}
+
+	.co-metric {
+		background: var(--co-surface);
+		border: 1px solid var(--co-border);
+		border-radius: var(--co-radius);
+		padding: 18px 20px;
+	}
+
+	.co-metric__label {
+		font-size: 11px;
+		font-weight: 600;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+		color: var(--co-ink-3);
+		margin: 0 0 6px;
+	}
+
+	.co-metric__value {
+		font-family: var(--co-mono);
+		font-size: 30px;
+		font-weight: 500;
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.02em;
+		color: var(--co-ink);
+		line-height: 1.1;
+	}
+
+	.co-metric__value--muted {
+		color: var(--co-ink-4);
+		font-size: 20px;
+	}
+
+	// ---------- Health list ----------
 	.content-ops-health-list {
 		list-style: none;
 		margin: 0;
@@ -41,86 +165,209 @@
 		li {
 			display: flex;
 			align-items: center;
-			gap: 10px;
-			padding: 8px 0;
+			gap: 12px;
+			padding: 12px 0;
+			font-size: 14px;
 
 			& + li {
-				border-top: 1px solid #f0f0f1;
+				border-top: 1px solid var(--co-border);
+			}
+
+			strong {
+				font-weight: 500;
+				color: var(--co-ink);
 			}
 		}
 
-		strong {
-			font-weight: 500;
-		}
-
 		.content-ops-health-detail {
-			color: #50575e;
-			font-size: 13px;
+			font-family: var(--co-mono);
+			font-size: 12px;
+			color: var(--co-ink-3);
 			margin-left: auto;
+			padding: 2px 8px;
+			background: var(--co-surface-soft);
+			border-radius: var(--co-radius-sm);
 		}
 	}
 
 	.content-ops-health-dot {
 		display: inline-block;
-		width: 10px;
-		height: 10px;
+		width: 8px;
+		height: 8px;
 		border-radius: 50%;
 		flex-shrink: 0;
+		box-shadow: 0 0 0 3px rgba(4, 47, 46, 0.04);
 
 		&--ok {
-			background: #00a32a;
+			background: var(--co-ok);
 		}
 
 		&--warn {
-			background: #dba617;
+			background: var(--co-warn);
 		}
 
 		&--error {
-			background: #d63638;
+			background: var(--co-error);
 		}
 	}
 
-	// Preset cards grid
+	// ---------- Preset cards ----------
 	.content-ops-preset-cards {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 16px;
+		gap: 14px;
 	}
 
-	// Recent operations list — plain UL styling
+	.co-preset-card {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 18px 20px;
+		background: var(--co-surface);
+		border: 1px solid var(--co-border);
+		border-radius: var(--co-radius);
+		text-decoration: none;
+		color: var(--co-ink);
+		transition: border-color 150ms ease, transform 150ms ease,
+			box-shadow 150ms ease;
+
+		&:hover {
+			border-color: var(--co-accent);
+			transform: translateY(-1px);
+			box-shadow: 0 6px 16px -10px rgba(15, 118, 110, 0.3);
+		}
+
+		&:focus-visible {
+			outline: 2px solid var(--co-accent);
+			outline-offset: 2px;
+		}
+	}
+
+	.co-preset-card__title {
+		font-size: 15px;
+		font-weight: 600;
+		color: var(--co-ink);
+		margin: 0;
+	}
+
+	.co-preset-card__description {
+		font-size: 13px;
+		color: var(--co-ink-3);
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	.co-preset-card__meta {
+		display: flex;
+		gap: 6px;
+		margin-top: auto;
+		padding-top: 8px;
+	}
+
+	// ---------- Tags / chips ----------
+	.co-chip {
+		display: inline-flex;
+		align-items: center;
+		font-family: var(--co-mono);
+		font-size: 11px;
+		font-weight: 500;
+		color: var(--co-ink-2);
+		padding: 2px 8px;
+		background: var(--co-surface-soft);
+		border: 1px solid var(--co-border);
+		border-radius: var(--co-radius-sm);
+		text-transform: lowercase;
+		letter-spacing: 0;
+	}
+
+	.co-chip--accent {
+		color: var(--co-accent-ink);
+		background: var(--co-accent-soft);
+		border-color: transparent;
+	}
+
+	// ---------- Recent operations ----------
 	ul.recent-operations {
 		list-style: none;
 		margin: 0;
 		padding: 0;
 
 		li {
-			padding: 10px 0;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+			padding: 12px 0;
+			font-size: 14px;
 
 			& + li {
-				border-top: 1px solid #f0f0f1;
+				border-top: 1px solid var(--co-border);
 			}
 		}
-	}
 
-	// Stats card rows
-	.stats-row {
-		display: flex;
-		justify-content: space-between;
-		padding: 6px 0;
-		font-size: 14px;
-
-		& + .stats-row {
-			border-top: 1px solid #f0f0f1;
+		time {
+			font-family: var(--co-mono);
+			font-size: 12px;
+			color: var(--co-ink-3);
+			min-width: 120px;
 		}
 	}
 
-	// Operations Builder sections
-	.builder-section {
-		margin-bottom: 12px;
+	// ---------- Links + accent ----------
+	a {
+		color: var(--co-accent);
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+			color: var(--co-accent-hover);
+		}
 	}
 
-	// Table defaults for history
+	// ---------- Buttons ----------
+	.components-button.is-primary {
+		background: var(--co-accent);
+		border-color: var(--co-accent);
+
+		&:hover:not(:disabled) {
+			background: var(--co-accent-hover);
+			border-color: var(--co-accent-hover);
+		}
+
+		&:focus:not(:disabled) {
+			box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--co-accent);
+		}
+	}
+
+	// ---------- Tables ----------
 	table.wp-list-table {
-		margin: 0;
+		border: 1px solid var(--co-border);
+		border-radius: var(--co-radius);
+		overflow: hidden;
+
+		thead th {
+			background: var(--co-surface-alt);
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			color: var(--co-ink-3);
+		}
+
+		tbody td {
+			font-size: 14px;
+		}
+	}
+
+	// ---------- Operations Builder sections ----------
+	.co-builder-section {
+		margin-bottom: 16px;
+	}
+
+	// ---------- Empty state ----------
+	.co-empty {
+		color: var(--co-ink-4);
+		font-size: 13px;
+		text-align: center;
+		padding: 24px 0;
 	}
 }
