@@ -76,4 +76,38 @@ final class PreviewRouteTest extends TestCase {
 		$response = $this->server->dispatch( $req );
 		$this->assertSame( 403, $response->get_status() );
 	}
+
+	public function test_preview_includes_display_rows_with_title_status_and_edit_url(): void {
+		$user_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $user_id );
+
+		$post_id = self::factory()->post->create(
+			[
+				'post_type'   => 'post',
+				'post_status' => 'draft',
+				'post_title'  => 'A draft to delete',
+			]
+		);
+
+		$request = new \WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$request->set_body_params(
+			[
+				'target'    => 'post',
+				'operation' => 'delete',
+				'filters'   => [ 'status' => 'draft' ],
+				'params'    => [],
+			]
+		);
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'display_rows', $data );
+		$this->assertNotEmpty( $data['display_rows'] );
+		$first = $data['display_rows'][0];
+		$this->assertSame( $post_id, $first['id'] );
+		$this->assertSame( 'A draft to delete', $first['title'] );
+		$this->assertSame( 'draft', $first['status'] );
+		$this->assertArrayHasKey( 'edit_url', $first );
+		$this->assertArrayHasKey( 'thumbnail_url', $first );
+	}
 }

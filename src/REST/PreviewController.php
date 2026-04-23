@@ -2,6 +2,7 @@
 namespace ContentOps\REST;
 
 use ContentOps\Execution\ExecutionService;
+use ContentOps\Registry\TargetRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -14,9 +15,11 @@ final class PreviewController extends RestController {
 	];
 
 	private ExecutionService $execution;
+	private TargetRegistry $targets;
 
-	public function __construct( ExecutionService $execution ) {
+	public function __construct( ExecutionService $execution, TargetRegistry $targets ) {
 		$this->execution = $execution;
+		$this->targets   = $targets;
 	}
 
 	/**
@@ -52,12 +55,21 @@ final class PreviewController extends RestController {
 			return $this->error_response( $error, $status );
 		}
 
+		$target_obj   = $this->targets->get( $target );
+		$display_rows = [];
+		if ( null !== $target_obj ) {
+			foreach ( $result->sample_ids() as $id ) {
+				$display_rows[] = $target_obj->get_display( (int) $id );
+			}
+		}
+
 		return new WP_REST_Response(
 			[
 				'count'         => $result->count(),
 				'sample_ids'    => $result->sample_ids(),
 				'preview_token' => $result->preview_token(),
 				'warnings'      => $result->warnings(),
+				'display_rows'  => $display_rows,
 			]
 		);
 	}

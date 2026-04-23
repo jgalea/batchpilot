@@ -71,7 +71,7 @@ final class RouteRegistrar {
 			]
 		);
 
-		$preview = new PreviewController( $this->execution );
+		$preview = new PreviewController( $this->execution, $this->targets );
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/preview',
