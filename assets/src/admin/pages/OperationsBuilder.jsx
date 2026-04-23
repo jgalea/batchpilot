@@ -7,6 +7,8 @@ import { BuilderContext } from '../state/builderContext';
 import { reducer, initialState } from '../state/builderReducer';
 import TargetPicker from '../components/TargetPicker';
 import FilterList from '../components/FilterList';
+import OperationPicker from '../components/OperationPicker';
+import OperationParamsForm from '../components/OperationParamsForm';
 
 const OperationsBuilder = ( { api = createApi() } ) => {
 	const { catalog, error } = useCatalog( api );
@@ -51,6 +53,40 @@ const OperationsBuilder = ( { api = createApi() } ) => {
 							}
 							dispatch={ dispatch }
 						/>
+					</section>
+				) }
+				{ state.target && (
+					<section>
+						<h2>{ __( 'Operation', 'content-ops' ) }</h2>
+						<OperationPicker
+							operations={ catalog.operations }
+							supported={ [ 'delete', 'duplicate', 'edit' ] }
+							selected={ state.operation }
+							onSelect={ ( slug ) =>
+								dispatch( {
+									type: 'SET_OPERATION',
+									operation: slug,
+								} )
+							}
+						/>
+						{ state.operation && (
+							<OperationParamsForm
+								schema={
+									(
+										catalog.operations.find(
+											( o ) => o.slug === state.operation
+										) || {}
+									).params_schema
+								}
+								value={ state.params }
+								onChange={ ( params ) =>
+									dispatch( {
+										type: 'SET_PARAMS',
+										params,
+									} )
+								}
+							/>
+						) }
 					</section>
 				) }
 			</div>
