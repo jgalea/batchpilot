@@ -2,13 +2,31 @@
 namespace ContentOps\CLI;
 
 use ContentOps\Async\ActionSchedulerBridge;
+use ContentOps\Execution\ExecutionService;
+use ContentOps\History\OperationRepository;
+use ContentOps\Registry\OperationRegistry;
+use ContentOps\Registry\TargetRegistry;
 
 final class CommandRegistrar {
 
 	private ActionSchedulerBridge $action_scheduler;
+	private ExecutionService $execution;
+	private TargetRegistry $targets;
+	private OperationRegistry $operations;
+	private OperationRepository $operations_repo;
 
-	public function __construct( ActionSchedulerBridge $action_scheduler ) {
+	public function __construct(
+		ActionSchedulerBridge $action_scheduler,
+		ExecutionService $execution,
+		TargetRegistry $targets,
+		OperationRegistry $operations,
+		OperationRepository $operations_repo
+	) {
 		$this->action_scheduler = $action_scheduler;
+		$this->execution        = $execution;
+		$this->targets          = $targets;
+		$this->operations       = $operations;
+		$this->operations_repo  = $operations_repo;
 	}
 
 	public function register(): void {

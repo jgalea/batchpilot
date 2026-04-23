@@ -3,13 +3,27 @@ namespace ContentOps\Abilities;
 
 use ContentOps\Async\ActionSchedulerBridge;
 use ContentOps\CLI\DoctorCommand;
+use ContentOps\Execution\ExecutionService;
+use ContentOps\Registry\OperationRegistry;
+use ContentOps\Registry\TargetRegistry;
 
 final class AbilitiesBridge {
 
 	private ActionSchedulerBridge $action_scheduler;
+	private ExecutionService $execution;
+	private TargetRegistry $targets;
+	private OperationRegistry $operations;
 
-	public function __construct( ActionSchedulerBridge $action_scheduler ) {
+	public function __construct(
+		ActionSchedulerBridge $action_scheduler,
+		ExecutionService $execution,
+		TargetRegistry $targets,
+		OperationRegistry $operations
+	) {
 		$this->action_scheduler = $action_scheduler;
+		$this->execution        = $execution;
+		$this->targets          = $targets;
+		$this->operations       = $operations;
 	}
 
 	public function is_available(): bool {
@@ -20,7 +34,6 @@ final class AbilitiesBridge {
 		if ( ! $this->is_available() ) {
 			return;
 		}
-
 		add_action( 'abilities_api_init', [ $this, 'register_abilities' ] );
 	}
 

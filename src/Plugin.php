@@ -55,18 +55,58 @@ final class Plugin {
 		\load_plugin_textdomain( 'content-ops', false, dirname( \plugin_basename( $this->plugin_file ) ) . '/languages' );
 		$this->load_action_scheduler();
 
+		global $wpdb;
+
 		$action_scheduler_bridge = new \ContentOps\Async\ActionSchedulerBridge();
 		$this->set( 'async.action_scheduler', $action_scheduler_bridge );
 
-		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge );
+		$token_generator = new \ContentOps\PreviewToken\TokenGenerator( (string) wp_salt() );
+		$token_store     = new \ContentOps\PreviewToken\TokenStore();
+		$operations_repo = new \ContentOps\History\OperationRepository( $wpdb );
+		$snapshots_repo  = new \ContentOps\History\SnapshotRepository( $wpdb );
+		$this->set( 'preview.token_generator', $token_generator );
+		$this->set( 'preview.token_store', $token_store );
+		$this->set( 'history.operations', $operations_repo );
+		$this->set( 'history.snapshots', $snapshots_repo );
+
+		$target_registry    = new \ContentOps\Registry\TargetRegistry();
+		$operation_registry = new \ContentOps\Registry\OperationRegistry();
+
+		$post_types = \apply_filters( 'content_ops_post_types', [ 'post', 'page' ] );
+		foreach ( (array) $post_types as $post_type ) {
+			$target_registry->register( new \ContentOps\Targets\PostTarget( (string) $post_type ) );
+		}
+
+		$operation_registry->register( new \ContentOps\Operations\DeleteOperation( $token_generator, $token_store, $operations_repo ) );
+		$operation_registry->register( new \ContentOps\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo ) );
+		$operation_registry->register( new \ContentOps\Operations\BulkEditOperation( $token_generator, $token_store, $operations_repo, $snapshots_repo ) );
+
+		$this->set( 'target.registry', $target_registry );
+		$this->set( 'operation.registry', $operation_registry );
+
+		$execution = new \ContentOps\Execution\ExecutionService(
+			$target_registry,
+			$operation_registry,
+			$operations_repo,
+			$snapshots_repo,
+			$token_generator,
+			$token_store
+		);
+		$this->set( 'execution.service', $execution );
+
+		$runner = new \ContentOps\Execution\OperationRunner( $execution );
+		$runner->register();
+		$this->set( 'execution.runner', $runner );
+
+		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo );
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
 
-		$cli_registrar = new \ContentOps\CLI\CommandRegistrar( $action_scheduler_bridge );
+		$cli_registrar = new \ContentOps\CLI\CommandRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo );
 		$cli_registrar->register();
 		$this->set( 'cli.registrar', $cli_registrar );
 
-		$abilities_bridge = new \ContentOps\Abilities\AbilitiesBridge( $action_scheduler_bridge );
+		$abilities_bridge = new \ContentOps\Abilities\AbilitiesBridge( $action_scheduler_bridge, $execution, $target_registry, $operation_registry );
 		$abilities_bridge->register();
 		$this->set( 'abilities.bridge', $abilities_bridge );
 
