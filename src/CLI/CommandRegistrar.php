@@ -39,5 +39,11 @@ final class CommandRegistrar {
 			new DoctorCommand( $this->action_scheduler ),
 			[ 'shortdesc' => __( 'Check Content Ops environment health.', 'content-ops' ) ]
 		);
+
+		\WP_CLI::add_command(
+			'content-ops delete',
+			new DeleteCommand( $this->execution ),
+			[ 'shortdesc' => __( 'Trash or permanently delete posts in bulk.', 'content-ops' ) ]
+		);
 	}
 }
