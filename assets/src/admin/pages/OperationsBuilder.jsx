@@ -1,4 +1,4 @@
-import { useReducer } from '@wordpress/element';
+import { useEffect, useReducer } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Spinner, Notice } from '@wordpress/components';
 import { createApi, normalizeError } from '../api';
@@ -14,6 +14,13 @@ import OperationParamsForm from '../components/OperationParamsForm';
 import PreviewPanel from '../components/PreviewPanel';
 import ExecuteButton from '../components/ExecuteButton';
 import ExecutionResult from '../components/ExecutionResult';
+
+const readQuery = () =>
+	typeof window === 'undefined'
+		? new URLSearchParams()
+		: new URLSearchParams( window.location.search );
+
+const newRowId = () => Math.random().toString( 36 ).slice( 2, 10 );
 
 const filtersToArgs = ( rows ) => {
 	const out = {};
@@ -38,6 +45,83 @@ const OperationsBuilder = ( { api = createApi() } ) => {
 		state,
 		filtersToArgs
 	);
+
+	useEffect( () => {
+		if ( ! catalog ) {
+			return;
+		}
+		const query = readQuery();
+		const presetSlug = query.get( 'preset' );
+		if ( presetSlug ) {
+			const preset = ( catalog.presets || [] ).find(
+				( p ) => p.slug === presetSlug
+			);
+			if ( preset ) {
+				dispatch( { type: 'SET_TARGET', target: preset.target } );
+				dispatch( {
+					type: 'SET_OPERATION',
+					operation: preset.operation,
+				} );
+				dispatch( {
+					type: 'SET_FILTERS',
+					filters: Object.entries( preset.filters || {} ).map(
+						( [ key, value ] ) => ( {
+							id: newRowId(),
+							key,
+							value,
+						} )
+					),
+				} );
+				dispatch( {
+					type: 'SET_PARAMS',
+					params: preset.params || {},
+				} );
+				return;
+			}
+		}
+
+		const rerunId = query.get( 'rerun' );
+		if ( rerunId ) {
+			api.getOperation( parseInt( rerunId, 10 ) )
+				.then( ( op ) => {
+					dispatch( { type: 'SET_TARGET', target: op.target } );
+					dispatch( { type: 'SET_OPERATION', operation: op.type } );
+					dispatch( {
+						type: 'SET_FILTERS',
+						filters: Object.entries( op.filters || {} ).map(
+							( [ key, value ] ) => ( {
+								id: newRowId(),
+								key,
+								value,
+							} )
+						),
+					} );
+					dispatch( {
+						type: 'SET_PARAMS',
+						params: op.params || {},
+					} );
+				} )
+				.catch( () => {} );
+			return;
+		}
+
+		const urlTarget = query.get( 'target' );
+		const urlOperation = query.get( 'operation' );
+		if ( urlTarget && urlOperation ) {
+			dispatch( { type: 'SET_TARGET', target: urlTarget } );
+			dispatch( { type: 'SET_OPERATION', operation: urlOperation } );
+			const urlIds = query
+				.getAll( 'filters[ids][]' )
+				.map( ( v ) => parseInt( v, 10 ) )
+				.filter( ( n ) => ! Number.isNaN( n ) );
+			if ( urlIds.length > 0 ) {
+				dispatch( {
+					type: 'SET_FILTERS',
+					filters: [ { id: newRowId(), key: 'ids', value: urlIds } ],
+				} );
+			}
+		}
+	}, [ catalog ] ); // eslint-disable-line react-hooks/exhaustive-deps
 
 	if ( error ) {
 		return (
