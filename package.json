@@ -8,17 +8,21 @@
     "lint:js": "wp-scripts lint-js assets/src",
     "lint:js:fix": "wp-scripts lint-js --fix assets/src",
     "test:js": "wp-scripts test-unit-js",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "test:e2e:install": "playwright install --with-deps chromium",
     "env:start": "wp-env start",
     "env:stop": "wp-env stop",
     "env:destroy": "wp-env destroy",
     "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/content-ops composer test:integration"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@wordpress/api-fetch": "^7.44.0",
     "@wordpress/components": "^32.6.0",
+    "@wordpress/e2e-test-utils-playwright": "^1.44.0",
     "@wordpress/env": "^10.0.0",
     "@wordpress/i18n": "^6.17.0",
     "@wordpress/scripts": "^30.0.0"
