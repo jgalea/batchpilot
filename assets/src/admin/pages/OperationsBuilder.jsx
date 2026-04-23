@@ -6,6 +6,7 @@ import { useCatalog } from '../hooks/useCatalog';
 import { BuilderContext } from '../state/builderContext';
 import { reducer, initialState } from '../state/builderReducer';
 import TargetPicker from '../components/TargetPicker';
+import FilterList from '../components/FilterList';
 
 const OperationsBuilder = ( { api = createApi() } ) => {
 	const { catalog, error } = useCatalog( api );
@@ -36,6 +37,22 @@ const OperationsBuilder = ( { api = createApi() } ) => {
 						}
 					/>
 				</section>
+				{ state.target && (
+					<section>
+						<h2>{ __( 'Filters', 'content-ops' ) }</h2>
+						<FilterList
+							filters={ state.filters }
+							defs={
+								(
+									catalog.targets.find(
+										( t ) => t.slug === state.target
+									) || { filters: [] }
+								).filters
+							}
+							dispatch={ dispatch }
+						/>
+					</section>
+				) }
 			</div>
 		</BuilderContext.Provider>
 	);

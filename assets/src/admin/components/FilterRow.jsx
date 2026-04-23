@@ -4,6 +4,7 @@ import {
 	SelectControl,
 	TextControl,
 } from '@wordpress/components';
+import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 const EnumInput = ( { def, value, onChange } ) => {
@@ -96,6 +97,73 @@ const BoolInput = ( { def, value, onChange } ) => (
 	/>
 );
 
+const DateInput = ( { def, value, onChange } ) => (
+	<div>
+		<label htmlFor={ `co-date-${ def.key }` }>{ def.label }</label>
+		<input
+			id={ `co-date-${ def.key }` }
+			type="date"
+			value={ value || '' }
+			onChange={ ( e ) => onChange( e.target.value ) }
+		/>
+	</div>
+);
+
+const IdInput = ( { def, value, onChange } ) => (
+	<TextControl
+		__next40pxDefaultSize
+		__nextHasNoMarginBottom
+		label={ def.label }
+		type="number"
+		value={ value === null || value === undefined ? '' : String( value ) }
+		onChange={ ( v ) => onChange( v === '' ? null : parseInt( v, 10 ) ) }
+	/>
+);
+
+const TaxonomyInput = ( { value, onChange } ) => {
+	const initialTax = ( value && value.taxonomy ) || '';
+	const initialIds =
+		value && Array.isArray( value.term_ids )
+			? value.term_ids.join( ', ' )
+			: '';
+	const [ tax, setTax ] = useState( initialTax );
+	const [ ids, setIds ] = useState( initialIds );
+
+	const emit = ( nextTax, nextIds ) => {
+		const termIds = nextIds
+			.split( ',' )
+			.map( ( s ) => parseInt( s.trim(), 10 ) )
+			.filter( ( n ) => ! Number.isNaN( n ) );
+		onChange( { taxonomy: nextTax, term_ids: termIds } );
+	};
+
+	return (
+		<div>
+			<TextControl
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				label={ __( 'Taxonomy slug', 'content-ops' ) }
+				value={ tax }
+				onChange={ ( v ) => {
+					setTax( v );
+					emit( v, ids );
+				} }
+			/>
+			<TextControl
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				label={ __( 'Term IDs', 'content-ops' ) }
+				value={ ids }
+				help={ __( 'Comma-separated.', 'content-ops' ) }
+				onChange={ ( v ) => {
+					setIds( v );
+					emit( tax, v );
+				} }
+			/>
+		</div>
+	);
+};
+
 const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 	const def = defs.find( ( d ) => d.key === row.key ) || null;
 	const keyOptions = [
@@ -127,6 +195,32 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 			{ def && def.type === 'bool' && (
 				<BoolInput
 					def={ def }
+					value={ row.value }
+					onChange={ ( value ) =>
+						onChange( { key: def.key, value } )
+					}
+				/>
+			) }
+			{ def && def.type === 'date' && (
+				<DateInput
+					def={ def }
+					value={ row.value }
+					onChange={ ( value ) =>
+						onChange( { key: def.key, value } )
+					}
+				/>
+			) }
+			{ def && ( def.type === 'user' || def.type === 'post' ) && (
+				<IdInput
+					def={ def }
+					value={ row.value }
+					onChange={ ( value ) =>
+						onChange( { key: def.key, value } )
+					}
+				/>
+			) }
+			{ def && def.type === 'taxonomy' && (
+				<TaxonomyInput
 					value={ row.value }
 					onChange={ ( value ) =>
 						onChange( { key: def.key, value } )
