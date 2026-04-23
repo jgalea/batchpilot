@@ -51,5 +51,11 @@ final class CommandRegistrar {
 			new DuplicateCommand( $this->execution ),
 			[ 'shortdesc' => __( 'Duplicate posts in bulk.', 'content-ops' ) ]
 		);
+
+		\WP_CLI::add_command(
+			'content-ops edit',
+			new EditCommand( $this->execution ),
+			[ 'shortdesc' => __( 'Bulk-edit posts.', 'content-ops' ) ]
+		);
 	}
 }
