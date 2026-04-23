@@ -131,6 +131,12 @@ final class Plugin {
 		$asset_loader->register();
 		$this->set( 'admin.assets', $asset_loader );
 
+		$post_list_integration = new \ContentOps\Admin\PostListIntegration(
+			admin_url( 'admin.php?page=content-ops-operations' )
+		);
+		$post_list_integration->register();
+		$this->set( 'admin.post_list', $post_list_integration );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 

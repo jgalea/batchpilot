@@ -6,6 +6,12 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+### Added
+- `PostListIntegration` — injects a "Duplicate with Content Ops" row action on post/page list tables and "Content Ops: Delete / Duplicate / Bulk edit" entries into the bulk-actions dropdown. All entries deep-link into the Operations Builder with `target`, `operation`, and `filters[ids][]` prefilled.
+
+### Known limitations
+- `PostTarget` does not yet register an `ids` filter, so the deep-link preview triggered from this flow will report a matched count of 0 until Phase 1b.1 adds an `ids` `FilterDefinition`. Row actions and bulk actions still open the Operations Builder correctly; only live preview is affected.
+
 ## [0.2.0-alpha] - 2026-04-23
 
 ### Added
