@@ -14,6 +14,7 @@
     "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/content-ops composer test:integration"
   },
   "devDependencies": {
+    "@wordpress/api-fetch": "^7.44.0",
     "@wordpress/env": "^10.0.0",
     "@wordpress/scripts": "^30.0.0"
   }
