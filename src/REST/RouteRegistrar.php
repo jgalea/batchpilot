@@ -58,5 +58,34 @@ final class RouteRegistrar {
 				'permission_callback' => [ $catalog, 'check_permission' ],
 			]
 		);
+
+		$preview = new PreviewController( $this->execution );
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/preview',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $preview, 'handle' ],
+				'permission_callback' => [ $preview, 'check_permission' ],
+				'args'                => [
+					'target'    => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'operation' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'filters'   => [
+						'type'    => 'object',
+						'default' => new \stdClass(),
+					],
+					'params'    => [
+						'type'    => 'object',
+						'default' => new \stdClass(),
+					],
+				],
+			]
+		);
 	}
 }
