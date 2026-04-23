@@ -37,6 +37,23 @@ const filtersToArgs = ( rows ) => {
 	return out;
 };
 
+const Step = ( { number, title, description, done, disabled, children } ) => (
+	<section
+		className={ `co-step${ disabled ? ' co-step--disabled' : '' }${
+			done ? ' co-step--done' : ''
+		}` }
+	>
+		<div className="co-step__header">
+			<span className="co-step__number">{ number }</span>
+			<div className="co-step__titles">
+				<h2 className="co-step__title">{ title }</h2>
+				<p className="co-step__description">{ description }</p>
+			</div>
+		</div>
+		<div className="co-step__body">{ children }</div>
+	</section>
+);
+
 const OperationsBuilder = ( { api = defaultApi } ) => {
 	const { catalog, error } = useCatalog( api );
 	const [ state, dispatch ] = useReducer( reducer, initialState );
@@ -125,13 +142,19 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 	if ( error ) {
 		return (
-			<Notice status="error" role="alert">
-				{ error.message }
-			</Notice>
+			<div className="co-stack">
+				<Notice status="error" role="alert">
+					{ error.message }
+				</Notice>
+			</div>
 		);
 	}
 	if ( ! catalog ) {
-		return <Spinner />;
+		return (
+			<div className="co-stack">
+				<Spinner />
+			</div>
+		);
 	}
 
 	const bootstrap = getBootstrap();
@@ -159,12 +182,38 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 		}
 	};
 
+	const selectedTarget = catalog.targets.find(
+		( t ) => t.slug === state.target
+	);
+	const selectedOperation = catalog.operations.find(
+		( o ) => o.slug === state.operation
+	);
+
 	return (
 		<BuilderContext.Provider value={ { state, dispatch, catalog, api } }>
-			<div>
-				<h1>{ __( 'Operations Builder', 'content-ops' ) }</h1>
-				<section>
-					<h2>{ __( 'Target', 'content-ops' ) }</h2>
+			<div className="co-stack">
+				<header className="co-page-header">
+					<span className="co-eyebrow">
+						{ __( 'Builder', 'content-ops' ) }
+					</span>
+					<h1>{ __( 'Operations', 'content-ops' ) }</h1>
+					<p className="co-page-subtitle">
+						{ __(
+							'Build a bulk operation in four steps: pick a target, add filters, choose an operation, preview, then execute.',
+							'content-ops'
+						) }
+					</p>
+				</header>
+
+				<Step
+					number="1"
+					title={ __( 'Target', 'content-ops' ) }
+					description={ __(
+						'What kind of content are you operating on?',
+						'content-ops'
+					) }
+					done={ !! state.target }
+				>
 					<TargetPicker
 						targets={ catalog.targets }
 						selected={ state.target }
@@ -172,79 +221,151 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 							dispatch( { type: 'SET_TARGET', target: slug } )
 						}
 					/>
-				</section>
-				{ state.target && (
-					<section>
-						<h2>{ __( 'Filters', 'content-ops' ) }</h2>
+				</Step>
+
+				<Step
+					number="2"
+					title={ __( 'Filters', 'content-ops' ) }
+					description={
+						state.target
+							? __(
+									'Narrow the matching set. All filters must match.',
+									'content-ops'
+							  )
+							: __(
+									'Filter options unlock once you pick a target.',
+									'content-ops'
+							  )
+					}
+					disabled={ ! state.target }
+					done={ state.target && state.filters.length > 0 }
+				>
+					{ state.target ? (
 						<FilterList
 							filters={ state.filters }
 							defs={
-								(
-									catalog.targets.find(
-										( t ) => t.slug === state.target
-									) || { filters: [] }
-								).filters
+								( selectedTarget || { filters: [] } ).filters
 							}
 							dispatch={ dispatch }
 						/>
-					</section>
-				) }
-				{ state.target && (
-					<section>
-						<h2>{ __( 'Operation', 'content-ops' ) }</h2>
-						<OperationPicker
-							operations={ catalog.operations }
-							supported={ [ 'delete', 'duplicate', 'edit' ] }
-							selected={ state.operation }
-							onSelect={ ( slug ) =>
-								dispatch( {
-									type: 'SET_OPERATION',
-									operation: slug,
-								} )
-							}
-						/>
-						{ state.operation && (
-							<OperationParamsForm
-								schema={
-									(
-										catalog.operations.find(
-											( o ) => o.slug === state.operation
-										) || {}
-									).params_schema
-								}
-								value={ state.params }
-								onChange={ ( params ) =>
+					) : (
+						<p className="co-empty">
+							{ __(
+								'Pick a target above to add filters.',
+								'content-ops'
+							) }
+						</p>
+					) }
+				</Step>
+
+				<Step
+					number="3"
+					title={ __( 'Operation', 'content-ops' ) }
+					description={
+						state.target
+							? __(
+									'What should happen to the matched items?',
+									'content-ops'
+							  )
+							: __(
+									'Choose Delete, Duplicate, or Bulk edit once a target is selected.',
+									'content-ops'
+							  )
+					}
+					disabled={ ! state.target }
+					done={ !! state.operation }
+				>
+					{ state.target ? (
+						<>
+							<OperationPicker
+								operations={ catalog.operations }
+								supported={ [ 'delete', 'duplicate', 'edit' ] }
+								selected={ state.operation }
+								onSelect={ ( slug ) =>
 									dispatch( {
-										type: 'SET_PARAMS',
-										params,
+										type: 'SET_OPERATION',
+										operation: slug,
 									} )
 								}
 							/>
-						) }
-					</section>
-				) }
-				{ state.operation && (
-					<section>
-						<h2>{ __( 'Preview & Execute', 'content-ops' ) }</h2>
-						<PreviewPanel
-							preview={ preview }
-							previewing={ previewing }
-							previewError={ previewError }
-						/>
-						<ExecuteButton
-							preview={ preview }
-							operation={ state.operation }
-							onExecute={ execute }
-							executing={ state.executing }
-						/>
-						{ state.execution && (
-							<ExecutionResult
-								execution={ state.execution }
-								historyUrl={ bootstrap.pages.history }
+							{ state.operation && (
+								<div className="co-step__subsection">
+									<h3 className="co-section-title">
+										{ __( 'Parameters', 'content-ops' ) }
+									</h3>
+									<OperationParamsForm
+										schema={
+											( selectedOperation || {} )
+												.params_schema
+										}
+										value={ state.params }
+										onChange={ ( params ) =>
+											dispatch( {
+												type: 'SET_PARAMS',
+												params,
+											} )
+										}
+									/>
+								</div>
+							) }
+						</>
+					) : (
+						<p className="co-empty">
+							{ __(
+								'Pick a target above to choose an operation.',
+								'content-ops'
+							) }
+						</p>
+					) }
+				</Step>
+
+				<Step
+					number="4"
+					title={ __( 'Preview & execute', 'content-ops' ) }
+					description={
+						state.operation
+							? __(
+									'Live-preview the match; execute when ready.',
+									'content-ops'
+							  )
+							: __(
+									'Preview becomes available once a target and operation are selected.',
+									'content-ops'
+							  )
+					}
+					disabled={ ! state.operation }
+				>
+					{ state.operation ? (
+						<>
+							<PreviewPanel
+								preview={ preview }
+								previewing={ previewing }
+								previewError={ previewError }
 							/>
-						) }
-					</section>
-				) }
+							<div className="co-execute-row">
+								<ExecuteButton
+									preview={ preview }
+									operation={ state.operation }
+									onExecute={ execute }
+									executing={ state.executing }
+								/>
+							</div>
+							{ state.execution && (
+								<ExecutionResult
+									execution={ state.execution }
+									historyUrl={ bootstrap.pages.history }
+								/>
+							) }
+						</>
+					) : (
+						<p className="co-empty">
+							{ __(
+								'Complete steps 1–3 to preview and execute.',
+								'content-ops'
+							) }
+						</p>
+					) }
+				</Step>
 			</div>
 		</BuilderContext.Provider>
 	);
