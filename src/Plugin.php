@@ -100,7 +100,11 @@ final class Plugin {
 		$runner->register();
 		$this->set( 'execution.runner', $runner );
 
-		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $token_verifier, $token_store );
+		$settings = new \ContentOps\Admin\Settings();
+		$settings->register();
+		$this->set( 'admin.settings', $settings );
+
+		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $token_verifier, $token_store, $settings );
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
 
