@@ -135,5 +135,35 @@ final class RouteRegistrar {
 				],
 			]
 		);
+
+		$operations_ctrl = new OperationsController( $this->operations_repo );
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/operations',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $operations_ctrl, 'handle_list' ],
+				'permission_callback' => [ $operations_ctrl, 'check_permission' ],
+				'args'                => [
+					'limit'  => [
+						'type'    => 'integer',
+						'default' => 20,
+					],
+					'offset' => [
+						'type'    => 'integer',
+						'default' => 0,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/operations/(?P<id>\d+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $operations_ctrl, 'handle_single' ],
+				'permission_callback' => [ $operations_ctrl, 'check_permission' ],
+			]
+		);
 	}
 }
