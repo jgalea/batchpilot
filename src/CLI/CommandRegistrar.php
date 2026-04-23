@@ -57,5 +57,17 @@ final class CommandRegistrar {
 			new EditCommand( $this->execution ),
 			[ 'shortdesc' => __( 'Bulk-edit posts.', 'content-ops' ) ]
 		);
+
+		\WP_CLI::add_command(
+			'content-ops history',
+			new HistoryCommand( $this->operations_repo ),
+			[ 'shortdesc' => __( 'List Content Ops operations.', 'content-ops' ) ]
+		);
+
+		\WP_CLI::add_command(
+			'content-ops undo',
+			new UndoCommand( $this->operations, $this->operations_repo ),
+			[ 'shortdesc' => __( 'Undo a Content Ops operation.', 'content-ops' ) ]
+		);
 	}
 }

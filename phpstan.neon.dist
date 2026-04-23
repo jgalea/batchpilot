@@ -31,7 +31,7 @@ parameters:
     # ExecuteController retains TokenStore to match plan signature; verifier wraps it internally.
     - message: '#Property ContentOps\\REST\\ExecuteController::\$token_store is never read, only written\.#'
       path: src/REST/ExecuteController.php
-    - message: '#Property ContentOps\\CLI\\CommandRegistrar::\$(execution|targets|operations|operations_repo) is never read, only written\.#'
+    - message: '#Property ContentOps\\CLI\\CommandRegistrar::\$targets is never read, only written\.#'
       path: src/CLI/CommandRegistrar.php
     - message: '#Property ContentOps\\Abilities\\AbilitiesBridge::\$(execution|targets|operations) is never read, only written\.#'
       path: src/Abilities/AbilitiesBridge.php
