@@ -40,6 +40,15 @@ final class AssetLoader {
 			true
 		);
 
+		wp_enqueue_style( 'wp-components' );
+
+		wp_enqueue_style(
+			self::HANDLE,
+			$plugin_url . 'assets/build/admin.css',
+			[ 'wp-components' ],
+			(string) $asset['version']
+		);
+
 		wp_set_script_translations( self::HANDLE, 'content-ops' );
 
 		wp_add_inline_script(

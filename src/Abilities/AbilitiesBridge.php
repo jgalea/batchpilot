@@ -34,10 +34,27 @@ final class AbilitiesBridge {
 		if ( ! $this->is_available() ) {
 			return;
 		}
+
+		if ( did_action( 'abilities_api_init' ) > 0 || did_action( 'init' ) > 0 ) {
+			$this->register_abilities();
+			return;
+		}
+
 		add_action( 'abilities_api_init', [ $this, 'register_abilities' ] );
+		add_action( 'init', [ $this, 'register_abilities' ], 20 );
 	}
 
 	public function register_abilities(): void {
+		static $done = false;
+		if ( $done ) {
+			return;
+		}
+		$done = true;
+
+		$this->do_register_abilities();
+	}
+
+	private function do_register_abilities(): void {
 		if ( function_exists( 'wp_register_ability_category' ) ) {
 			wp_register_ability_category(
 				'content-ops',
