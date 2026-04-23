@@ -45,5 +45,11 @@ final class CommandRegistrar {
 			new DeleteCommand( $this->execution ),
 			[ 'shortdesc' => __( 'Trash or permanently delete posts in bulk.', 'content-ops' ) ]
 		);
+
+		\WP_CLI::add_command(
+			'content-ops duplicate',
+			new DuplicateCommand( $this->execution ),
+			[ 'shortdesc' => __( 'Duplicate posts in bulk.', 'content-ops' ) ]
+		);
 	}
 }
