@@ -31,6 +31,9 @@ parameters:
     # Registrars/bridge hold dependencies required by later Phase 1a tasks (catalog, preview, execute, history).
     - message: '#Property ContentOps\\REST\\RouteRegistrar::\$(execution|targets|operations|operations_repo) is never read, only written\.#'
       path: src/REST/RouteRegistrar.php
+    # ExecuteController retains TokenStore to match plan signature; verifier wraps it internally.
+    - message: '#Property ContentOps\\REST\\ExecuteController::\$token_store is never read, only written\.#'
+      path: src/REST/ExecuteController.php
     - message: '#Property ContentOps\\CLI\\CommandRegistrar::\$(execution|targets|operations|operations_repo) is never read, only written\.#'
       path: src/CLI/CommandRegistrar.php
     - message: '#Property ContentOps\\Abilities\\AbilitiesBridge::\$(execution|targets|operations) is never read, only written\.#'

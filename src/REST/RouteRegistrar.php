@@ -4,6 +4,8 @@ namespace ContentOps\REST;
 use ContentOps\Async\ActionSchedulerBridge;
 use ContentOps\Execution\ExecutionService;
 use ContentOps\History\OperationRepository;
+use ContentOps\PreviewToken\TokenStore;
+use ContentOps\PreviewToken\TokenVerifier;
 use ContentOps\Registry\OperationRegistry;
 use ContentOps\Registry\TargetRegistry;
 
@@ -16,19 +18,25 @@ final class RouteRegistrar {
 	private TargetRegistry $targets;
 	private OperationRegistry $operations;
 	private OperationRepository $operations_repo;
+	private TokenVerifier $verifier;
+	private TokenStore $token_store;
 
 	public function __construct(
 		ActionSchedulerBridge $action_scheduler,
 		ExecutionService $execution,
 		TargetRegistry $targets,
 		OperationRegistry $operations,
-		OperationRepository $operations_repo
+		OperationRepository $operations_repo,
+		TokenVerifier $verifier,
+		TokenStore $token_store
 	) {
 		$this->action_scheduler = $action_scheduler;
 		$this->execution        = $execution;
 		$this->targets          = $targets;
 		$this->operations       = $operations;
 		$this->operations_repo  = $operations_repo;
+		$this->verifier         = $verifier;
+		$this->token_store      = $token_store;
 	}
 
 	public function register(): void {
@@ -81,6 +89,46 @@ final class RouteRegistrar {
 						'default' => new \stdClass(),
 					],
 					'params'    => [
+						'type'    => 'object',
+						'default' => new \stdClass(),
+					],
+				],
+			]
+		);
+
+		$execute = new ExecuteController(
+			$this->execution,
+			$this->targets,
+			$this->operations,
+			$this->verifier,
+			$this->token_store,
+			$this->action_scheduler
+		);
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/execute',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $execute, 'handle' ],
+				'permission_callback' => [ $execute, 'check_permission' ],
+				'args'                => [
+					'preview_token' => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'target'        => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'operation'     => [
+						'type'     => 'string',
+						'required' => true,
+					],
+					'filters'       => [
+						'type'    => 'object',
+						'default' => new \stdClass(),
+					],
+					'params'        => [
 						'type'    => 'object',
 						'default' => new \stdClass(),
 					],

@@ -62,10 +62,12 @@ final class Plugin {
 
 		$token_generator = new \ContentOps\PreviewToken\TokenGenerator( (string) wp_salt() );
 		$token_store     = new \ContentOps\PreviewToken\TokenStore();
+		$token_verifier  = new \ContentOps\PreviewToken\TokenVerifier( $token_generator, $token_store );
 		$operations_repo = new \ContentOps\History\OperationRepository( $wpdb );
 		$snapshots_repo  = new \ContentOps\History\SnapshotRepository( $wpdb );
 		$this->set( 'preview.token_generator', $token_generator );
 		$this->set( 'preview.token_store', $token_store );
+		$this->set( 'preview.token_verifier', $token_verifier );
 		$this->set( 'history.operations', $operations_repo );
 		$this->set( 'history.snapshots', $snapshots_repo );
 
@@ -98,7 +100,7 @@ final class Plugin {
 		$runner->register();
 		$this->set( 'execution.runner', $runner );
 
-		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo );
+		$rest_registrar = new \ContentOps\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $token_verifier, $token_store );
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
 
