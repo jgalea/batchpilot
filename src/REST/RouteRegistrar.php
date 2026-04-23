@@ -165,5 +165,16 @@ final class RouteRegistrar {
 				'permission_callback' => [ $operations_ctrl, 'check_permission' ],
 			]
 		);
+
+		$undo = new UndoController( $this->operations, $this->operations_repo );
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/operations/(?P<id>\d+)/undo',
+			[
+				'methods'             => 'POST',
+				'callback'            => [ $undo, 'handle' ],
+				'permission_callback' => [ $undo, 'check_permission' ],
+			]
+		);
 	}
 }
