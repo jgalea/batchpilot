@@ -14,8 +14,12 @@
     "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/content-ops composer test:integration"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@wordpress/api-fetch": "^7.44.0",
+    "@wordpress/components": "^32.6.0",
     "@wordpress/env": "^10.0.0",
+    "@wordpress/i18n": "^6.17.0",
     "@wordpress/scripts": "^30.0.0"
   }
 }
