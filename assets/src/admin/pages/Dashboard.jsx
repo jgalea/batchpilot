@@ -4,10 +4,10 @@ import HealthPanel from '../components/HealthPanel';
 import StatsCard from '../components/StatsCard';
 import RecentOperationsList from '../components/RecentOperationsList';
 import PresetCards from '../components/PresetCards';
-import { createApi } from '../api';
+import { defaultApi } from '../api';
 import { getBootstrap } from '../bootstrap';
 
-const Dashboard = ( { api = createApi(), bootstrap = getBootstrap() } ) => {
+const Dashboard = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 	const [ presets, setPresets ] = useState( [] );
 	useEffect( () => {
 		api.fetchCatalog()

@@ -58,3 +58,5 @@ export const createApi = ( fetchFn = apiFetch ) => {
 			call( '/settings', 'POST', body, signal ),
 	};
 };
+
+export const defaultApi = createApi();

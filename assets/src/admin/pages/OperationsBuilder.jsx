@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { Spinner, Notice } from '@wordpress/components';
-import { createApi, normalizeError } from '../api';
+import { defaultApi, normalizeError } from '../api';
 import { useCatalog } from '../hooks/useCatalog';
 import { useDebouncedPreview } from '../hooks/useDebouncedPreview';
 import { getBootstrap } from '../bootstrap';
@@ -37,7 +37,7 @@ const filtersToArgs = ( rows ) => {
 	return out;
 };
 
-const OperationsBuilder = ( { api = createApi() } ) => {
+const OperationsBuilder = ( { api = defaultApi } ) => {
 	const { catalog, error } = useCatalog( api );
 	const [ state, dispatch ] = useReducer( reducer, initialState );
 	const { preview, previewing, previewError } = useDebouncedPreview(

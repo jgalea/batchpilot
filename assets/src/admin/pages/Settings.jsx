@@ -1,9 +1,9 @@
 import { __ } from '@wordpress/i18n';
 import SettingsForm from '../components/SettingsForm';
-import { createApi } from '../api';
+import { defaultApi } from '../api';
 import { getBootstrap } from '../bootstrap';
 
-const Settings = ( { api = createApi(), bootstrap = getBootstrap() } ) => (
+const Settings = ( { api = defaultApi, bootstrap = getBootstrap() } ) => (
 	<div>
 		<h1>{ __( 'Settings', 'content-ops' ) }</h1>
 		<SettingsForm api={ api } />

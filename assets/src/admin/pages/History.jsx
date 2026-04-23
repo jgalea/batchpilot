@@ -3,10 +3,10 @@ import { Notice } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import HistoryTable from '../components/HistoryTable';
 import OperationDetailsModal from '../components/OperationDetailsModal';
-import { createApi, normalizeError } from '../api';
+import { defaultApi, normalizeError } from '../api';
 import { getBootstrap } from '../bootstrap';
 
-const History = ( { api = createApi(), bootstrap = getBootstrap() } ) => {
+const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 	const [ viewing, setViewing ] = useState( null );
 	const [ notice, setNotice ] = useState( null );
 	const [ reloadKey, setReloadKey ] = useState( 0 );
