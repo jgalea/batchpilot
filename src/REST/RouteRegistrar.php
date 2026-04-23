@@ -47,5 +47,16 @@ final class RouteRegistrar {
 				'permission_callback' => [ $doctor, 'check_permission' ],
 			]
 		);
+
+		$catalog = new CatalogController( $this->targets, $this->operations );
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/catalog',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $catalog, 'handle' ],
+				'permission_callback' => [ $catalog, 'check_permission' ],
+			]
+		);
 	}
 }
