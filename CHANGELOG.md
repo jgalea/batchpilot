@@ -6,11 +6,48 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
-### Added
-- `PostListIntegration` — injects a "Duplicate with Content Ops" row action on post/page list tables and "Content Ops: Delete / Duplicate / Bulk edit" entries into the bulk-actions dropdown. All entries deep-link into the Operations Builder with `target`, `operation`, and `filters[ids][]` prefilled.
+## [0.3.0-alpha] - 2026-04-23
 
-### Known limitations
-- `PostTarget` does not yet register an `ids` filter, so the deep-link preview triggered from this flow will report a matched count of 0 until Phase 1b.1 adds an `ids` `FilterDefinition`. Row actions and bulk actions still open the Operations Builder correctly; only live preview is affected.
+### Added
+
+Phase 1b admin UI — plugin now usable entirely from WordPress admin, no CLI or REST required.
+
+#### Admin shell (PHP)
+- `AdminMenu` — top-level "Content Ops" menu (`dashicons-list-view`) with four submenus: Dashboard, Operations, History, Settings. Each renders a page-slug-specific `<div id="content-ops-{slug}-root">` into which React mounts.
+- `AssetLoader` — enqueues `assets/build/admin.js` only on Content Ops pages, with `window.contentOpsAdmin` bootstrap carrying REST URL, nonce, capability map, page URLs.
+- `Settings` + `SettingsController` — single `content_ops_settings` option, `GET`/`POST /content-ops/v1/settings` (manage_options). Defaults merged server-side; unknown keys rejected.
+- `PostListIntegration` — injects "Duplicate with Content Ops" row action and "Content Ops: Delete / Duplicate / Bulk edit" bulk-action entries on post/page list tables. All deep-link into the Operations Builder prefilled.
+
+#### REST additions
+- `POST /preview` response extended with `display_rows` array (same length as `sample_ids`, each entry from `target.get_display()`) so the preview panel renders titles/status/dates/edit links without a second round-trip.
+- `GET`/`POST /content-ops/v1/settings` — new endpoints.
+
+#### React admin app (single bundle, `assets/src/admin/`)
+- Entry + router: `index.js` + `router.js` detect which `#content-ops-{slug}-root` is present and mount the matching page.
+- `api.js` — `@wordpress/api-fetch` wrapper with typed helpers (`fetchCatalog`, `preview`, `execute`, `listOperations`, `getOperation`, `undoOperation`, `fetchDoctor`, `getSettings`, `saveSettings`), AbortController plumbing, normalized `{ code, message, context }` errors.
+- **Dashboard** — HealthPanel (doctor checklist), StatsCard (ops this week, items affected), RecentOperationsList (last 5 with one-click undo), PresetCards (Common Cleanups deep-linking into Operations Builder).
+- **Operations Builder** — TargetPicker, FilterList with FilterRow supporting 6 input types (enum/bool/date/user/post/taxonomy), OperationPicker (pills filtered by target support), OperationParamsForm (derived from `params_schema`), PreviewPanel (debounced live preview with `useDebouncedPreview`, 300ms + AbortController), ExecuteButton (armed after successful preview, disabled when no token), ExecutionResult (completed/queued display). Reducer-based state (`state/builderReducer.js` + `state/builderContext.js`).
+- **Deep-link prefill** — `?preset=...`, `?rerun=...`, and raw `?target=...&operation=...&filters[ids][]=...` all dispatched on mount after catalog loads.
+- **History** — HistoryTable (Date/Type/Target/Items/Status/User/Actions columns, prev/next pagination via `listOperations`). OperationDetailsModal (filters/params JSON + affected IDs). Row actions: view details, undo (with confirmation + refresh), re-run (deep link).
+- **Settings** — SettingsForm with async_threshold, batch_size, delete_permanent_default, history_retention_days. AI agent access panel linking to WP users admin.
+
+#### Tests
+- **Jest + React Testing Library** suite: 51 tests / 21 suites covering every component, reducer, hook, and api helper. `tests/js/setup-jest-dom.js` + `jest-unit.config.js` added.
+- PHP unit and integration suites extended: 43 unit / 134 integration (1 skipped — Abilities matrix), 367 assertions.
+
+### Known limitations / deferred to Phase 1b.1
+- `PostTarget` does not register an `ids` filter — bulk-action and row-action deep links open the Operations Builder correctly but the live preview shows 0 matches until Phase 1b.1 adds an `ids` `FilterDefinition`.
+- Playwright E2E tests (plan Tasks 21–22) deferred to Phase 1b.1; Jest + PHP integration coverage is thorough, E2E is belt-and-suspenders.
+- Async autocomplete for user/post filters deferred — Phase 1b ships simple numeric ID inputs.
+- Match mode is "All filters" only; "Any" deferred to Phase 2.
+- Row actions open Operations Builder via query-string deep link (new tab); in-place modals are Phase 2 polish.
+
+### Test coverage at release
+- **PHP Unit:** 43 tests / 96 assertions.
+- **PHP Integration:** 134 tests / 367 assertions, 1 skipped (Abilities matrix).
+- **JS (Jest):** 51 tests / 21 suites.
+- **Static analysis:** PHPCS clean, PHPStan level 6 `[OK] No errors`, ESLint clean.
+- **Bundle size:** `admin.js` ≈ 25 KB minified.
 
 ## [0.2.0-alpha] - 2026-04-23
 
