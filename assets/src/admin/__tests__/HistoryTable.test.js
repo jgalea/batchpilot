@@ -39,4 +39,33 @@ describe( 'HistoryTable', () => {
 			} )
 		);
 	} );
+
+	it( 'invokes onRowAction with view / undo / rerun', async () => {
+		const onRowAction = jest.fn();
+		const api = {
+			listOperations: jest.fn().mockResolvedValue( rows( 1 ) ),
+		};
+		render(
+			<HistoryTable
+				api={ api }
+				pageSize={ 20 }
+				onRowAction={ onRowAction }
+			/>
+		);
+		await waitFor( () => screen.getAllByRole( 'row' ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /details/i } )
+		);
+		expect( onRowAction ).toHaveBeenCalledWith(
+			'view',
+			expect.any( Object )
+		);
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /undo/i } )
+		);
+		expect( onRowAction ).toHaveBeenCalledWith(
+			'undo',
+			expect.any( Object )
+		);
+	} );
 } );
