@@ -123,6 +123,10 @@ final class Plugin {
 		$admin_menu->register();
 		$this->set( 'admin.menu', $admin_menu );
 
+		$asset_loader = new \ContentOps\Admin\AssetLoader( $this->plugin_file );
+		$asset_loader->register();
+		$this->set( 'admin.assets', $asset_loader );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
