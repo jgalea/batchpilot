@@ -119,6 +119,10 @@ final class Plugin {
 			static fn ( array $presets ) => array_merge( $presets, $preset_catalog->all() )
 		);
 
+		$admin_menu = new \ContentOps\Admin\AdminMenu();
+		$admin_menu->register();
+		$this->set( 'admin.menu', $admin_menu );
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
