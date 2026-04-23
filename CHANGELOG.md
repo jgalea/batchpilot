@@ -6,6 +6,65 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [0.2.0-alpha] - 2026-04-23
+
+### Added
+
+Phase 1a backend MVP — plugin is now usable via WP-CLI, REST, and the Abilities API.
+
+#### Concrete Targets and Operations
+- `PostTarget` — one instance per registered public post type (slug = post type slug). 12 filters: post_type, status, author, published_before/after, modified_before/after, taxonomy, has_comments, has_featured_image, post_parent, has_children. Query against real `WP_Query`; `get_display()` returns preview-row summary.
+- `DeleteOperation` — trash by default, `permanent=true` to hard-delete. Undo untrashes (guards against permanent deletes).
+- `DuplicateOperation` — copies post with meta (excluding `_edit_lock`), taxonomies, featured image, optional child-include. Target status defaults to `draft`. Undo hard-deletes the duplicates.
+- `BulkEditOperation` — applies set_status, reassign_author, shift_dates (±N days), taxonomy add/remove, password, comment_status, menu_order. Snapshots every mutated field (including taxonomies as JSON-encoded term IDs) for undo. Undo restores from snapshots.
+
+#### Execution pipeline
+- `ExecutionService` — shared `preview()`, `record()`, `run_sync()` methods. Binds Target, Operation, query, preview token, and history row.
+- `OperationRunner` — Action Scheduler hook handler (`content_ops_run_operation`). Loads operation row, re-resolves Target/Operation, chunks IDs at `ExecutionService::BATCH_SIZE = 50`, calls `execute_batch()` per chunk, aggregates results.
+
+#### REST surface (`content-ops/v1`)
+- `GET /catalog` — registered targets, operations (with param schemas), and curated presets.
+- `POST /preview` — runs `preview()`, returns count + sample_ids + `preview_token` + warnings. Per-op capability check.
+- `POST /execute` — verifies `preview_token`, records operation history row, either runs synchronously OR enqueues Action Scheduler action when matched count exceeds `apply_filters('content_ops_async_threshold', 100)`. Returns `200` (completed) or `202` (queued).
+- `GET /operations` — paginated history list (`?limit=20&offset=0`).
+- `GET /operations/{id}` — history detail.
+- `POST /operations/{id}/undo` — resolves Operation by stored type, calls `undo()`, returns `UndoResult` JSON.
+
+#### WP-CLI commands
+- `wp content-ops delete [--post-type=X] [--status=Y] [--older-than=Nd] [--permanent] [--dry-run] [--yes] [--format=json|table|count|ids]` — builds QueryArgs from flags, previews, then executes synchronously.
+- `wp content-ops duplicate [--post-type=X] [--status=Y] [--target-status=draft] [--title-suffix=...] [--dry-run] [--yes] [--format=...]`.
+- `wp content-ops edit [--post-type=X] [--status=Y] [--set-status=...] [--reassign-author=N] [--shift-dates=N] [--comment-status=...] [--menu-order=N] [--dry-run] [--yes] [--format=...]`.
+- `wp content-ops history [--limit=N] [--format=table|json]` — lists recent operations newest-first.
+- `wp content-ops undo <operation_id> [--yes] [--format=...]` — invokes the operation's `undo()` handler.
+
+#### Abilities API (soft dependency)
+- `AbilitiesBridge` now iterates Target × Operation pairs and registers `content-ops/{target_slug}_{op_slug}` abilities when Abilities API is installed. Each ability's input schema merges filters + operation params, output schema mirrors `PreviewResult`, permission callback maps to the per-op `content_ops_*` capability, execute callback delegates to `ExecutionService::preview()`.
+
+#### Plugin boot wiring
+- `Plugin::on_plugins_loaded()` now instantiates registries, creates one `PostTarget` per public post type, registers the three operations, wires `OperationRunner` to the `content_ops_run_operation` Action Scheduler hook, and passes registries into `RouteRegistrar`, `CommandRegistrar`, and `AbilitiesBridge`.
+- `RouteRegistrar`, `CommandRegistrar`, `AbilitiesBridge` constructors updated to accept registries + ExecutionService + repositories.
+
+#### Curated presets
+- `PresetCatalog` ships two starter presets accessible via `/catalog` → `presets`:
+  - `trash-old-drafts` — trash post drafts modified over 90 days ago.
+  - `trash-auto-drafts` — trash all auto-draft posts.
+
+### Fixed / hardened
+- Test isolation: operation test classes now use matching `wpSetUpBeforeClass` / `wpTearDownAfterClass` to install and drop schema, preventing cross-class DB leakage into `SchemaTest`.
+- `tests/unit/bootstrap.php` polyfills `DAY_IN_SECONDS` for unit runs that load production code depending on the WP constant.
+
+### Deviations from plan (documented in commits)
+- Plan's `modified_before` / `post_modified` test pattern updated to use `$wpdb->update()` + `clean_post_cache()` — WordPress silently ignores `post_modified`/`post_modified_gmt` on `wp_insert_post`.
+- `wp_untrash_post` restores to `draft` not previous status in WP 5.6+ by default; tests that require the "restore to previous status" contract register the `wp_untrash_post_set_previous_status` filter explicitly.
+- `BatchResult::of` invariant (`processed === succeeded + failed`; `count(item_errors) <= failed`) enforced on every construction path.
+- `composer stan` script: `--memory-limit=512M` baked in to avoid crashes on default PHP memory.
+
+### Test coverage
+- **Unit:** 43 tests / 96 assertions.
+- **Integration:** 119 tests / 321 assertions (1 skipped: Abilities matrix — Abilities API not installed in wp-env).
+- **Static analysis:** PHPCS clean, PHPStan level 6 `[OK] No errors`.
+- **End-to-end smoke:** `wp content-ops doctor --format=json`, `GET /wp-json/content-ops/v1/catalog` (HTTP 200 with 2 targets / 3 operations / 2 presets) both verified green.
+
 ## [0.1.0-alpha] - 2026-04-22
 
 ### Added
