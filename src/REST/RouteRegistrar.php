@@ -1,6 +1,7 @@
 <?php
 namespace ContentOps\REST;
 
+use ContentOps\Admin\Settings;
 use ContentOps\Async\ActionSchedulerBridge;
 use ContentOps\Execution\ExecutionService;
 use ContentOps\History\OperationRepository;
@@ -20,6 +21,7 @@ final class RouteRegistrar {
 	private OperationRepository $operations_repo;
 	private TokenVerifier $verifier;
 	private TokenStore $token_store;
+	private Settings $settings;
 
 	public function __construct(
 		ActionSchedulerBridge $action_scheduler,
@@ -28,7 +30,8 @@ final class RouteRegistrar {
 		OperationRegistry $operations,
 		OperationRepository $operations_repo,
 		TokenVerifier $verifier,
-		TokenStore $token_store
+		TokenStore $token_store,
+		Settings $settings
 	) {
 		$this->action_scheduler = $action_scheduler;
 		$this->execution        = $execution;
@@ -37,6 +40,7 @@ final class RouteRegistrar {
 		$this->operations_repo  = $operations_repo;
 		$this->verifier         = $verifier;
 		$this->token_store      = $token_store;
+		$this->settings         = $settings;
 	}
 
 	public function register(): void {
@@ -174,6 +178,24 @@ final class RouteRegistrar {
 				'methods'             => 'POST',
 				'callback'            => [ $undo, 'handle' ],
 				'permission_callback' => [ $undo, 'check_permission' ],
+			]
+		);
+
+		$settings_ctrl = new SettingsController( $this->settings );
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/settings',
+			[
+				[
+					'methods'             => 'GET',
+					'callback'            => [ $settings_ctrl, 'handle_get' ],
+					'permission_callback' => [ $settings_ctrl, 'check_permission' ],
+				],
+				[
+					'methods'             => 'POST',
+					'callback'            => [ $settings_ctrl, 'handle_post' ],
+					'permission_callback' => [ $settings_ctrl, 'check_permission' ],
+				],
 			]
 		);
 	}
