@@ -53,4 +53,12 @@ final class CatalogRouteTest extends TestCase {
 		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/catalog' ) );
 		$this->assertSame( 403, $response->get_status() );
 	}
+
+	public function test_catalog_exposes_built_in_presets(): void {
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/catalog' ) );
+		$data     = $response->get_data();
+		$slugs    = array_map( static fn ( $p ) => $p['slug'], $data['presets'] );
+		$this->assertContains( 'trash-old-drafts', $slugs );
+		$this->assertContains( 'trash-auto-drafts', $slugs );
+	}
 }

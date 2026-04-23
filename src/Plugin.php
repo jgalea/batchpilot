@@ -112,6 +112,13 @@ final class Plugin {
 		$abilities_bridge->register();
 		$this->set( 'abilities.bridge', $abilities_bridge );
 
+		$preset_catalog = new \ContentOps\Presets\PresetCatalog();
+		$this->set( 'preset.catalog', $preset_catalog );
+		\add_filter(
+			'content_ops_presets',
+			static fn ( array $presets ) => array_merge( $presets, $preset_catalog->all() )
+		);
+
 		\do_action( 'content_ops_booted', $this );
 	}
 
