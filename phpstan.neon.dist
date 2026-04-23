@@ -28,3 +28,10 @@ parameters:
     # ExecutionService holds dependencies required by later features (snapshots, preview tokens).
     - message: '#Property ContentOps\\Execution\\ExecutionService::\$(snapshots_repo|token_generator|token_store) is never read, only written\.#'
       path: src/Execution/ExecutionService.php
+    # Registrars/bridge hold dependencies required by later Phase 1a tasks (catalog, preview, execute, history).
+    - message: '#Property ContentOps\\REST\\RouteRegistrar::\$(execution|targets|operations|operations_repo) is never read, only written\.#'
+      path: src/REST/RouteRegistrar.php
+    - message: '#Property ContentOps\\CLI\\CommandRegistrar::\$(execution|targets|operations|operations_repo) is never read, only written\.#'
+      path: src/CLI/CommandRegistrar.php
+    - message: '#Property ContentOps\\Abilities\\AbilitiesBridge::\$(execution|targets|operations) is never read, only written\.#'
+      path: src/Abilities/AbilitiesBridge.php
