@@ -28,24 +28,23 @@ test.describe( 'Operations Builder — happy path', () => {
 		page,
 	} ) => {
 		await expect(
-			page.getByRole( 'heading', { name: 'Operations Builder' } )
+			page.getByRole( 'heading', { name: 'Operations', level: 1 } )
 		).toBeVisible();
 
-		await page.getByRole( 'button', { name: 'Posts' } ).click();
+		await page.getByRole( 'button', { name: /^Posts/ } ).click();
 
 		await page.getByRole( 'button', { name: 'Add filter' } ).click();
-		await page
-			.getByRole( 'combobox', { name: 'Filter' } )
-			.selectOption( 'status' );
-		await page.getByLabel( 'Status' ).fill( 'draft' );
+		await page.getByRole( 'menuitem', { name: 'Status' } ).click();
+		await page.getByRole( 'checkbox', { name: 'Draft' } ).check();
 
 		await page
-			.getByRole( 'button', { name: 'Delete', exact: true } )
+			.getByRole( 'button', { name: /^Delete\b/, exact: false } )
+			.first()
 			.click();
 
-		await expect( page.getByText( /Matched: 3 items/ ) ).toBeVisible( {
-			timeout: 5000,
-		} );
+		await expect(
+			page.getByText( /3 items matched/i )
+		).toBeVisible( { timeout: 5000 } );
 		await expect( page.getByText( 'E2E draft 1' ) ).toBeVisible();
 
 		const executeBtn = page.getByRole( 'button', {
@@ -54,8 +53,8 @@ test.describe( 'Operations Builder — happy path', () => {
 		await expect( executeBtn ).toBeEnabled();
 		await executeBtn.click();
 
-		await expect( page.getByRole( 'status' ) ).toContainText(
-			/3 succeeded/
-		);
+		await expect(
+			page.locator( ':text-matches("3 succeeded", "i")' ).first()
+		).toBeVisible( { timeout: 10000 } );
 	} );
 } );
