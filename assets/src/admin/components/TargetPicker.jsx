@@ -26,9 +26,7 @@ const TargetPicker = ( { targets, selected, onSelect } ) => (
 					<span className="co-choice__meta">
 						<span className="co-chip">{ t.slug }</span>
 						<span className="co-choice__hint">
-							{ filterCountLabel(
-								( t.filters || [] ).length
-							) }
+							{ filterCountLabel( ( t.filters || [] ).length ) }
 						</span>
 					</span>
 				</button>

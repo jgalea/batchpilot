@@ -348,6 +348,11 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 									operation={ state.operation }
 									onExecute={ execute }
 									executing={ state.executing }
+									hasFilters={
+										Object.keys(
+											filtersToArgs( state.filters )
+										).length > 0
+									}
 								/>
 							</div>
 							{ state.execution && (

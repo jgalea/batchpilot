@@ -59,7 +59,47 @@ final class CatalogController extends RestController {
 				'targets'    => $targets,
 				'operations' => $ops,
 				'presets'    => $presets,
+				'vocab'      => [
+					'statuses'   => $this->statuses(),
+					'taxonomies' => $this->taxonomies(),
+				],
 			]
 		);
+	}
+
+	/**
+	 * @return array<int, array{label: string, value: string}>
+	 */
+	private function statuses(): array {
+		$out = [];
+		foreach ( [ 'publish', 'draft', 'pending', 'private', 'future', 'trash' ] as $slug ) {
+			$obj = get_post_status_object( $slug );
+			if ( null !== $obj ) {
+				$out[] = [
+					'label' => (string) $obj->label,
+					'value' => $slug,
+				];
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * @return array<int, array{slug: string, label: string, hierarchical: bool, object_types: array<int, string>}>
+	 */
+	private function taxonomies(): array {
+		$out        = [];
+		$taxonomies = get_taxonomies( [ 'show_ui' => true ], 'objects' );
+		foreach ( $taxonomies as $tax ) {
+			$rest_base = ! empty( $tax->rest_base ) ? (string) $tax->rest_base : (string) $tax->name;
+			$out[]     = [
+				'slug'         => (string) $tax->name,
+				'label'        => isset( $tax->labels->name ) ? (string) $tax->labels->name : (string) $tax->name,
+				'rest_base'    => $rest_base,
+				'hierarchical' => (bool) $tax->hierarchical,
+				'object_types' => array_values( array_map( 'strval', (array) $tax->object_type ) ),
+			];
+		}
+		return $out;
 	}
 }

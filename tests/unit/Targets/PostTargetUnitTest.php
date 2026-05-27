@@ -37,6 +37,8 @@ final class PostTargetUnitTest extends TestCase {
 	}
 
 	public function test_get_filters_returns_expected_keys(): void {
+		$this->stubFilterVocab();
+
 		$target  = new PostTarget( 'post' );
 		$filters = $target->get_filters();
 
@@ -62,6 +64,8 @@ final class PostTargetUnitTest extends TestCase {
 	}
 
 	public function test_get_filters_types_are_declared(): void {
+		$this->stubFilterVocab();
+
 		$target = new PostTarget( 'post' );
 		$by_key = [];
 		foreach ( $target->get_filters() as $filter ) {
@@ -74,5 +78,28 @@ final class PostTargetUnitTest extends TestCase {
 		$this->assertSame( 'taxonomy', $by_key['taxonomy'] );
 		$this->assertSame( 'bool', $by_key['has_comments'] );
 		$this->assertSame( 'post', $by_key['post_parent'] );
+	}
+
+	private function stubFilterVocab(): void {
+		$post_type         = new \stdClass();
+		$post_type->labels = (object) [ 'name' => 'Posts' ];
+		Functions\when( 'get_post_type_object' )->justReturn( $post_type );
+
+		Functions\when( 'get_post_status_object' )->alias(
+			static function ( string $slug ) {
+				$labels = [
+					'publish' => 'Published',
+					'draft'   => 'Draft',
+					'pending' => 'Pending',
+					'private' => 'Private',
+					'future'  => 'Scheduled',
+					'trash'   => 'Trash',
+				];
+				if ( ! isset( $labels[ $slug ] ) ) {
+					return null;
+				}
+				return (object) [ 'label' => $labels[ $slug ] ];
+			}
+		);
 	}
 }

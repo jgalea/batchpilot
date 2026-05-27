@@ -29,8 +29,24 @@ final class PostTarget implements TargetInterface {
 
 	public function get_filters(): array {
 		return [
-			new FilterDefinition( 'post_type', __( 'Post type', 'content-ops' ), 'enum', [ 'default' => $this->post_type ] ),
-			new FilterDefinition( 'status', __( 'Status', 'content-ops' ), 'enum', [ 'multiple' => true ] ),
+			new FilterDefinition(
+				'post_type',
+				__( 'Post type', 'content-ops' ),
+				'enum',
+				[
+					'default' => $this->post_type,
+					'options' => $this->post_type_options(),
+				]
+			),
+			new FilterDefinition(
+				'status',
+				__( 'Status', 'content-ops' ),
+				'enum',
+				[
+					'multiple' => true,
+					'options'  => $this->status_options(),
+				]
+			),
 			new FilterDefinition( 'author', __( 'Author', 'content-ops' ), 'user' ),
 			new FilterDefinition( 'modified_before', __( 'Modified before', 'content-ops' ), 'date' ),
 			new FilterDefinition( 'modified_after', __( 'Modified after', 'content-ops' ), 'date' ),
@@ -51,6 +67,51 @@ final class PostTarget implements TargetInterface {
 			new FilterDefinition( 'has_featured_image', __( 'Has featured image', 'content-ops' ), 'bool' ),
 			new FilterDefinition( 'post_parent', __( 'Post parent', 'content-ops' ), 'post' ),
 			new FilterDefinition( 'has_children', __( 'Has children', 'content-ops' ), 'bool' ),
+		];
+	}
+
+	/**
+	 * @return array<int, array{label: string, value: string}>
+	 */
+	private function status_options(): array {
+		// The core statuses that apply to normal content. We explicitly
+		// whitelist these rather than querying get_post_stati() so that
+		// statuses registered for unrelated post types (Action Scheduler,
+		// WooCommerce orders, etc.) don't leak into the Posts/Pages UI.
+		$core_statuses = [ 'publish', 'draft', 'pending', 'private', 'future', 'trash' ];
+
+		$options = [];
+		foreach ( $core_statuses as $slug ) {
+			$obj = get_post_status_object( $slug );
+			if ( null !== $obj ) {
+				$options[] = [
+					'label' => (string) $obj->label,
+					'value' => $slug,
+				];
+			}
+		}
+
+		return $options;
+	}
+
+	/**
+	 * @return array<int, array{label: string, value: string}>
+	 */
+	private function post_type_options(): array {
+		$obj = get_post_type_object( $this->post_type );
+		if ( null === $obj ) {
+			return [
+				[
+					'label' => $this->post_type,
+					'value' => $this->post_type,
+				],
+			];
+		}
+		return [
+			[
+				'label' => (string) $obj->labels->name,
+				'value' => $this->post_type,
+			],
 		];
 	}
 

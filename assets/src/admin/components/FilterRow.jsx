@@ -18,11 +18,12 @@ const EnumInput = ( { def, value, onChange } ) => {
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
+				hideLabelFromVision
 				label={ def.label }
-				help={
+				placeholder={
 					multiple
-						? __( 'Comma-separated values.', 'content-ops' )
-						: ''
+						? __( 'comma-separated values', 'content-ops' )
+						: __( 'value', 'content-ops' )
 				}
 				value={
 					Array.isArray( value ) ? value.join( ',' ) : value || ''
@@ -42,14 +43,17 @@ const EnumInput = ( { def, value, onChange } ) => {
 	}
 	if ( multiple ) {
 		return (
-			<fieldset>
-				<legend>{ def.label }</legend>
+			<div className="co-filter-row__enum-multi" role="group">
 				{ options.map( ( o ) => {
 					const checked =
 						Array.isArray( value ) && value.includes( o.value );
-					const id = `content-ops-enum-${ def.key }-${ o.value }`;
+					const id = `co-enum-${ def.key }-${ o.value }`;
 					return (
-						<div key={ o.value }>
+						<label
+							key={ o.value }
+							htmlFor={ id }
+							className="co-chip"
+						>
 							<input
 								id={ id }
 								type="checkbox"
@@ -67,17 +71,18 @@ const EnumInput = ( { def, value, onChange } ) => {
 									);
 								} }
 							/>
-							<label htmlFor={ id }>{ o.label }</label>
-						</div>
+							<span>{ o.label }</span>
+						</label>
 					);
 				} ) }
-			</fieldset>
+			</div>
 		);
 	}
 	return (
 		<SelectControl
 			__next40pxDefaultSize
 			__nextHasNoMarginBottom
+			hideLabelFromVision
 			label={ def.label }
 			value={ value || '' }
 			options={ [
@@ -89,32 +94,33 @@ const EnumInput = ( { def, value, onChange } ) => {
 	);
 };
 
-const BoolInput = ( { def, value, onChange } ) => (
+const BoolInput = ( { value, onChange } ) => (
 	<ToggleControl
-		label={ def.label }
+		__nextHasNoMarginBottom
+		label={ value ? __( 'Yes', 'content-ops' ) : __( 'No', 'content-ops' ) }
 		checked={ !! value }
 		onChange={ onChange }
 	/>
 );
 
 const DateInput = ( { def, value, onChange } ) => (
-	<div>
-		<label htmlFor={ `co-date-${ def.key }` }>{ def.label }</label>
-		<input
-			id={ `co-date-${ def.key }` }
-			type="date"
-			value={ value || '' }
-			onChange={ ( e ) => onChange( e.target.value ) }
-		/>
-	</div>
+	<input
+		type="date"
+		className="co-filter-row__date"
+		aria-label={ def.label }
+		value={ value || '' }
+		onChange={ ( e ) => onChange( e.target.value ) }
+	/>
 );
 
 const IdInput = ( { def, value, onChange } ) => (
 	<TextControl
 		__next40pxDefaultSize
 		__nextHasNoMarginBottom
+		hideLabelFromVision
 		label={ def.label }
 		type="number"
+		placeholder={ __( 'ID', 'content-ops' ) }
 		value={ value === null || value === undefined ? '' : String( value ) }
 		onChange={ ( v ) => onChange( v === '' ? null : parseInt( v, 10 ) ) }
 	/>
@@ -138,11 +144,13 @@ const TaxonomyInput = ( { value, onChange } ) => {
 	};
 
 	return (
-		<div>
+		<div className="co-filter-row__taxonomy">
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
+				hideLabelFromVision
 				label={ __( 'Taxonomy slug', 'content-ops' ) }
+				placeholder={ __( 'taxonomy (e.g. category)', 'content-ops' ) }
 				value={ tax }
 				onChange={ ( v ) => {
 					setTax( v );
@@ -152,9 +160,10 @@ const TaxonomyInput = ( { value, onChange } ) => {
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
+				hideLabelFromVision
 				label={ __( 'Term IDs', 'content-ops' ) }
+				placeholder={ __( 'term IDs (e.g. 12, 34)', 'content-ops' ) }
 				value={ ids }
-				help={ __( 'Comma-separated.', 'content-ops' ) }
 				onChange={ ( v ) => {
 					setIds( v );
 					emit( tax, v );
@@ -164,72 +173,110 @@ const TaxonomyInput = ( { value, onChange } ) => {
 	);
 };
 
+const removeIcon = (
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width="18"
+		height="18"
+		aria-hidden="true"
+	>
+		<path
+			fill="currentColor"
+			d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+		/>
+	</svg>
+);
+
 const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 	const def = defs.find( ( d ) => d.key === row.key ) || null;
-	const keyOptions = [
-		{ label: __( 'Choose filter…', 'content-ops' ), value: '' },
-		...defs.map( ( d ) => ( { label: d.label, value: d.key } ) ),
-	];
+
+	if ( ! def ) {
+		const keyOptions = [
+			{ label: __( 'Choose filter…', 'content-ops' ), value: '' },
+			...defs.map( ( d ) => ( { label: d.label, value: d.key } ) ),
+		];
+		return (
+			<div className="co-filter-row co-filter-row--empty" role="group">
+				<div className="co-filter-row__picker">
+					<SelectControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						hideLabelFromVision
+						label={ __( 'Filter', 'content-ops' ) }
+						value=""
+						options={ keyOptions }
+						onChange={ ( key ) =>
+							onChange( { key: key || null, value: null } )
+						}
+					/>
+				</div>
+				<Button
+					className="co-filter-row__remove"
+					onClick={ onRemove }
+					label={ __( 'Remove filter', 'content-ops' ) }
+					icon={ removeIcon }
+				/>
+			</div>
+		);
+	}
+
+	const typeClass = `co-filter-row--type-${ def.type }`;
 
 	return (
-		<div className="content-ops-filter-row" role="group">
-			<SelectControl
-				__next40pxDefaultSize
-				__nextHasNoMarginBottom
-				label={ __( 'Filter', 'content-ops' ) }
-				value={ row.key || '' }
-				options={ keyOptions }
-				onChange={ ( key ) =>
-					onChange( { key: key || null, value: null } )
-				}
+		<div className={ `co-filter-row ${ typeClass }` } role="group">
+			<span className="co-filter-row__label">{ def.label }</span>
+			<div className="co-filter-row__value">
+				{ def.type === 'enum' && (
+					<EnumInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'bool' && (
+					<BoolInput
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'date' && (
+					<DateInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ ( def.type === 'user' || def.type === 'post' ) && (
+					<IdInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'taxonomy' && (
+					<TaxonomyInput
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+			</div>
+			<Button
+				className="co-filter-row__remove"
+				onClick={ onRemove }
+				label={ __( 'Remove filter', 'content-ops' ) }
+				icon={ removeIcon }
 			/>
-			{ def && def.type === 'enum' && (
-				<EnumInput
-					def={ def }
-					value={ row.value }
-					onChange={ ( value ) =>
-						onChange( { key: def.key, value } )
-					}
-				/>
-			) }
-			{ def && def.type === 'bool' && (
-				<BoolInput
-					def={ def }
-					value={ row.value }
-					onChange={ ( value ) =>
-						onChange( { key: def.key, value } )
-					}
-				/>
-			) }
-			{ def && def.type === 'date' && (
-				<DateInput
-					def={ def }
-					value={ row.value }
-					onChange={ ( value ) =>
-						onChange( { key: def.key, value } )
-					}
-				/>
-			) }
-			{ def && ( def.type === 'user' || def.type === 'post' ) && (
-				<IdInput
-					def={ def }
-					value={ row.value }
-					onChange={ ( value ) =>
-						onChange( { key: def.key, value } )
-					}
-				/>
-			) }
-			{ def && def.type === 'taxonomy' && (
-				<TaxonomyInput
-					value={ row.value }
-					onChange={ ( value ) =>
-						onChange( { key: def.key, value } )
-					}
-				/>
-			) }
-			<Button isDestructive onClick={ onRemove }>
-				{ __( 'Remove', 'content-ops' ) }
-			</Button>
 		</div>
 	);
 };

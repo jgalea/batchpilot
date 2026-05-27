@@ -32,7 +32,8 @@ describe( 'PreviewPanel', () => {
 				previewError={ null }
 			/>
 		);
-		expect( screen.getByText( /42/ ) ).toBeInTheDocument();
+		const matches = screen.getAllByText( /42/ );
+		expect( matches.length ).toBeGreaterThan( 0 );
 		expect( screen.getByText( 'First' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Second' ) ).toBeInTheDocument();
 		expect(

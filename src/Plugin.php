@@ -49,6 +49,7 @@ final class Plugin {
 		\register_activation_hook( $this->plugin_file, [ Activator::class, 'activate' ] );
 		\register_deactivation_hook( $this->plugin_file, [ Deactivator::class, 'deactivate' ] );
 		\add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ], -1 );
+		\add_action( 'admin_init', [ \ContentOps\Capabilities\Capabilities::class, 'ensure_granted' ] );
 	}
 
 	public function on_plugins_loaded(): void {

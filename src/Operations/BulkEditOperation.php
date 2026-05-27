@@ -50,17 +50,52 @@ final class BulkEditOperation implements OperationInterface {
 		return [
 			'type'       => 'object',
 			'properties' => [
-				'set_status'       => [ 'type' => 'string' ],
-				'reassign_author'  => [ 'type' => 'integer' ],
-				'shift_dates_days' => [ 'type' => 'integer' ],
-				'taxonomy_add'     => [ 'type' => 'object' ],
-				'taxonomy_remove'  => [ 'type' => 'object' ],
-				'password'         => [ 'type' => 'string' ],
-				'comment_status'   => [
-					'type' => 'string',
-					'enum' => [ 'open', 'closed' ],
+				'set_status'       => [
+					'type'        => 'string',
+					'widget'      => 'post_status',
+					'label'       => __( 'Set status to', 'content-ops' ),
+					'description' => __( 'Change the publication status of every matched item.', 'content-ops' ),
 				],
-				'menu_order'       => [ 'type' => 'integer' ],
+				'reassign_author'  => [
+					'type'        => 'integer',
+					'widget'      => 'user',
+					'label'       => __( 'Reassign author to', 'content-ops' ),
+					'description' => __( 'Every matched item will be reassigned to this user.', 'content-ops' ),
+				],
+				'shift_dates_days' => [
+					'type'        => 'integer',
+					'label'       => __( 'Shift publish dates by (days)', 'content-ops' ),
+					'description' => __( 'Positive to push forward, negative to pull back. Example: −30 shifts posts a month earlier.', 'content-ops' ),
+				],
+				'taxonomy_add'     => [
+					'type'        => 'object',
+					'widget'      => 'taxonomy_terms',
+					'label'       => __( 'Add taxonomy terms', 'content-ops' ),
+					'description' => __( 'Pick a taxonomy and one or more terms. They will be added to every matched item (existing terms are preserved).', 'content-ops' ),
+				],
+				'taxonomy_remove'  => [
+					'type'        => 'object',
+					'widget'      => 'taxonomy_terms',
+					'label'       => __( 'Remove taxonomy terms', 'content-ops' ),
+					'description' => __( 'Pick a taxonomy and the terms to remove from every matched item.', 'content-ops' ),
+				],
+				'password'         => [
+					'type'        => 'string',
+					'widget'      => 'password',
+					'label'       => __( 'Set password', 'content-ops' ),
+					'description' => __( 'Password-protect every matched item. Leave empty to clear an existing password.', 'content-ops' ),
+				],
+				'comment_status'   => [
+					'type'        => 'string',
+					'enum'        => [ 'open', 'closed' ],
+					'label'       => __( 'Comments', 'content-ops' ),
+					'description' => __( 'Allow or disallow comments on all matched items.', 'content-ops' ),
+				],
+				'menu_order'       => [
+					'type'        => 'integer',
+					'label'       => __( 'Menu order', 'content-ops' ),
+					'description' => __( 'Numeric order used by themes to sort posts/pages.', 'content-ops' ),
+				],
 			],
 		];
 	}

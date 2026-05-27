@@ -47,8 +47,10 @@ final class DeleteOperation implements OperationInterface {
 			'type'       => 'object',
 			'properties' => [
 				'permanent' => [
-					'type'    => 'boolean',
-					'default' => false,
+					'type'        => 'boolean',
+					'default'     => false,
+					'label'       => __( 'Permanently delete (skip trash)', 'content-ops' ),
+					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default — items go to the Trash and can be restored.', 'content-ops' ),
 				],
 			],
 		];

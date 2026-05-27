@@ -56,19 +56,29 @@ final class DuplicateOperation implements OperationInterface {
 			'type'       => 'object',
 			'properties' => [
 				'target_status'    => [
-					'type'    => 'string',
-					'default' => 'draft',
+					'type'        => 'string',
+					'widget'      => 'post_status',
+					'default'     => 'draft',
+					'label'       => __( 'Status of duplicates', 'content-ops' ),
+					'description' => __( 'Status applied to newly created copies.', 'content-ops' ),
 				],
 				'reassign_author'  => [
-					'type' => 'integer',
+					'type'        => 'integer',
+					'widget'      => 'user',
+					'label'       => __( 'Author of duplicates', 'content-ops' ),
+					'description' => __( 'If set, the new copies will be assigned to this user. Leave empty to keep the original author.', 'content-ops' ),
 				],
 				'title_suffix'     => [
-					'type'    => 'string',
-					'default' => self::DEFAULT_SUFFIX,
+					'type'        => 'string',
+					'default'     => self::DEFAULT_SUFFIX,
+					'label'       => __( 'Title suffix', 'content-ops' ),
+					'description' => __( 'Appended to each copied title so duplicates are easy to spot.', 'content-ops' ),
 				],
 				'include_children' => [
-					'type'    => 'boolean',
-					'default' => false,
+					'type'        => 'boolean',
+					'default'     => false,
+					'label'       => __( 'Also duplicate child posts', 'content-ops' ),
+					'description' => __( 'Recursively duplicate hierarchical children (pages, attachments) along with each matched post.', 'content-ops' ),
 				],
 			],
 		];

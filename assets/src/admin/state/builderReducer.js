@@ -28,7 +28,11 @@ export const reducer = ( state, action ) => {
 				...state,
 				filters: [
 					...state.filters,
-					{ id: newId(), key: null, value: null },
+					{
+						id: newId(),
+						key: action.key || null,
+						value: null,
+					},
 				],
 				preview: null,
 			};
