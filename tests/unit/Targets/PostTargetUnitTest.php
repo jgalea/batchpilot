@@ -46,6 +46,7 @@ final class PostTargetUnitTest extends TestCase {
 
 		$this->assertSame(
 			[
+				'ids',
 				'post_type',
 				'status',
 				'author',
@@ -72,6 +73,7 @@ final class PostTargetUnitTest extends TestCase {
 			$by_key[ $filter->key() ] = $filter->type();
 		}
 
+		$this->assertSame( 'ids', $by_key['ids'] );
 		$this->assertSame( 'enum', $by_key['status'] );
 		$this->assertSame( 'user', $by_key['author'] );
 		$this->assertSame( 'date', $by_key['modified_before'] );

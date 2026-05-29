@@ -6,6 +6,25 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-29
+
+### Changed
+
+- Renamed plugin from "Content Ops" to "BatchPilot" across PHP namespace, slug, text domain, REST namespace, WP-CLI command, capabilities, Action Scheduler hook, DB table prefix, JS bootstrap global, CSS prefix, and error-code namespace. See the rename commit for the full identifier map.
+- Bumped Plugin URI from placeholder to GitHub repo URL.
+- Removed `load_plugin_textdomain()` call now that WordPress.org auto-loads translations under the plugin slug.
+- Removed `Domain Path: /languages` header since the languages directory does not ship.
+
+### Added
+
+- `ids` filter on `PostTarget` so the post-list row and bulk-action deep links into the Operations Builder preview correctly (previously they opened the builder but showed 0 matches because the `filters[ids][]=N` query string had no matching `FilterDefinition`).
+- `if ( ! defined( 'ABSPATH' ) ) { exit; }` direct-access guard on every PHP file under `src/`.
+- WordPress.org-format `readme.txt` with description, FAQ, screenshots list, and changelog.
+
+### Fixed
+
+- `tests/unit/bootstrap.php` defines `ABSPATH` so the new direct-access guards do not short-circuit Brain Monkey unit runs outside WordPress.
+
 ## [0.3.0-alpha] - 2026-04-23
 
 ### Added

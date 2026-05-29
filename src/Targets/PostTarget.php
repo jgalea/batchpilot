@@ -34,6 +34,12 @@ final class PostTarget implements TargetInterface {
 	public function get_filters(): array {
 		return [
 			new FilterDefinition(
+				'ids',
+				__( 'Specific IDs', 'batchpilot' ),
+				'ids',
+				[ 'multiple' => true ]
+			),
+			new FilterDefinition(
 				'post_type',
 				__( 'Post type', 'batchpilot' ),
 				'enum',
@@ -181,6 +187,18 @@ final class PostTarget implements TargetInterface {
 			'post_type'   => $this->post_type,
 			'post_status' => 'any',
 		];
+
+		if ( $args->has( 'ids' ) ) {
+			$ids = array_values(
+				array_filter(
+					array_map( 'intval', (array) $args->get( 'ids' ) ),
+					static fn ( int $id ): bool => $id > 0
+				)
+			);
+			if ( ! empty( $ids ) ) {
+				$query['post__in'] = $ids;
+			}
+		}
 
 		if ( $args->has( 'status' ) ) {
 			$query['post_status'] = $args->get( 'status' );

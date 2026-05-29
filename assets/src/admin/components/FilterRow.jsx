@@ -126,6 +126,29 @@ const IdInput = ( { def, value, onChange } ) => (
 	/>
 );
 
+const IdsInput = ( { def, value, onChange } ) => {
+	const initial = Array.isArray( value ) ? value.join( ', ' ) : '';
+	const [ raw, setRaw ] = useState( initial );
+	return (
+		<TextControl
+			__next40pxDefaultSize
+			__nextHasNoMarginBottom
+			hideLabelFromVision
+			label={ def.label }
+			placeholder={ __( 'comma-separated IDs, e.g. 12, 34, 56', 'batchpilot' ) }
+			value={ raw }
+			onChange={ ( v ) => {
+				setRaw( v );
+				const ids = v
+					.split( ',' )
+					.map( ( s ) => parseInt( s.trim(), 10 ) )
+					.filter( ( n ) => ! Number.isNaN( n ) && n > 0 );
+				onChange( ids );
+			} }
+		/>
+	);
+};
+
 const TaxonomyInput = ( { value, onChange } ) => {
 	const initialTax = ( value && value.taxonomy ) || '';
 	const initialIds =
@@ -255,6 +278,15 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 				) }
 				{ ( def.type === 'user' || def.type === 'post' ) && (
 					<IdInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'ids' && (
+					<IdsInput
 						def={ def }
 						value={ row.value }
 						onChange={ ( value ) =>

@@ -4,7 +4,7 @@ Tags: bulk delete, bulk edit, duplicate posts, bulk operations, undo
 Requires at least: 6.3
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.3.0-alpha
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,28 +86,23 @@ By default, uninstall leaves your operation history in place. To drop everything
 
 == Changelog ==
 
-= 0.3.0-alpha =
+= 1.0.0 =
 
-* Stepper-driven Operations Builder with live preview, smart filter widgets, and a destructive-action confirmation guard for unfiltered or large deletes.
-* Catalog vocab block exposes statuses and taxonomies so the UI can render labelled selects and term pickers without round-tripping.
-* Operation params schema annotated with widget, label, and description hints (post_status, user picker, taxonomy terms, password).
-* Capability self-heal on admin_init re-grants missing capabilities after upgrades that bypass the activation hook.
-* React 18 createRoot migration.
+Initial release.
 
-= 0.2.0-alpha =
-
-* PostTarget with 12 filters and per-post-type registration.
-* Delete, Duplicate, Bulk Edit operations with snapshot-based undo.
-* REST surface: catalog, preview, execute, operations, undo.
-* WP-CLI commands: delete, duplicate, edit, history, undo, doctor.
-* Abilities API soft integration (one ability per Target × Operation).
-
-= 0.1.0-alpha =
-
-* Plugin foundation, custom tables, preview-token machinery, Action Scheduler bridge, capability model.
+* Three operations on posts, pages, and any registered public post type: Delete (trash or permanent), Duplicate (meta, taxonomies, featured image, optional child posts), Bulk Edit (status, author, dates, taxonomies, password, comment status, menu order).
+* Thirteen filters: specific IDs, post type, status, author, modified before/after, published before/after, taxonomy term, has comments, has featured image, post parent, has children.
+* Stepper-driven Operations Builder with live preview, smart widgets per param type, and a destructive-action confirmation guard for unfiltered or large deletes.
+* Snapshot-based undo for every operation except permanent deletes. Full audit history with one-click re-run.
+* Preview tokens (HMAC-signed, 5-minute TTL) prevent stale state from being executed.
+* Async execution via Action Scheduler when matched count exceeds the configurable threshold.
+* Surfaces: admin UI, WP-CLI (`wp batchpilot`), REST API (`/wp-json/batchpilot/v1/*`), WordPress Abilities API.
+* Post-list integration: row action ("Duplicate with BatchPilot") and bulk actions deep-link into the Operations Builder pre-filled with the selected IDs.
+* Per-operation capability gates: `batchpilot_delete`, `batchpilot_edit`, `batchpilot_duplicate`, `batchpilot_move`, `batchpilot_schedule`.
+* Doctor screen and `wp batchpilot doctor` for environment checks.
 
 == Upgrade Notice ==
 
-= 0.3.0-alpha =
+= 1.0.0 =
 
-Pre-release. UI is stepper-driven, capabilities self-heal on admin_init, REST catalog now includes a vocab block. No breaking changes for clients that used 0.2.0-alpha's REST or CLI surface.
+Initial release.
