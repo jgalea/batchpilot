@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\History;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Operation {
 
 	private int $id;

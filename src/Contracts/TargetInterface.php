@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Contracts;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 interface TargetInterface {
 
 	public function slug(): string;

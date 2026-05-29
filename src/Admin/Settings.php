@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Settings {
 
 	public const OPTION = 'batchpilot_settings';

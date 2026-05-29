@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Capabilities\Capabilities;
 use BatchPilot\Database\Migrations;
 

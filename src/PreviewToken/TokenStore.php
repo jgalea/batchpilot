@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\PreviewToken;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class TokenStore {
 
 	private const TRANSIENT_PREFIX = 'co_preview_token_';

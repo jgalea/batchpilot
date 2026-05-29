@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\PreviewToken;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class TokenVerifier {
 
 	private TokenGenerator $generator;

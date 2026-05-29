@@ -1,4 +1,8 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', '/tmp/wp/' );
+}
+
 require __DIR__ . '/../../vendor/autoload.php';
 
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {

@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Execution;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class OperationRunner {
 
 	public const HOOK = 'batchpilot_run_operation';

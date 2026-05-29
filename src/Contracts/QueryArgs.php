@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Contracts;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class QueryArgs {
 
 	/** @var array<string, mixed> */

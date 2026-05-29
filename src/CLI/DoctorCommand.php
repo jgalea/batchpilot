@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\CLI;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\REST\DoctorController;
 

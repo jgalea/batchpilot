@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Plugin {
 
 	private static ?self $instance = null;
@@ -53,7 +57,6 @@ final class Plugin {
 	}
 
 	public function on_plugins_loaded(): void {
-		\load_plugin_textdomain( 'batchpilot', false, dirname( \plugin_basename( $this->plugin_file ) ) . '/languages' );
 		$this->load_action_scheduler();
 
 		global $wpdb;

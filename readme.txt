@@ -2,7 +2,7 @@
 Contributors: jeangalea
 Tags: bulk delete, bulk edit, duplicate posts, bulk operations, undo
 Requires at least: 6.3
-Tested up to: 6.6
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 0.3.0-alpha
 License: GPLv2 or later

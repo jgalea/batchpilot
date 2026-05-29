@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class AdminMenu {
 
 	public const PARENT_SLUG = 'batchpilot';

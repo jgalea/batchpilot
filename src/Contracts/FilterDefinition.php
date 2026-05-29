@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Contracts;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use InvalidArgumentException;
 
 final class FilterDefinition {

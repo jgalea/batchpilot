@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Errors;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use InvalidArgumentException;
 
 final class BatchPilotError {

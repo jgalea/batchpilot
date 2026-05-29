@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Registry;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Contracts\OperationInterface;
 use LogicException;
 

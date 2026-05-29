@@ -8,6 +8,10 @@
 
 namespace BatchPilot\Database;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Migrations {
 
 	public static function maybe_migrate(): void {

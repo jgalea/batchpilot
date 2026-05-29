@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Async;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class ActionSchedulerBridge {
 
 	public function is_available(): bool {

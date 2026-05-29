@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\CLI;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Execution\ExecutionService;
 
 final class DuplicateCommand {

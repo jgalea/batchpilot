@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Targets;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Contracts\FilterDefinition;
 use BatchPilot\Contracts\QueryArgs;
 use BatchPilot\Contracts\TargetInterface;

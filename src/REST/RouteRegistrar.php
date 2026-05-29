@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\REST;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Admin\Settings;
 use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\Execution\ExecutionService;

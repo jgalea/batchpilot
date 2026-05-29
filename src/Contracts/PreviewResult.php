@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Contracts;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Errors\BatchPilotError;
 
 final class PreviewResult {

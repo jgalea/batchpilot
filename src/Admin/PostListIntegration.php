@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use WP_Post;
 
 final class PostListIntegration {

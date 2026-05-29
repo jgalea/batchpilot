@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\REST;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Errors\BatchPilotError;
 use WP_Error;
 use WP_REST_Response;

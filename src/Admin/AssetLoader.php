@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Capabilities\Capabilities;
 
 final class AssetLoader {

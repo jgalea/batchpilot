@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Capabilities;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Capabilities {
 
 	public const ALL = [

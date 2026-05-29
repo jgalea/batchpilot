@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Database;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class Schema {
 
 	public const VERSION        = '1.0.0';

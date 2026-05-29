@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\REST;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\History\Operation;
 use BatchPilot\History\OperationRepository;

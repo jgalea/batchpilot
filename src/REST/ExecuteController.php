@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\REST;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\Contracts\QueryArgs;
 use BatchPilot\Errors\BatchPilotError;

@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\PreviewToken;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class TokenGenerator {
 
 	private string $salt;

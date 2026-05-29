@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Operations;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Contracts\BatchResult;
 use BatchPilot\Contracts\OperationInterface;
 use BatchPilot\Contracts\PreviewResult;

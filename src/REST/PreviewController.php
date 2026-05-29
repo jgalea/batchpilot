@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\REST;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use BatchPilot\Execution\ExecutionService;
 use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;

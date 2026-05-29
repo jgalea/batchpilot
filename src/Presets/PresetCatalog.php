@@ -1,6 +1,10 @@
 <?php
 namespace BatchPilot\Presets;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 final class PresetCatalog {
 
 	/** @return array<int, array<string, mixed>> */
