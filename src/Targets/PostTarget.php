@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Targets;
+namespace BatchPilot\Targets;
 
-use ContentOps\Contracts\FilterDefinition;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
+use BatchPilot\Contracts\FilterDefinition;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
 
 final class PostTarget implements TargetInterface {
 
@@ -31,7 +31,7 @@ final class PostTarget implements TargetInterface {
 		return [
 			new FilterDefinition(
 				'post_type',
-				__( 'Post type', 'content-ops' ),
+				__( 'Post type', 'batchpilot' ),
 				'enum',
 				[
 					'default' => $this->post_type,
@@ -40,21 +40,21 @@ final class PostTarget implements TargetInterface {
 			),
 			new FilterDefinition(
 				'status',
-				__( 'Status', 'content-ops' ),
+				__( 'Status', 'batchpilot' ),
 				'enum',
 				[
 					'multiple' => true,
 					'options'  => $this->status_options(),
 				]
 			),
-			new FilterDefinition( 'author', __( 'Author', 'content-ops' ), 'user' ),
-			new FilterDefinition( 'modified_before', __( 'Modified before', 'content-ops' ), 'date' ),
-			new FilterDefinition( 'modified_after', __( 'Modified after', 'content-ops' ), 'date' ),
-			new FilterDefinition( 'published_before', __( 'Published before', 'content-ops' ), 'date' ),
-			new FilterDefinition( 'published_after', __( 'Published after', 'content-ops' ), 'date' ),
+			new FilterDefinition( 'author', __( 'Author', 'batchpilot' ), 'user' ),
+			new FilterDefinition( 'modified_before', __( 'Modified before', 'batchpilot' ), 'date' ),
+			new FilterDefinition( 'modified_after', __( 'Modified after', 'batchpilot' ), 'date' ),
+			new FilterDefinition( 'published_before', __( 'Published before', 'batchpilot' ), 'date' ),
+			new FilterDefinition( 'published_after', __( 'Published after', 'batchpilot' ), 'date' ),
 			new FilterDefinition(
 				'taxonomy',
-				__( 'Taxonomy term', 'content-ops' ),
+				__( 'Taxonomy term', 'batchpilot' ),
 				'taxonomy',
 				[
 					'shape' => [
@@ -63,10 +63,10 @@ final class PostTarget implements TargetInterface {
 					],
 				]
 			),
-			new FilterDefinition( 'has_comments', __( 'Has comments', 'content-ops' ), 'bool' ),
-			new FilterDefinition( 'has_featured_image', __( 'Has featured image', 'content-ops' ), 'bool' ),
-			new FilterDefinition( 'post_parent', __( 'Post parent', 'content-ops' ), 'post' ),
-			new FilterDefinition( 'has_children', __( 'Has children', 'content-ops' ), 'bool' ),
+			new FilterDefinition( 'has_comments', __( 'Has comments', 'batchpilot' ), 'bool' ),
+			new FilterDefinition( 'has_featured_image', __( 'Has featured image', 'batchpilot' ), 'bool' ),
+			new FilterDefinition( 'post_parent', __( 'Post parent', 'batchpilot' ), 'post' ),
+			new FilterDefinition( 'has_children', __( 'Has children', 'batchpilot' ), 'bool' ),
 		];
 	}
 

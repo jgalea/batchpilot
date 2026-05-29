@@ -15,7 +15,7 @@ describe( 'PresetCards', () => {
 			},
 		];
 		const baseUrl =
-			'http://example.test/wp-admin/admin.php?page=content-ops-operations';
+			'http://example.test/wp-admin/admin.php?page=batchpilot-operations';
 		render( <PresetCards presets={ presets } operationsUrl={ baseUrl } /> );
 		expect( screen.getByText( 'Trash old drafts' ) ).toBeInTheDocument();
 		const link = screen.getByRole( 'link', { name: /trash old drafts/i } );

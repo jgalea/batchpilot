@@ -2,7 +2,7 @@ import { test, expect } from './fixtures';
 
 test.describe( 'Operations Builder — happy path', () => {
 	test.beforeEach( async ( { requestUtils, admin } ) => {
-		await requestUtils.activatePlugin( 'content-ops' );
+		await requestUtils.activatePlugin( 'batchpilot' );
 		for ( let i = 0; i < 3; i++ ) {
 			await requestUtils.rest( {
 				method: 'POST',
@@ -16,7 +16,7 @@ test.describe( 'Operations Builder — happy path', () => {
 		}
 		await admin.visitAdminPage(
 			'admin.php',
-			'page=content-ops-operations'
+			'page=batchpilot-operations'
 		);
 	} );
 

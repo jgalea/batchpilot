@@ -1,11 +1,14 @@
 {
   "core": "WordPress/WordPress#6.6",
   "phpVersion": "7.4",
-  "plugins": [ "." ],
+  "plugins": [],
+  "mappings": {
+    "wp-content/plugins/batchpilot": "."
+  },
   "env": {
     "tests": {
       "mappings": {
-        "wp-content/plugins/content-ops": "."
+        "wp-content/plugins/batchpilot": "."
       }
     }
   }

@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Execution;
+namespace BatchPilot\Execution;
 
 final class OperationRunner {
 
-	public const HOOK = 'content_ops_run_operation';
+	public const HOOK = 'batchpilot_run_operation';
 
 	private ExecutionService $execution;
 

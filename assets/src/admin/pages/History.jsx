@@ -22,7 +22,7 @@ const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 					status: 'success',
 					text: sprintf(
 						/* translators: %s: restored count or identifier */
-						__( 'Restored: %s', 'content-ops' ),
+						__( 'Restored: %s', 'batchpilot' ),
 						r.restored
 					),
 				} );
@@ -47,7 +47,7 @@ const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 
 	return (
 		<div>
-			<h1>{ __( 'Operations history', 'content-ops' ) }</h1>
+			<h1>{ __( 'Operations history', 'batchpilot' ) }</h1>
 			{ notice && (
 				<Notice
 					status={ notice.status }

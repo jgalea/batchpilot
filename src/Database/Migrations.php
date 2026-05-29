@@ -6,7 +6,7 @@
  * Future versions will register per-version migration callbacks here.
  */
 
-namespace ContentOps\Database;
+namespace BatchPilot\Database;
 
 final class Migrations {
 

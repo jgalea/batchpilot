@@ -1,23 +1,23 @@
 <?php
-namespace ContentOps\Tests\Integration\CLI;
+namespace BatchPilot\Tests\Integration\CLI;
 
-use ContentOps\CLI\EditCommand;
-use ContentOps\Execution\ExecutionService;
-use ContentOps\History\OperationRepository;
-use ContentOps\History\SnapshotRepository;
-use ContentOps\Operations\BulkEditOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\CLI\EditCommand;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\History\SnapshotRepository;
+use BatchPilot\Operations\BulkEditOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class EditCommandTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	private function command(): EditCommand {
@@ -70,6 +70,6 @@ final class EditCommandTest extends TestCase {
 
 		$this->assertNotSame( 0, $result['exit_code'] );
 		$data = json_decode( $result['output'], true );
-		$this->assertSame( 'co.params.invalid_status', $data['code'] );
+		$this->assertSame( 'bp.params.invalid_status', $data['code'] );
 	}
 }

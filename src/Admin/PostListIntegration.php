@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\Admin;
+namespace BatchPilot\Admin;
 
 use WP_Post;
 
@@ -25,14 +25,14 @@ final class PostListIntegration {
 	 * @return array<string, string>
 	 */
 	public function filter_row_actions( array $actions, WP_Post $post ): array {
-		if ( ! current_user_can( 'content_ops_duplicate' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		if ( ! current_user_can( 'batchpilot_duplicate' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
 			return $actions;
 		}
-		$url                              = $this->build_url( 'duplicate', $post->post_type, [ 'ids' => [ (int) $post->ID ] ] );
-		$actions['content_ops_duplicate'] = sprintf(
+		$url                             = $this->build_url( 'duplicate', $post->post_type, [ 'ids' => [ (int) $post->ID ] ] );
+		$actions['batchpilot_duplicate'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $url ),
-			esc_html__( 'Duplicate with Content Ops', 'content-ops' )
+			esc_html__( 'Duplicate with BatchPilot', 'batchpilot' )
 		);
 		return $actions;
 	}
@@ -45,9 +45,9 @@ final class PostListIntegration {
 		return array_merge(
 			$actions,
 			[
-				'content_ops_delete'    => __( 'Content Ops: Delete', 'content-ops' ),
-				'content_ops_duplicate' => __( 'Content Ops: Duplicate', 'content-ops' ),
-				'content_ops_edit'      => __( 'Content Ops: Bulk edit', 'content-ops' ),
+				'batchpilot_delete'    => __( 'BatchPilot: Delete', 'batchpilot' ),
+				'batchpilot_duplicate' => __( 'BatchPilot: Duplicate', 'batchpilot' ),
+				'batchpilot_edit'      => __( 'BatchPilot: Bulk edit', 'batchpilot' ),
 			]
 		);
 	}
@@ -56,10 +56,10 @@ final class PostListIntegration {
 	 * @param int[] $post_ids
 	 */
 	public function handle_bulk_action( string $redirect_to, string $action, array $post_ids ): string {
-		if ( 0 !== strpos( $action, 'content_ops_' ) ) {
+		if ( 0 !== strpos( $action, 'batchpilot_' ) ) {
 			return $redirect_to;
 		}
-		$op        = substr( $action, strlen( 'content_ops_' ) );
+		$op        = substr( $action, strlen( 'batchpilot_' ) );
 		$post_type = isset( $_REQUEST['post_type'] ) ? sanitize_key( wp_unslash( (string) $_REQUEST['post_type'] ) ) : 'post'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		return $this->build_url( $op, $post_type, [ 'ids' => array_map( 'intval', $post_ids ) ] );
 	}

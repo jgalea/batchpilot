@@ -1,18 +1,18 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Admin\Settings;
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\Execution\ExecutionService;
-use ContentOps\History\OperationRepository;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\PreviewToken\TokenVerifier;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Admin\Settings;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\PreviewToken\TokenVerifier;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 
 final class RouteRegistrar {
 
-	public const REST_NAMESPACE = 'content-ops/v1';
+	public const REST_NAMESPACE = 'batchpilot/v1';
 
 	private ActionSchedulerBridge $action_scheduler;
 	private ExecutionService $execution;

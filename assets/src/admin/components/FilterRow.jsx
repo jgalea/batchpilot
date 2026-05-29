@@ -22,8 +22,8 @@ const EnumInput = ( { def, value, onChange } ) => {
 				label={ def.label }
 				placeholder={
 					multiple
-						? __( 'comma-separated values', 'content-ops' )
-						: __( 'value', 'content-ops' )
+						? __( 'comma-separated values', 'batchpilot' )
+						: __( 'value', 'batchpilot' )
 				}
 				value={
 					Array.isArray( value ) ? value.join( ',' ) : value || ''
@@ -43,16 +43,16 @@ const EnumInput = ( { def, value, onChange } ) => {
 	}
 	if ( multiple ) {
 		return (
-			<div className="co-filter-row__enum-multi" role="group">
+			<div className="bp-filter-row__enum-multi" role="group">
 				{ options.map( ( o ) => {
 					const checked =
 						Array.isArray( value ) && value.includes( o.value );
-					const id = `co-enum-${ def.key }-${ o.value }`;
+					const id = `bp-enum-${ def.key }-${ o.value }`;
 					return (
 						<label
 							key={ o.value }
 							htmlFor={ id }
-							className="co-chip"
+							className="bp-chip"
 						>
 							<input
 								id={ id }
@@ -86,7 +86,7 @@ const EnumInput = ( { def, value, onChange } ) => {
 			label={ def.label }
 			value={ value || '' }
 			options={ [
-				{ label: __( 'Choose…', 'content-ops' ), value: '' },
+				{ label: __( 'Choose…', 'batchpilot' ), value: '' },
 				...options,
 			] }
 			onChange={ onChange }
@@ -97,7 +97,7 @@ const EnumInput = ( { def, value, onChange } ) => {
 const BoolInput = ( { value, onChange } ) => (
 	<ToggleControl
 		__nextHasNoMarginBottom
-		label={ value ? __( 'Yes', 'content-ops' ) : __( 'No', 'content-ops' ) }
+		label={ value ? __( 'Yes', 'batchpilot' ) : __( 'No', 'batchpilot' ) }
 		checked={ !! value }
 		onChange={ onChange }
 	/>
@@ -106,7 +106,7 @@ const BoolInput = ( { value, onChange } ) => (
 const DateInput = ( { def, value, onChange } ) => (
 	<input
 		type="date"
-		className="co-filter-row__date"
+		className="bp-filter-row__date"
 		aria-label={ def.label }
 		value={ value || '' }
 		onChange={ ( e ) => onChange( e.target.value ) }
@@ -120,7 +120,7 @@ const IdInput = ( { def, value, onChange } ) => (
 		hideLabelFromVision
 		label={ def.label }
 		type="number"
-		placeholder={ __( 'ID', 'content-ops' ) }
+		placeholder={ __( 'ID', 'batchpilot' ) }
 		value={ value === null || value === undefined ? '' : String( value ) }
 		onChange={ ( v ) => onChange( v === '' ? null : parseInt( v, 10 ) ) }
 	/>
@@ -144,13 +144,13 @@ const TaxonomyInput = ( { value, onChange } ) => {
 	};
 
 	return (
-		<div className="co-filter-row__taxonomy">
+		<div className="bp-filter-row__taxonomy">
 			<TextControl
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				hideLabelFromVision
-				label={ __( 'Taxonomy slug', 'content-ops' ) }
-				placeholder={ __( 'taxonomy (e.g. category)', 'content-ops' ) }
+				label={ __( 'Taxonomy slug', 'batchpilot' ) }
+				placeholder={ __( 'taxonomy (e.g. category)', 'batchpilot' ) }
 				value={ tax }
 				onChange={ ( v ) => {
 					setTax( v );
@@ -161,8 +161,8 @@ const TaxonomyInput = ( { value, onChange } ) => {
 				__next40pxDefaultSize
 				__nextHasNoMarginBottom
 				hideLabelFromVision
-				label={ __( 'Term IDs', 'content-ops' ) }
-				placeholder={ __( 'term IDs (e.g. 12, 34)', 'content-ops' ) }
+				label={ __( 'Term IDs', 'batchpilot' ) }
+				placeholder={ __( 'term IDs (e.g. 12, 34)', 'batchpilot' ) }
 				value={ ids }
 				onChange={ ( v ) => {
 					setIds( v );
@@ -193,17 +193,17 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 
 	if ( ! def ) {
 		const keyOptions = [
-			{ label: __( 'Choose filter…', 'content-ops' ), value: '' },
+			{ label: __( 'Choose filter…', 'batchpilot' ), value: '' },
 			...defs.map( ( d ) => ( { label: d.label, value: d.key } ) ),
 		];
 		return (
-			<div className="co-filter-row co-filter-row--empty" role="group">
-				<div className="co-filter-row__picker">
+			<div className="bp-filter-row bp-filter-row--empty" role="group">
+				<div className="bp-filter-row__picker">
 					<SelectControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						hideLabelFromVision
-						label={ __( 'Filter', 'content-ops' ) }
+						label={ __( 'Filter', 'batchpilot' ) }
 						value=""
 						options={ keyOptions }
 						onChange={ ( key ) =>
@@ -212,21 +212,21 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 					/>
 				</div>
 				<Button
-					className="co-filter-row__remove"
+					className="bp-filter-row__remove"
 					onClick={ onRemove }
-					label={ __( 'Remove filter', 'content-ops' ) }
+					label={ __( 'Remove filter', 'batchpilot' ) }
 					icon={ removeIcon }
 				/>
 			</div>
 		);
 	}
 
-	const typeClass = `co-filter-row--type-${ def.type }`;
+	const typeClass = `bp-filter-row--type-${ def.type }`;
 
 	return (
-		<div className={ `co-filter-row ${ typeClass }` } role="group">
-			<span className="co-filter-row__label">{ def.label }</span>
-			<div className="co-filter-row__value">
+		<div className={ `bp-filter-row ${ typeClass }` } role="group">
+			<span className="bp-filter-row__label">{ def.label }</span>
+			<div className="bp-filter-row__value">
 				{ def.type === 'enum' && (
 					<EnumInput
 						def={ def }
@@ -272,9 +272,9 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 				) }
 			</div>
 			<Button
-				className="co-filter-row__remove"
+				className="bp-filter-row__remove"
 				onClick={ onRemove }
-				label={ __( 'Remove filter', 'content-ops' ) }
+				label={ __( 'Remove filter', 'batchpilot' ) }
 				icon={ removeIcon }
 			/>
 		</div>

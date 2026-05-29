@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Integration\Targets;
+namespace BatchPilot\Tests\Integration\Targets;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class PostTargetTest extends TestCase {
 

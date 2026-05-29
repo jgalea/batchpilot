@@ -1,11 +1,11 @@
 <?php
-namespace ContentOps\CLI;
+namespace BatchPilot\CLI;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\Execution\ExecutionService;
-use ContentOps\History\OperationRepository;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 
 final class CommandRegistrar {
 
@@ -35,39 +35,39 @@ final class CommandRegistrar {
 		}
 
 		\WP_CLI::add_command(
-			'content-ops doctor',
+			'batchpilot doctor',
 			new DoctorCommand( $this->action_scheduler ),
-			[ 'shortdesc' => __( 'Check Content Ops environment health.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'Check BatchPilot environment health.', 'batchpilot' ) ]
 		);
 
 		\WP_CLI::add_command(
-			'content-ops delete',
+			'batchpilot delete',
 			new DeleteCommand( $this->execution ),
-			[ 'shortdesc' => __( 'Trash or permanently delete posts in bulk.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'Trash or permanently delete posts in bulk.', 'batchpilot' ) ]
 		);
 
 		\WP_CLI::add_command(
-			'content-ops duplicate',
+			'batchpilot duplicate',
 			new DuplicateCommand( $this->execution ),
-			[ 'shortdesc' => __( 'Duplicate posts in bulk.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'Duplicate posts in bulk.', 'batchpilot' ) ]
 		);
 
 		\WP_CLI::add_command(
-			'content-ops edit',
+			'batchpilot edit',
 			new EditCommand( $this->execution ),
-			[ 'shortdesc' => __( 'Bulk-edit posts.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'Bulk-edit posts.', 'batchpilot' ) ]
 		);
 
 		\WP_CLI::add_command(
-			'content-ops history',
+			'batchpilot history',
 			new HistoryCommand( $this->operations_repo ),
-			[ 'shortdesc' => __( 'List Content Ops operations.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'List BatchPilot operations.', 'batchpilot' ) ]
 		);
 
 		\WP_CLI::add_command(
-			'content-ops undo',
+			'batchpilot undo',
 			new UndoCommand( $this->operations, $this->operations_repo ),
-			[ 'shortdesc' => __( 'Undo a Content Ops operation.', 'content-ops' ) ]
+			[ 'shortdesc' => __( 'Undo a BatchPilot operation.', 'batchpilot' ) ]
 		);
 	}
 }

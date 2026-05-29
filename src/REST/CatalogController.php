@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -52,7 +52,7 @@ final class CatalogController extends RestController {
 		 *
 		 * @param array<int, array<string, mixed>> $presets Preset entries.
 		 */
-		$presets = apply_filters( 'content_ops_presets', [] );
+		$presets = apply_filters( 'batchpilot_presets', [] );
 
 		return new WP_REST_Response(
 			[

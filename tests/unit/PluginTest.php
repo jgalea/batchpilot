@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Unit;
+namespace BatchPilot\Tests\Unit;
 
 use Brain\Monkey\Functions;
-use ContentOps\Plugin;
+use BatchPilot\Plugin;
 
 final class PluginTest extends TestCase {
 

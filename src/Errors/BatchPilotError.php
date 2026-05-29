@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Errors;
+namespace BatchPilot\Errors;
 
 use InvalidArgumentException;
 
-final class ContentOpsError {
+final class BatchPilotError {
 
 	private string $code;
 	private string $message;
@@ -15,7 +15,7 @@ final class ContentOpsError {
 	 */
 	public function __construct( string $code, string $message, array $context = [] ) {
 		if ( '' === $code ) {
-			throw new InvalidArgumentException( 'ContentOpsError code must be a non-empty string.' );
+			throw new InvalidArgumentException( 'BatchPilotError code must be a non-empty string.' );
 		}
 
 		$this->code    = $code;

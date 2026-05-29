@@ -1,8 +1,12 @@
-# Content Ops
+# BatchPilot
 
-Bulk operations for WordPress and WooCommerce — designed for humans and AI agents.
+Bulk delete, edit, and duplicate WordPress content with preview, undo, and full audit history.
 
-> Pre-release. Phase 0 (foundation) in progress. See `docs/superpowers/specs/` for design, `docs/superpowers/plans/` for implementation plans.
+Driveable via admin UI, WP-CLI (`wp batchpilot`), REST (`/wp-json/batchpilot/v1/*`), and the WordPress Abilities API.
+
+## Status
+
+Pre-release. See `readme.txt` for the wp.org-facing description and `CHANGELOG.md` for release notes.
 
 ## Development
 

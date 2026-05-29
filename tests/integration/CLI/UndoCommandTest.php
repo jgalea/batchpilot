@@ -1,20 +1,20 @@
 <?php
-namespace ContentOps\Tests\Integration\CLI;
+namespace BatchPilot\Tests\Integration\CLI;
 
-use ContentOps\CLI\UndoCommand;
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
-use ContentOps\Operations\DeleteOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\CLI\UndoCommand;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Operations\DeleteOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class UndoCommandTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public function test_undo_restores_trashed_posts(): void {
@@ -63,7 +63,7 @@ final class UndoCommandTest extends TestCase {
 
 		$this->assertNotSame( 0, $result['exit_code'] );
 		$data = json_decode( $result['output'], true );
-		$this->assertSame( 'co.operation.not_found', $data['code'] );
+		$this->assertSame( 'bp.operation.not_found', $data['code'] );
 	}
 
 	public function test_undo_unknown_operation_type_returns_error(): void {
@@ -83,6 +83,6 @@ final class UndoCommandTest extends TestCase {
 
 		$this->assertNotSame( 0, $result['exit_code'] );
 		$data = json_decode( $result['output'], true );
-		$this->assertSame( 'co.operation.unknown', $data['code'] );
+		$this->assertSame( 'bp.operation.unknown', $data['code'] );
 	}
 }

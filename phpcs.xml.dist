@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<ruleset name="Content Ops">
-	<description>Content Ops coding standards — WordPress-Extra minus the bits that fight modern PHP.</description>
+<ruleset name="BatchPilot">
+	<description>BatchPilot coding standards — WordPress-Extra minus the bits that fight modern PHP.</description>
 
 	<file>src</file>
 	<file>tests</file>
-	<file>content-ops.php</file>
+	<file>batchpilot.php</file>
 	<file>uninstall.php</file>
 
 	<exclude-pattern>*/vendor/*</exclude-pattern>
@@ -28,7 +28,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="content-ops"/>
+				<element value="batchpilot"/>
 			</property>
 		</properties>
 	</rule>

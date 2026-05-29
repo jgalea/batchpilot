@@ -11,12 +11,12 @@ const ExecutionResult = ( { execution, historyUrl } ) => {
 				<Notice status="info" isDismissible={ false }>
 					{ __(
 						'Operation queued. It will run in the background.',
-						'content-ops'
+						'batchpilot'
 					) }{ ' ' }
 					<a
 						href={ `${ historyUrl }&operation=${ execution.operation_id }` }
 					>
-						{ __( 'View in history', 'content-ops' ) }
+						{ __( 'View in history', 'batchpilot' ) }
 					</a>
 				</Notice>
 			</div>
@@ -33,7 +33,7 @@ const ExecutionResult = ( { execution, historyUrl } ) => {
 					/* translators: 1: processed count, 2: succeeded count, 3: failed count */
 					__(
 						'%1$d processed · %2$d succeeded · %3$d failed',
-						'content-ops'
+						'batchpilot'
 					),
 					processed,
 					succeeded,
@@ -42,7 +42,7 @@ const ExecutionResult = ( { execution, historyUrl } ) => {
 				<a
 					href={ `${ historyUrl }&operation=${ execution.operation_id }` }
 				>
-					{ __( 'View in history', 'content-ops' ) }
+					{ __( 'View in history', 'batchpilot' ) }
 				</a>
 			</Notice>
 		</div>

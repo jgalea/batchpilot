@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\CLI;
+namespace BatchPilot\CLI;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\REST\DoctorController;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\REST\DoctorController;
 
 final class DoctorCommand {
 
@@ -13,7 +13,7 @@ final class DoctorCommand {
 	}
 
 	/**
-	 * Report Content Ops environment health.
+	 * Report BatchPilot environment health.
 	 *
 	 * ## OPTIONS
 	 *

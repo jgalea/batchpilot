@@ -1,10 +1,10 @@
 <?php
-namespace ContentOps\Database;
+namespace BatchPilot\Database;
 
 final class Schema {
 
 	public const VERSION        = '1.0.0';
-	public const VERSION_OPTION = 'content_ops_schema_version';
+	public const VERSION_OPTION = 'batchpilot_schema_version';
 
 	public static function install(): void {
 		if ( ! function_exists( 'dbDelta' ) ) {
@@ -14,7 +14,7 @@ final class Schema {
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
 
-		$operations = "CREATE TABLE {$wpdb->prefix}co_operations (
+		$operations = "CREATE TABLE {$wpdb->prefix}batchpilot_operations (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			type VARCHAR(64) NOT NULL,
 			target VARCHAR(64) NOT NULL,
@@ -32,7 +32,7 @@ final class Schema {
 			KEY status (status)
 		) {$charset_collate};";
 
-		$snapshots = "CREATE TABLE {$wpdb->prefix}co_snapshots (
+		$snapshots = "CREATE TABLE {$wpdb->prefix}batchpilot_snapshots (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			operation_id BIGINT UNSIGNED NOT NULL,
 			object_type VARCHAR(64) NOT NULL,
@@ -44,7 +44,7 @@ final class Schema {
 			KEY object (object_type, object_id)
 		) {$charset_collate};";
 
-		$schedules = "CREATE TABLE {$wpdb->prefix}co_schedules (
+		$schedules = "CREATE TABLE {$wpdb->prefix}batchpilot_schedules (
 			id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 			name VARCHAR(255) NOT NULL,
 			operation_type VARCHAR(64) NOT NULL,
@@ -71,9 +71,9 @@ final class Schema {
 
 	public static function drop_all(): void {
 		global $wpdb;
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}co_snapshots" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}co_operations" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}co_schedules" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}batchpilot_snapshots" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}batchpilot_operations" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}batchpilot_schedules" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 		delete_option( self::VERSION_OPTION );
 	}
 }

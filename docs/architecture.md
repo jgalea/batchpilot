@@ -1,13 +1,13 @@
 # Architecture
 
-Content Ops unifies bulk content operations — delete, duplicate, bulk edit, move, find/replace, CSV round-trip — across any post type, with WooCommerce support in later phases.
+BatchPilot unifies bulk content operations — delete, duplicate, bulk edit, move, find/replace, CSV round-trip — across any post type, with WooCommerce support in later phases.
 
 ## Core abstractions
 
 Every feature is the intersection of a **Target** (kind of thing) and an **Operation** (what to do). Each side plugs in independently.
 
-- `ContentOps\Contracts\TargetInterface`
-- `ContentOps\Contracts\OperationInterface`
+- `BatchPilot\Contracts\TargetInterface`
+- `BatchPilot\Contracts\OperationInterface`
 
 Targets and operations self-register into `TargetRegistry` and `OperationRegistry`.
 
@@ -15,9 +15,9 @@ Targets and operations self-register into `TargetRegistry` and `OperationRegistr
 
 Three custom tables:
 
-- `{prefix}co_operations` — one row per operation performed or scheduled.
-- `{prefix}co_snapshots` — before-state for undo.
-- `{prefix}co_schedules` — recurring-rule definitions (Pro).
+- `{prefix}batchpilot_operations` — one row per operation performed or scheduled.
+- `{prefix}batchpilot_snapshots` — before-state for undo.
+- `{prefix}batchpilot_schedules` — recurring-rule definitions (Pro).
 
 Deletes rely on WordPress trash instead of snapshots.
 

@@ -13,16 +13,16 @@ const humanizeKey = ( key ) =>
 	key.replace( /_/g, ' ' ).replace( /^\w/, ( c ) => c.toUpperCase() );
 
 const FieldShell = ( { label, description, children } ) => (
-	<div className="co-op-field">
-		<div className="co-op-field__text">
-			<span className="co-op-field__label">{ label }</span>
+	<div className="bp-op-field">
+		<div className="bp-op-field__text">
+			<span className="bp-op-field__label">{ label }</span>
 			{ description && (
-				<span className="co-op-field__description">
+				<span className="bp-op-field__description">
 					{ description }
 				</span>
 			) }
 		</div>
-		<div className="co-op-field__input">{ children }</div>
+		<div className="bp-op-field__input">{ children }</div>
 	</div>
 );
 
@@ -34,8 +34,8 @@ const BooleanField = ( { prop, value, onChange, label, description } ) => {
 				__nextHasNoMarginBottom
 				label={
 					checked
-						? __( 'Enabled', 'content-ops' )
-						: __( 'Disabled', 'content-ops' )
+						? __( 'Enabled', 'batchpilot' )
+						: __( 'Disabled', 'batchpilot' )
 				}
 				checked={ checked }
 				onChange={ onChange }
@@ -83,7 +83,7 @@ const StringField = ( { prop, value, onChange, label, description } ) => (
 
 const EnumField = ( { prop, value, onChange, label, description } ) => {
 	const options = [
-		{ label: __( '— No change —', 'content-ops' ), value: '' },
+		{ label: __( '— No change —', 'batchpilot' ), value: '' },
 		...( prop.enum || [] ).map( ( v ) => ( {
 			label: humanizeKey( String( v ) ),
 			value: String( v ),
@@ -113,7 +113,7 @@ const PostStatusField = ( {
 } ) => {
 	const statuses = catalog?.vocab?.statuses || [];
 	const options = [
-		{ label: __( '— No change —', 'content-ops' ), value: '' },
+		{ label: __( '— No change —', 'batchpilot' ), value: '' },
 		...statuses.map( ( s ) => ( { label: s.label, value: s.value } ) ),
 	];
 	return (
@@ -135,7 +135,7 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 	const [ reveal, setReveal ] = useState( false );
 	return (
 		<FieldShell label={ label } description={ description }>
-			<div className="co-op-field__password">
+			<div className="bp-op-field__password">
 				<TextControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
@@ -152,8 +152,8 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 					aria-pressed={ reveal }
 				>
 					{ reveal
-						? __( 'Hide', 'content-ops' )
-						: __( 'Show', 'content-ops' ) }
+						? __( 'Hide', 'batchpilot' )
+						: __( 'Show', 'batchpilot' ) }
 				</Button>
 			</div>
 		</FieldShell>
@@ -220,21 +220,21 @@ const UserField = ( { value, onChange, label, description } ) => {
 	return (
 		<FieldShell label={ label } description={ description }>
 			{ value && selected ? (
-				<div className="co-op-field__user-selected">
-					<span className="co-chip co-chip--accent">
+				<div className="bp-op-field__user-selected">
+					<span className="bp-chip bp-chip--accent">
 						{ selected.name || `#${ selected.id }` }
 						<Button
 							variant="tertiary"
 							onClick={ () => pick( null ) }
-							label={ __( 'Remove', 'content-ops' ) }
-							className="co-op-field__user-clear"
+							label={ __( 'Remove', 'batchpilot' ) }
+							className="bp-op-field__user-clear"
 						>
 							×
 						</Button>
 					</span>
 				</div>
 			) : (
-				<div className="co-op-field__user-search">
+				<div className="bp-op-field__user-search">
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -242,23 +242,23 @@ const UserField = ( { value, onChange, label, description } ) => {
 						label={ label }
 						placeholder={ __(
 							'Type to search users…',
-							'content-ops'
+							'batchpilot'
 						) }
 						value={ query }
 						onChange={ setQuery }
 					/>
 					{ query.length >= 2 && (
-						<ul className="co-op-field__user-results">
+						<ul className="bp-op-field__user-results">
 							{ loading && (
-								<li className="co-op-field__user-hint">
-									{ __( 'Searching…', 'content-ops' ) }
+								<li className="bp-op-field__user-hint">
+									{ __( 'Searching…', 'batchpilot' ) }
 								</li>
 							) }
 							{ ! loading && results.length === 0 && (
-								<li className="co-op-field__user-hint">
+								<li className="bp-op-field__user-hint">
 									{ __(
 										'No matching users.',
-										'content-ops'
+										'batchpilot'
 									) }
 								</li>
 							) }
@@ -266,11 +266,11 @@ const UserField = ( { value, onChange, label, description } ) => {
 								<li key={ u.id }>
 									<button
 										type="button"
-										className="co-op-field__user-option"
+										className="bp-op-field__user-option"
 										onClick={ () => pick( u ) }
 									>
 										<span>{ u.name }</span>
-										<span className="co-op-field__user-meta">
+										<span className="bp-op-field__user-meta">
 											#{ u.id }
 											{ u.slug ? ` · ${ u.slug }` : '' }
 										</span>
@@ -349,7 +349,7 @@ const TaxonomyTermsField = ( {
 	};
 
 	const taxOptions = [
-		{ label: __( '— Pick a taxonomy —', 'content-ops' ), value: '' },
+		{ label: __( '— Pick a taxonomy —', 'batchpilot' ), value: '' },
 		...taxonomies.map( ( t ) => ( {
 			label: `${ t.label } (${ t.slug })`,
 			value: t.slug,
@@ -358,28 +358,28 @@ const TaxonomyTermsField = ( {
 
 	return (
 		<FieldShell label={ label } description={ description }>
-			<div className="co-op-field__taxonomy">
+			<div className="bp-op-field__taxonomy">
 				<SelectControl
 					__next40pxDefaultSize
 					__nextHasNoMarginBottom
 					hideLabelFromVision
-					label={ __( 'Taxonomy', 'content-ops' ) }
+					label={ __( 'Taxonomy', 'batchpilot' ) }
 					value={ current.taxonomy || '' }
 					options={ taxOptions }
 					onChange={ setTaxonomy }
 				/>
 				{ current.taxonomy && (
-					<div className="co-op-field__taxonomy-terms">
+					<div className="bp-op-field__taxonomy-terms">
 						{ loading && (
-							<span className="co-op-field__user-hint">
-								{ __( 'Loading terms…', 'content-ops' ) }
+							<span className="bp-op-field__user-hint">
+								{ __( 'Loading terms…', 'batchpilot' ) }
 							</span>
 						) }
 						{ ! loading && termOptions.length === 0 && (
-							<span className="co-op-field__user-hint">
+							<span className="bp-op-field__user-hint">
 								{ __(
 									'No terms found in this taxonomy.',
-									'content-ops'
+									'batchpilot'
 								) }
 							</span>
 						) }
@@ -387,12 +387,12 @@ const TaxonomyTermsField = ( {
 							const checked = current.term_ids.includes(
 								opt.value
 							);
-							const id = `co-tax-term-${ current.taxonomy }-${ opt.value }`;
+							const id = `bp-tax-term-${ current.taxonomy }-${ opt.value }`;
 							return (
 								<label
 									key={ opt.value }
 									htmlFor={ id }
-									className="co-chip"
+									className="bp-chip"
 								>
 									<input
 										id={ id }
@@ -457,7 +457,7 @@ const OperationParamsForm = ( { schema, value, onChange } ) => {
 	};
 
 	return (
-		<div className="co-op-params">
+		<div className="bp-op-params">
 			{ Object.entries( schema.properties ).map( ( [ key, prop ] ) => {
 				const Field = pickField( prop );
 				const label = prop.label || humanizeKey( key );

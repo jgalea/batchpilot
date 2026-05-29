@@ -1,13 +1,13 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Errors\ContentOpsError;
+use BatchPilot\Errors\BatchPilotError;
 use WP_Error;
 use WP_REST_Response;
 
 abstract class RestController {
 
-	public function error_response( ContentOpsError $error, int $status ): WP_REST_Response {
+	public function error_response( BatchPilotError $error, int $status ): WP_REST_Response {
 		return new WP_REST_Response( $error->to_array(), $status );
 	}
 
@@ -20,8 +20,8 @@ abstract class RestController {
 		}
 
 		return new WP_Error(
-			'co.auth.forbidden',
-			__( 'You are not allowed to perform this action.', 'content-ops' ),
+			'bp.auth.forbidden',
+			__( 'You are not allowed to perform this action.', 'batchpilot' ),
 			[
 				'status'              => 403,
 				'required_capability' => $capability,

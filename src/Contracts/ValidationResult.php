@@ -1,14 +1,14 @@
 <?php
-namespace ContentOps\Contracts;
+namespace BatchPilot\Contracts;
 
-use ContentOps\Errors\ContentOpsError;
+use BatchPilot\Errors\BatchPilotError;
 
 final class ValidationResult {
 
 	private bool $ok;
-	private ?ContentOpsError $error;
+	private ?BatchPilotError $error;
 
-	private function __construct( bool $ok, ?ContentOpsError $error ) {
+	private function __construct( bool $ok, ?BatchPilotError $error ) {
 		$this->ok    = $ok;
 		$this->error = $error;
 	}
@@ -17,7 +17,7 @@ final class ValidationResult {
 		return new self( true, null );
 	}
 
-	public static function error( ContentOpsError $error ): self {
+	public static function error( BatchPilotError $error ): self {
 		return new self( false, $error );
 	}
 
@@ -25,7 +25,7 @@ final class ValidationResult {
 		return $this->ok;
 	}
 
-	public function get_error(): ?ContentOpsError {
+	public function get_error(): ?BatchPilotError {
 		return $this->error;
 	}
 }

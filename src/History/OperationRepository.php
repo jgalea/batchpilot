@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\History;
+namespace BatchPilot\History;
 
 use wpdb;
 
@@ -12,7 +12,7 @@ final class OperationRepository {
 	}
 
 	private function table(): string {
-		return $this->db->prefix . 'co_operations';
+		return $this->db->prefix . 'batchpilot_operations';
 	}
 
 	public function create( Operation $op ): Operation {

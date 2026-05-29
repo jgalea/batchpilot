@@ -5,7 +5,7 @@ parameters:
   level: 6
   paths:
     - src
-    - content-ops.php
+    - batchpilot.php
     - uninstall.php
   excludePaths:
     - vendor
@@ -26,10 +26,10 @@ parameters:
     - message: '#Function WP_CLI\\Utils\\format_items not found\.#'
       path: src/CLI/DoctorCommand.php
     # ExecutionService holds dependencies required by later features (snapshots, preview tokens).
-    - message: '#Property ContentOps\\Execution\\ExecutionService::\$(snapshots_repo|token_generator|token_store) is never read, only written\.#'
+    - message: '#Property BatchPilot\\Execution\\ExecutionService::\$(snapshots_repo|token_generator|token_store) is never read, only written\.#'
       path: src/Execution/ExecutionService.php
     # ExecuteController retains TokenStore to match plan signature; verifier wraps it internally.
-    - message: '#Property ContentOps\\REST\\ExecuteController::\$token_store is never read, only written\.#'
+    - message: '#Property BatchPilot\\REST\\ExecuteController::\$token_store is never read, only written\.#'
       path: src/REST/ExecuteController.php
-    - message: '#Property ContentOps\\CLI\\CommandRegistrar::\$targets is never read, only written\.#'
+    - message: '#Property BatchPilot\\CLI\\CommandRegistrar::\$targets is never read, only written\.#'
       path: src/CLI/CommandRegistrar.php

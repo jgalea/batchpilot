@@ -1,18 +1,18 @@
 <?php
-namespace ContentOps\Execution;
+namespace BatchPilot\Execution;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
-use ContentOps\History\SnapshotRepository;
-use ContentOps\Operations\DuplicateOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\History\SnapshotRepository;
+use BatchPilot\Operations\DuplicateOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 
 final class ExecutionService {
 
@@ -48,16 +48,16 @@ final class ExecutionService {
 	public function preview( string $target_slug, string $operation_slug, array $filters, array $params ): PreviewResult {
 		$target = $this->targets->get( $target_slug );
 		if ( null === $target ) {
-			return PreviewResult::error( new ContentOpsError( 'co.target.unknown', 'Unknown target.', [ 'target' => $target_slug ] ) );
+			return PreviewResult::error( new BatchPilotError( 'bp.target.unknown', 'Unknown target.', [ 'target' => $target_slug ] ) );
 		}
 		$op = $this->operations_registry->get( $operation_slug );
 		if ( null === $op ) {
-			return PreviewResult::error( new ContentOpsError( 'co.operation.unknown', 'Unknown operation.', [ 'operation' => $operation_slug ] ) );
+			return PreviewResult::error( new BatchPilotError( 'bp.operation.unknown', 'Unknown operation.', [ 'operation' => $operation_slug ] ) );
 		}
 		if ( ! $target->supports_operation( $operation_slug ) ) {
 			return PreviewResult::error(
-				new ContentOpsError(
-					'co.target.unsupported_operation',
+				new BatchPilotError(
+					'bp.target.unsupported_operation',
 					'Target does not support this operation.',
 					[
 						'target'    => $target_slug,
@@ -88,14 +88,14 @@ final class ExecutionService {
 	public function run_sync( int $operation_id ): BatchResult {
 		$row = $this->operations_repo->find( $operation_id );
 		if ( null === $row ) {
-			return BatchResult::error( new ContentOpsError( 'co.run.not_found', 'Operation not found.', [ 'operation_id' => $operation_id ] ) );
+			return BatchResult::error( new BatchPilotError( 'bp.run.not_found', 'Operation not found.', [ 'operation_id' => $operation_id ] ) );
 		}
 
 		$target = $this->targets->get( $row->target() );
 		$op     = $this->operations_registry->get( $row->type() );
 		if ( null === $target || null === $op ) {
 			$this->operations_repo->mark_failed( $operation_id, 'Target or operation no longer registered.' );
-			return BatchResult::error( new ContentOpsError( 'co.run.unresolvable', 'Target or operation missing at run time.' ) );
+			return BatchResult::error( new BatchPilotError( 'bp.run.unresolvable', 'Target or operation missing at run time.' ) );
 		}
 
 		$this->operations_repo->mark_running( $operation_id );

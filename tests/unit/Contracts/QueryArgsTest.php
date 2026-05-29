@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Unit\Contracts;
+namespace BatchPilot\Tests\Unit\Contracts;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class QueryArgsTest extends TestCase {
 

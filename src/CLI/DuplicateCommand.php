@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\CLI;
+namespace BatchPilot\CLI;
 
-use ContentOps\Execution\ExecutionService;
+use BatchPilot\Execution\ExecutionService;
 
 final class DuplicateCommand {
 

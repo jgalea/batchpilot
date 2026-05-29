@@ -1,17 +1,17 @@
 <?php
-namespace ContentOps\Operations;
+namespace BatchPilot\Operations;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\OperationInterface;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Contracts\UndoResult;
-use ContentOps\Contracts\ValidationResult;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\OperationRepository;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\OperationInterface;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Contracts\UndoResult;
+use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
 
 final class DuplicateOperation implements OperationInterface {
 
@@ -45,7 +45,7 @@ final class DuplicateOperation implements OperationInterface {
 	}
 
 	public function label(): string {
-		return __( 'Duplicate', 'content-ops' );
+		return __( 'Duplicate', 'batchpilot' );
 	}
 
 	/**
@@ -59,26 +59,26 @@ final class DuplicateOperation implements OperationInterface {
 					'type'        => 'string',
 					'widget'      => 'post_status',
 					'default'     => 'draft',
-					'label'       => __( 'Status of duplicates', 'content-ops' ),
-					'description' => __( 'Status applied to newly created copies.', 'content-ops' ),
+					'label'       => __( 'Status of duplicates', 'batchpilot' ),
+					'description' => __( 'Status applied to newly created copies.', 'batchpilot' ),
 				],
 				'reassign_author'  => [
 					'type'        => 'integer',
 					'widget'      => 'user',
-					'label'       => __( 'Author of duplicates', 'content-ops' ),
-					'description' => __( 'If set, the new copies will be assigned to this user. Leave empty to keep the original author.', 'content-ops' ),
+					'label'       => __( 'Author of duplicates', 'batchpilot' ),
+					'description' => __( 'If set, the new copies will be assigned to this user. Leave empty to keep the original author.', 'batchpilot' ),
 				],
 				'title_suffix'     => [
 					'type'        => 'string',
 					'default'     => self::DEFAULT_SUFFIX,
-					'label'       => __( 'Title suffix', 'content-ops' ),
-					'description' => __( 'Appended to each copied title so duplicates are easy to spot.', 'content-ops' ),
+					'label'       => __( 'Title suffix', 'batchpilot' ),
+					'description' => __( 'Appended to each copied title so duplicates are easy to spot.', 'batchpilot' ),
 				],
 				'include_children' => [
 					'type'        => 'boolean',
 					'default'     => false,
-					'label'       => __( 'Also duplicate child posts', 'content-ops' ),
-					'description' => __( 'Recursively duplicate hierarchical children (pages, attachments) along with each matched post.', 'content-ops' ),
+					'label'       => __( 'Also duplicate child posts', 'batchpilot' ),
+					'description' => __( 'Recursively duplicate hierarchical children (pages, attachments) along with each matched post.', 'batchpilot' ),
 				],
 			],
 		];
@@ -92,8 +92,8 @@ final class DuplicateOperation implements OperationInterface {
 			$status = (string) $params['target_status'];
 			if ( null === get_post_status_object( $status ) ) {
 				return ValidationResult::error(
-					new ContentOpsError(
-						'co.params.invalid_status',
+					new BatchPilotError(
+						'bp.params.invalid_status',
 						'Unknown post status.',
 						[ 'target_status' => $status ]
 					)
@@ -105,8 +105,8 @@ final class DuplicateOperation implements OperationInterface {
 			$user_id = (int) $params['reassign_author'];
 			if ( $user_id <= 0 || false === get_userdata( $user_id ) ) {
 				return ValidationResult::error(
-					new ContentOpsError(
-						'co.params.invalid_author',
+					new BatchPilotError(
+						'bp.params.invalid_author',
 						'User not found.',
 						[ 'reassign_author' => $user_id ]
 					)
@@ -219,8 +219,8 @@ final class DuplicateOperation implements OperationInterface {
 		$op = $this->operations->find( $operation_id );
 		if ( null === $op ) {
 			return UndoResult::error(
-				new ContentOpsError(
-					'co.undo.not_found',
+				new BatchPilotError(
+					'bp.undo.not_found',
 					'Operation not found.',
 					[ 'operation_id' => $operation_id ]
 				)

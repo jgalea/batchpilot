@@ -1,15 +1,15 @@
 <?php
-namespace ContentOps\Tests\Unit\Registry;
+namespace BatchPilot\Tests\Unit\Registry;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\OperationInterface;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Contracts\UndoResult;
-use ContentOps\Contracts\ValidationResult;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\OperationInterface;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Contracts\UndoResult;
+use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class OperationRegistryTest extends TestCase {
 

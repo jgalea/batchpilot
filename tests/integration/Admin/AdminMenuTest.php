@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Integration\Admin;
+namespace BatchPilot\Tests\Integration\Admin;
 
-use ContentOps\Admin\AdminMenu;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Admin\AdminMenu;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class AdminMenuTest extends TestCase {
 
@@ -19,12 +19,12 @@ final class AdminMenuTest extends TestCase {
 		$admin->register_menus();
 
 		$top = array_column( $menu, 2 );
-		$this->assertContains( 'content-ops', $top );
-		$this->assertArrayHasKey( 'content-ops', $submenu );
+		$this->assertContains( 'batchpilot', $top );
+		$this->assertArrayHasKey( 'batchpilot', $submenu );
 
-		$slugs = array_column( $submenu['content-ops'], 2 );
+		$slugs = array_column( $submenu['batchpilot'], 2 );
 		$this->assertSame(
-			[ 'content-ops', 'content-ops-operations', 'content-ops-history', 'content-ops-settings' ],
+			[ 'batchpilot', 'batchpilot-operations', 'batchpilot-history', 'batchpilot-settings' ],
 			$slugs
 		);
 	}
@@ -34,7 +34,7 @@ final class AdminMenuTest extends TestCase {
 		ob_start();
 		$admin->render_page( 'dashboard' );
 		$html = (string) ob_get_clean();
-		$this->assertStringContainsString( 'id="content-ops-dashboard-root"', $html );
-		$this->assertStringContainsString( 'class="content-ops-app"', $html );
+		$this->assertStringContainsString( 'id="batchpilot-dashboard-root"', $html );
+		$this->assertStringContainsString( 'class="batchpilot-app"', $html );
 	}
 }

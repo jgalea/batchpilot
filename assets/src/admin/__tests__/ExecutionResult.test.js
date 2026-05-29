@@ -10,7 +10,7 @@ describe( 'ExecutionResult', () => {
 					operation_id: 12,
 					batch: { processed: 10, succeeded: 10, failed: 0 },
 				} }
-				historyUrl="http://x?page=content-ops-history"
+				historyUrl="http://x?page=batchpilot-history"
 			/>
 		);
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
@@ -22,14 +22,14 @@ describe( 'ExecutionResult', () => {
 		render(
 			<ExecutionResult
 				execution={ { status: 'queued', operation_id: 5 } }
-				historyUrl="http://x?page=content-ops-history"
+				historyUrl="http://x?page=batchpilot-history"
 			/>
 		);
 		expect(
 			screen.getByRole( 'link', { name: /view in history/i } )
 		).toHaveAttribute(
 			'href',
-			expect.stringContaining( 'content-ops-history' )
+			expect.stringContaining( 'batchpilot-history' )
 		);
 	} );
 } );

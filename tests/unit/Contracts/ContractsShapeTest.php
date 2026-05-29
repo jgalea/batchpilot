@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Unit\Contracts;
+namespace BatchPilot\Tests\Unit\Contracts;
 
-use ContentOps\Contracts\OperationInterface;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\OperationInterface;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Tests\Unit\TestCase;
 use ReflectionClass;
 
 final class ContractsShapeTest extends TestCase {

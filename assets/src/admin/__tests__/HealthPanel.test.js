@@ -43,7 +43,7 @@ describe( 'HealthPanel', () => {
 		const api = {
 			fetchDoctor: jest
 				.fn()
-				.mockRejectedValue( { code: 'co.internal', message: 'boom' } ),
+				.mockRejectedValue( { code: 'bp.internal', message: 'boom' } ),
 		};
 		render( <HealthPanel api={ api } /> );
 		await waitFor( () =>

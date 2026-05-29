@@ -32,49 +32,49 @@ const StatsCard = ( { api } ) => {
 	);
 
 	return (
-		<div className="co-metrics">
-			<div className="co-metric">
-				<p className="co-metric__label">
-					{ __( 'Operations', 'content-ops' ) }
+		<div className="bp-metrics">
+			<div className="bp-metric">
+				<p className="bp-metric__label">
+					{ __( 'Operations', 'batchpilot' ) }
 				</p>
 				<p
-					className="co-metric__value"
+					className="bp-metric__value"
 					data-testid="stats-ops-this-week"
 				>
 					{ thisWeek.length }
 				</p>
 			</div>
-			<div className="co-metric">
-				<p className="co-metric__label">
-					{ __( 'Items affected', 'content-ops' ) }
+			<div className="bp-metric">
+				<p className="bp-metric__label">
+					{ __( 'Items affected', 'batchpilot' ) }
 				</p>
 				<p
-					className="co-metric__value"
+					className="bp-metric__value"
 					data-testid="stats-items-affected"
 				>
 					{ items }
 				</p>
 			</div>
-			<div className="co-metric">
-				<p className="co-metric__label">
-					{ __( 'Active schedules', 'content-ops' ) }
+			<div className="bp-metric">
+				<p className="bp-metric__label">
+					{ __( 'Active schedules', 'batchpilot' ) }
 				</p>
 				<p
-					className="co-metric__value co-metric__value--muted"
+					className="bp-metric__value bp-metric__value--muted"
 					data-testid="stats-active-schedules"
 				>
-					{ __( 'N/A', 'content-ops' ) }
+					{ __( 'N/A', 'batchpilot' ) }
 				</p>
 			</div>
-			<div className="co-metric">
-				<p className="co-metric__label">
-					{ __( 'Next scheduled run', 'content-ops' ) }
+			<div className="bp-metric">
+				<p className="bp-metric__label">
+					{ __( 'Next scheduled run', 'batchpilot' ) }
 				</p>
 				<p
-					className="co-metric__value co-metric__value--muted"
+					className="bp-metric__value bp-metric__value--muted"
 					data-testid="stats-next-run"
 				>
-					{ __( 'N/A', 'content-ops' ) }
+					{ __( 'N/A', 'batchpilot' ) }
 				</p>
 			</div>
 		</div>

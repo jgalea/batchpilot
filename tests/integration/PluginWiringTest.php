@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration;
+namespace BatchPilot\Tests\Integration;
 
-use ContentOps\Plugin;
+use BatchPilot\Plugin;
 
 final class PluginWiringTest extends TestCase {
 
@@ -11,8 +11,8 @@ final class PluginWiringTest extends TestCase {
 		$targets    = $plugin->get( 'target.registry' );
 		$operations = $plugin->get( 'operation.registry' );
 
-		$this->assertInstanceOf( \ContentOps\Registry\TargetRegistry::class, $targets );
-		$this->assertInstanceOf( \ContentOps\Registry\OperationRegistry::class, $operations );
+		$this->assertInstanceOf( \BatchPilot\Registry\TargetRegistry::class, $targets );
+		$this->assertInstanceOf( \BatchPilot\Registry\OperationRegistry::class, $operations );
 
 		$this->assertTrue( $targets->has( 'post' ) );
 		$this->assertTrue( $targets->has( 'page' ) );
@@ -22,6 +22,6 @@ final class PluginWiringTest extends TestCase {
 	}
 
 	public function test_execution_service_is_registered(): void {
-		$this->assertInstanceOf( \ContentOps\Execution\ExecutionService::class, Plugin::instance()->get( 'execution.service' ) );
+		$this->assertInstanceOf( \BatchPilot\Execution\ExecutionService::class, Plugin::instance()->get( 'execution.service' ) );
 	}
 }

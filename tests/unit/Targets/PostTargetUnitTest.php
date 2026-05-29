@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Unit\Targets;
+namespace BatchPilot\Tests\Unit\Targets;
 
 use Brain\Monkey\Functions;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class PostTargetUnitTest extends TestCase {
 

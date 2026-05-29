@@ -1,10 +1,10 @@
 <?php
-namespace ContentOps\Tests\Unit\Registry;
+namespace BatchPilot\Tests\Unit\Registry;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Registry\TargetRegistry;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Registry\TargetRegistry;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class TargetRegistryTest extends TestCase {
 

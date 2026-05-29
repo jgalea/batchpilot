@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Integration\Capabilities;
+namespace BatchPilot\Tests\Integration\Capabilities;
 
-use ContentOps\Capabilities\Capabilities;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Capabilities\Capabilities;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class CapabilitiesTest extends TestCase {
 
@@ -18,11 +18,11 @@ final class CapabilitiesTest extends TestCase {
 	public function test_all_constant_is_stable(): void {
 		$this->assertSame(
 			[
-				'content_ops_delete',
-				'content_ops_edit',
-				'content_ops_duplicate',
-				'content_ops_move',
-				'content_ops_schedule',
+				'batchpilot_delete',
+				'batchpilot_edit',
+				'batchpilot_duplicate',
+				'batchpilot_move',
+				'batchpilot_schedule',
 			],
 			Capabilities::ALL
 		);

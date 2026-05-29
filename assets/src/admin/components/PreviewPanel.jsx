@@ -12,7 +12,7 @@ const formatCount = ( n ) => {
 const PreviewPanel = ( { preview, previewing, previewError } ) => {
 	if ( previewError ) {
 		return (
-			<div className="co-preview co-preview--error" role="alert">
+			<div className="bp-preview bp-preview--error" role="alert">
 				<Notice status="error" isDismissible={ false }>
 					{ previewError.message }
 				</Notice>
@@ -22,10 +22,10 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 
 	if ( ! preview && previewing ) {
 		return (
-			<div className="co-preview co-preview--loading" role="status">
+			<div className="bp-preview bp-preview--loading" role="status">
 				<Spinner />
-				<span className="co-preview__hint">
-					{ __( 'Calculating match…', 'content-ops' ) }
+				<span className="bp-preview__hint">
+					{ __( 'Calculating match…', 'batchpilot' ) }
 				</span>
 			</div>
 		);
@@ -33,14 +33,14 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 
 	if ( ! preview ) {
 		return (
-			<div className="co-preview co-preview--placeholder" role="status">
-				<span className="co-preview__placeholder-title">
-					{ __( 'No preview yet', 'content-ops' ) }
+			<div className="bp-preview bp-preview--placeholder" role="status">
+				<span className="bp-preview__placeholder-title">
+					{ __( 'No preview yet', 'batchpilot' ) }
 				</span>
-				<span className="co-preview__hint">
+				<span className="bp-preview__hint">
 					{ __(
 						'Add or adjust a filter above to see how many items will match. The preview refreshes automatically as you type.',
-						'content-ops'
+						'batchpilot'
 					) }
 				</span>
 			</div>
@@ -53,39 +53,39 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 
 	const countLabel = sprintf(
 		/* translators: %s: number of matched items, pre-formatted */
-		_n( '%s item matched', '%s items matched', count, 'content-ops' ),
+		_n( '%s item matched', '%s items matched', count, 'batchpilot' ),
 		formatCount( count )
 	);
 
 	return (
-		<div className="co-preview">
-			<header className="co-preview__header">
-				<div className="co-preview__count">
-					<span className="co-preview__count-value">
+		<div className="bp-preview">
+			<header className="bp-preview__header">
+				<div className="bp-preview__count">
+					<span className="bp-preview__count-value">
 						{ formatCount( count ) }
 					</span>
-					<span className="co-preview__count-label">
+					<span className="bp-preview__count-label">
 						{ _n(
 							'item matched',
 							'items matched',
 							count,
-							'content-ops'
+							'batchpilot'
 						) }
 					</span>
 				</div>
-				<div className="co-preview__status">
+				<div className="bp-preview__status">
 					{ previewing ? (
-						<span className="co-preview__badge co-preview__badge--live">
+						<span className="bp-preview__badge bp-preview__badge--live">
 							<Spinner />
-							<span>{ __( 'Updating…', 'content-ops' ) }</span>
+							<span>{ __( 'Updating…', 'batchpilot' ) }</span>
 						</span>
 					) : (
-						<span className="co-preview__badge co-preview__badge--fresh">
+						<span className="bp-preview__badge bp-preview__badge--fresh">
 							<span
-								className="co-preview__dot"
+								className="bp-preview__dot"
 								aria-hidden="true"
 							/>
-							<span>{ __( 'Live', 'content-ops' ) }</span>
+							<span>{ __( 'Live', 'batchpilot' ) }</span>
 						</span>
 					) }
 				</div>
@@ -95,7 +95,7 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 				<Notice
 					status="warning"
 					isDismissible={ false }
-					className="co-preview__warnings"
+					className="bp-preview__warnings"
 				>
 					<ul>
 						{ warnings.map( ( w, i ) => (
@@ -106,41 +106,41 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 			) }
 
 			{ rows.length > 0 ? (
-				<div className="co-preview__rows">
-					<div className="co-preview__rows-header">
+				<div className="bp-preview__rows">
+					<div className="bp-preview__rows-header">
 						<span>
 							{ sprintf(
 								/* translators: %s: pre-formatted row count */
-								__( 'Showing %s of matches', 'content-ops' ),
+								__( 'Showing %s of matches', 'batchpilot' ),
 								formatCount( rows.length )
 							) }
 						</span>
-						<span className="co-preview__rows-hint">
+						<span className="bp-preview__rows-hint">
 							{ __(
 								'Sample preview. Click a title to verify.',
-								'content-ops'
+								'batchpilot'
 							) }
 						</span>
 					</div>
-					<table className="co-preview__table">
+					<table className="bp-preview__table">
 						<thead>
 							<tr>
-								<th className="co-preview__col-id">
-									{ __( 'ID', 'content-ops' ) }
+								<th className="bp-preview__col-id">
+									{ __( 'ID', 'batchpilot' ) }
 								</th>
-								<th>{ __( 'Title', 'content-ops' ) }</th>
-								<th className="co-preview__col-status">
-									{ __( 'Status', 'content-ops' ) }
+								<th>{ __( 'Title', 'batchpilot' ) }</th>
+								<th className="bp-preview__col-status">
+									{ __( 'Status', 'batchpilot' ) }
 								</th>
-								<th className="co-preview__col-date">
-									{ __( 'Date', 'content-ops' ) }
+								<th className="bp-preview__col-date">
+									{ __( 'Date', 'batchpilot' ) }
 								</th>
 							</tr>
 						</thead>
 						<tbody>
 							{ rows.map( ( r ) => (
 								<tr key={ r.id }>
-									<td className="co-preview__col-id">
+									<td className="bp-preview__col-id">
 										{ r.id }
 									</td>
 									<td>
@@ -153,7 +153,7 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 												{ r.title ||
 													__(
 														'(no title)',
-														'content-ops'
+														'batchpilot'
 													) }
 											</a>
 										) : (
@@ -161,17 +161,17 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 												{ r.title ||
 													__(
 														'(no title)',
-														'content-ops'
+														'batchpilot'
 													) }
 											</span>
 										) }
 									</td>
-									<td className="co-preview__col-status">
-										<span className="co-chip">
+									<td className="bp-preview__col-status">
+										<span className="bp-chip">
 											{ r.status }
 										</span>
 									</td>
-									<td className="co-preview__col-date">
+									<td className="bp-preview__col-date">
 										{ r.date }
 									</td>
 								</tr>
@@ -180,16 +180,16 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 					</table>
 				</div>
 			) : (
-				<div className="co-preview__no-rows">
+				<div className="bp-preview__no-rows">
 					<span>
 						{ count > 0
 							? __(
 									'Matches found but no sample rows available.',
-									'content-ops'
+									'batchpilot'
 							  )
 							: __(
 									'No items match these filters. Try relaxing a filter or removing one.',
-									'content-ops'
+									'batchpilot'
 							  ) }
 					</span>
 				</div>

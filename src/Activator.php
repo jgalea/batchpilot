@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps;
+namespace BatchPilot;
 
-use ContentOps\Capabilities\Capabilities;
-use ContentOps\Database\Migrations;
+use BatchPilot\Capabilities\Capabilities;
+use BatchPilot\Database\Migrations;
 
 final class Activator {
 

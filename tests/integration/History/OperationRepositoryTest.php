@@ -1,10 +1,10 @@
 <?php
-namespace ContentOps\Tests\Integration\History;
+namespace BatchPilot\Tests\Integration\History;
 
-use ContentOps\Database\Schema;
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Database\Schema;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class OperationRepositoryTest extends TestCase {
 

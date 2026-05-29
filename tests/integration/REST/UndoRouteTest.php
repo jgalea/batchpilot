@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_REST_Request;
 use WP_REST_Server;
 
@@ -11,7 +11,7 @@ final class UndoRouteTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
@@ -20,7 +20,7 @@ final class UndoRouteTest extends TestCase {
 
 		$admin = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$role  = get_role( 'administrator' );
-		foreach ( \ContentOps\Capabilities\Capabilities::ALL as $cap ) {
+		foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $cap ) {
 			$role->add_cap( $cap );
 		}
 		wp_set_current_user( $admin );
@@ -35,11 +35,11 @@ final class UndoRouteTest extends TestCase {
 			wp_trash_post( $id );
 		}
 
-		$repo  = new \ContentOps\History\OperationRepository( $wpdb );
-		$saved = $repo->create( \ContentOps\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => false ] ) );
+		$repo  = new \BatchPilot\History\OperationRepository( $wpdb );
+		$saved = $repo->create( \BatchPilot\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => false ] ) );
 		$repo->mark_completed( $saved->id(), $ids );
 
-		$response = $this->server->dispatch( new WP_REST_Request( 'POST', '/content-ops/v1/operations/' . $saved->id() . '/undo' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'POST', '/batchpilot/v1/operations/' . $saved->id() . '/undo' ) );
 
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 2, $response->get_data()['restored'] );
@@ -49,7 +49,7 @@ final class UndoRouteTest extends TestCase {
 	}
 
 	public function test_undo_missing_returns_404(): void {
-		$response = $this->server->dispatch( new WP_REST_Request( 'POST', '/content-ops/v1/operations/999999/undo' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'POST', '/batchpilot/v1/operations/999999/undo' ) );
 		$this->assertSame( 404, $response->get_status() );
 	}
 }

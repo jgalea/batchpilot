@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Integration\Abilities;
+namespace BatchPilot\Tests\Integration\Abilities;
 
-use ContentOps\Abilities\AbilitiesBridge;
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Abilities\AbilitiesBridge;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class AbilitiesBridgeTest extends TestCase {
 
@@ -21,15 +21,15 @@ final class AbilitiesBridgeTest extends TestCase {
 
 	private function bridge(): AbilitiesBridge {
 		global $wpdb;
-		$targets = new \ContentOps\Registry\TargetRegistry();
-		$ops     = new \ContentOps\Registry\OperationRegistry();
-		$exec    = new \ContentOps\Execution\ExecutionService(
+		$targets = new \BatchPilot\Registry\TargetRegistry();
+		$ops     = new \BatchPilot\Registry\OperationRegistry();
+		$exec    = new \BatchPilot\Execution\ExecutionService(
 			$targets,
 			$ops,
-			new \ContentOps\History\OperationRepository( $wpdb ),
-			new \ContentOps\History\SnapshotRepository( $wpdb ),
-			new \ContentOps\PreviewToken\TokenGenerator( 'salt' ),
-			new \ContentOps\PreviewToken\TokenStore( 300 )
+			new \BatchPilot\History\OperationRepository( $wpdb ),
+			new \BatchPilot\History\SnapshotRepository( $wpdb ),
+			new \BatchPilot\PreviewToken\TokenGenerator( 'salt' ),
+			new \BatchPilot\PreviewToken\TokenStore( 300 )
 		);
 		return new AbilitiesBridge( new ActionSchedulerBridge(), $exec, $targets, $ops );
 	}

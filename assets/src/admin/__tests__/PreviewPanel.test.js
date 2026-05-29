@@ -47,7 +47,7 @@ describe( 'PreviewPanel', () => {
 				preview={ null }
 				previewing={ false }
 				previewError={ {
-					code: 'co.x',
+					code: 'bp.x',
 					message: 'bad filter',
 					context: {},
 				} }

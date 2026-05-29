@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\CLI;
+namespace BatchPilot\CLI;
 
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
 
 final class HistoryCommand {
 
@@ -13,7 +13,7 @@ final class HistoryCommand {
 	}
 
 	/**
-	 * List recent Content Ops operations.
+	 * List recent BatchPilot operations.
 	 *
 	 * ## OPTIONS
 	 *

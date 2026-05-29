@@ -1,22 +1,22 @@
 <?php
-namespace ContentOps\Tests\Integration\Execution;
+namespace BatchPilot\Tests\Integration\Execution;
 
-use ContentOps\Execution\ExecutionService;
-use ContentOps\History\OperationRepository;
-use ContentOps\History\SnapshotRepository;
-use ContentOps\Operations\DeleteOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\History\SnapshotRepository;
+use BatchPilot\Operations\DeleteOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class ExecutionServiceTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	private function service(): ExecutionService {
@@ -54,13 +54,13 @@ final class ExecutionServiceTest extends TestCase {
 	public function test_preview_unknown_target_returns_error(): void {
 		$preview = $this->service()->preview( 'bogus', 'delete', [], [] );
 		$this->assertFalse( $preview->is_ok() );
-		$this->assertSame( 'co.target.unknown', $preview->get_error()->code() );
+		$this->assertSame( 'bp.target.unknown', $preview->get_error()->code() );
 	}
 
 	public function test_preview_unknown_operation_returns_error(): void {
 		$preview = $this->service()->preview( 'post', 'bogus', [], [] );
 		$this->assertFalse( $preview->is_ok() );
-		$this->assertSame( 'co.operation.unknown', $preview->get_error()->code() );
+		$this->assertSame( 'bp.operation.unknown', $preview->get_error()->code() );
 	}
 
 	public function test_preview_target_rejects_operation(): void {
@@ -69,7 +69,7 @@ final class ExecutionServiceTest extends TestCase {
 		$ops     = new OperationRegistry();
 		$targets->register( new PostTarget( 'post' ) );
 
-		$rejecting = new class() implements \ContentOps\Contracts\OperationInterface {
+		$rejecting = new class() implements \BatchPilot\Contracts\OperationInterface {
 			public function slug(): string {
 				return 'move';
 			}
@@ -82,20 +82,20 @@ final class ExecutionServiceTest extends TestCase {
 					'properties' => [],
 				];
 			}
-			public function validate( \ContentOps\Contracts\QueryArgs $a, array $p ): \ContentOps\Contracts\ValidationResult {
-				return \ContentOps\Contracts\ValidationResult::ok();
+			public function validate( \BatchPilot\Contracts\QueryArgs $a, array $p ): \BatchPilot\Contracts\ValidationResult {
+				return \BatchPilot\Contracts\ValidationResult::ok();
 			}
-			public function preview( \ContentOps\Contracts\QueryArgs $a, array $p, \ContentOps\Contracts\TargetInterface $t ): \ContentOps\Contracts\PreviewResult {
-				return \ContentOps\Contracts\PreviewResult::of( 0, [], '' );
+			public function preview( \BatchPilot\Contracts\QueryArgs $a, array $p, \BatchPilot\Contracts\TargetInterface $t ): \BatchPilot\Contracts\PreviewResult {
+				return \BatchPilot\Contracts\PreviewResult::of( 0, [], '' );
 			}
-			public function execute_batch( array $ids, array $p, \ContentOps\Contracts\TargetInterface $t ): \ContentOps\Contracts\BatchResult {
-				return \ContentOps\Contracts\BatchResult::of( 0, 0, 0 );
+			public function execute_batch( array $ids, array $p, \BatchPilot\Contracts\TargetInterface $t ): \BatchPilot\Contracts\BatchResult {
+				return \BatchPilot\Contracts\BatchResult::of( 0, 0, 0 );
 			}
 			public function supports_undo(): bool {
 				return false;
 			}
-			public function undo( int $id ): \ContentOps\Contracts\UndoResult {
-				return \ContentOps\Contracts\UndoResult::of( 0 );
+			public function undo( int $id ): \BatchPilot\Contracts\UndoResult {
+				return \BatchPilot\Contracts\UndoResult::of( 0 );
 			}
 		};
 		$ops->register( $rejecting );
@@ -110,7 +110,7 @@ final class ExecutionServiceTest extends TestCase {
 		);
 		$preview = $svc->preview( 'post', 'move', [], [] );
 		$this->assertFalse( $preview->is_ok() );
-		$this->assertSame( 'co.target.unsupported_operation', $preview->get_error()->code() );
+		$this->assertSame( 'bp.target.unsupported_operation', $preview->get_error()->code() );
 	}
 
 	public function test_record_creates_history_row_and_returns_id(): void {

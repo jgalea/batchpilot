@@ -1,17 +1,17 @@
 <?php
-namespace ContentOps\Capabilities;
+namespace BatchPilot\Capabilities;
 
 final class Capabilities {
 
 	public const ALL = [
-		'content_ops_delete',
-		'content_ops_edit',
-		'content_ops_duplicate',
-		'content_ops_move',
-		'content_ops_schedule',
+		'batchpilot_delete',
+		'batchpilot_edit',
+		'batchpilot_duplicate',
+		'batchpilot_move',
+		'batchpilot_schedule',
 	];
 
-	private const VERSION_OPTION  = 'content_ops_caps_version';
+	private const VERSION_OPTION  = 'batchpilot_caps_version';
 	private const CURRENT_VERSION = '1';
 
 	public static function grant_to_admins(): void {
@@ -30,7 +30,7 @@ final class Capabilities {
 	public static function ensure_granted(): void {
 		if ( get_option( self::VERSION_OPTION ) === self::CURRENT_VERSION ) {
 			$role = get_role( 'administrator' );
-			if ( null !== $role && $role->has_cap( 'content_ops_delete' ) ) {
+			if ( null !== $role && $role->has_cap( 'batchpilot_delete' ) ) {
 				return;
 			}
 		}

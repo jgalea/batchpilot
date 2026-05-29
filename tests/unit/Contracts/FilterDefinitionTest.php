@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Unit\Contracts;
+namespace BatchPilot\Tests\Unit\Contracts;
 
-use ContentOps\Contracts\FilterDefinition;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\FilterDefinition;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class FilterDefinitionTest extends TestCase {
 

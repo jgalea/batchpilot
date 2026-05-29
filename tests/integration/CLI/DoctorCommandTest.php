@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Integration\CLI;
+namespace BatchPilot\Tests\Integration\CLI;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\CLI\DoctorCommand;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\CLI\DoctorCommand;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class DoctorCommandTest extends TestCase {
 

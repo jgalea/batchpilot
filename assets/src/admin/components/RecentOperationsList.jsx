@@ -27,7 +27,7 @@ const RecentOperationsList = ( { api } ) => {
 				status: 'success',
 				text: sprintf(
 					/* translators: %d: number of items restored. */
-					__( 'Restored %d', 'content-ops' ),
+					__( 'Restored %d', 'batchpilot' ),
 					r.restored
 				),
 			} );
@@ -55,21 +55,21 @@ const RecentOperationsList = ( { api } ) => {
 				</Notice>
 			) }
 			{ ops.length === 0 && (
-				<p className="co-empty">
-					{ __( 'No operations yet.', 'content-ops' ) }
+				<p className="bp-empty">
+					{ __( 'No operations yet.', 'batchpilot' ) }
 				</p>
 			) }
 			{ ops.length > 0 && (
 				<ul className="recent-operations">
 					{ ops.map( ( op ) => (
 						<li key={ op.id }>
-							<span className="co-chip co-chip--accent">
+							<span className="bp-chip bp-chip--accent">
 								{ op.type }
 							</span>
-							<span className="co-chip">{ op.target }</span>
+							<span className="bp-chip">{ op.target }</span>
 							<time>
 								{ op.affected_count }{ ' ' }
-								{ __( 'items', 'content-ops' ) } · { op.status }
+								{ __( 'items', 'batchpilot' ) } · { op.status }
 							</time>
 							{ UNDOABLE.includes( op.type ) &&
 								op.status === 'completed' && (
@@ -78,7 +78,7 @@ const RecentOperationsList = ( { api } ) => {
 										onClick={ () => undo( op.id ) }
 										style={ { marginLeft: 'auto' } }
 									>
-										{ __( 'Undo', 'content-ops' ) }
+										{ __( 'Undo', 'batchpilot' ) }
 									</Button>
 								) }
 						</li>

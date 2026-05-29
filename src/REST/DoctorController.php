@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\Database\Schema;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\Database\Schema;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -32,9 +32,9 @@ final class DoctorController extends RestController {
 		global $wpdb;
 
 		$tables  = [
-			$wpdb->prefix . 'co_operations',
-			$wpdb->prefix . 'co_snapshots',
-			$wpdb->prefix . 'co_schedules',
+			$wpdb->prefix . 'batchpilot_operations',
+			$wpdb->prefix . 'batchpilot_snapshots',
+			$wpdb->prefix . 'batchpilot_schedules',
 		];
 		$missing = [];
 		foreach ( $tables as $table ) {

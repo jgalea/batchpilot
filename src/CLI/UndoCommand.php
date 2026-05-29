@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\CLI;
+namespace BatchPilot\CLI;
 
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\OperationRepository;
-use ContentOps\Registry\OperationRegistry;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Registry\OperationRegistry;
 
 final class UndoCommand {
 
@@ -16,7 +16,7 @@ final class UndoCommand {
 	}
 
 	/**
-	 * Undo a previously executed Content Ops operation.
+	 * Undo a previously executed BatchPilot operation.
 	 *
 	 * ## OPTIONS
 	 *
@@ -54,8 +54,8 @@ final class UndoCommand {
 
 		$row = $this->repo->find( $id );
 		if ( null === $row ) {
-			$err = new ContentOpsError(
-				'co.operation.not_found',
+			$err = new BatchPilotError(
+				'bp.operation.not_found',
 				'Operation not found.',
 				[ 'id' => $id ]
 			);
@@ -67,8 +67,8 @@ final class UndoCommand {
 
 		$op = $this->operations->get( $row->type() );
 		if ( null === $op ) {
-			$err = new ContentOpsError(
-				'co.operation.unknown',
+			$err = new BatchPilotError(
+				'bp.operation.unknown',
 				'Operation not registered.',
 				[ 'type' => $row->type() ]
 			);

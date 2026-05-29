@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\History;
+namespace BatchPilot\History;
 
 final class Snapshot {
 

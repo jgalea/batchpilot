@@ -18,7 +18,7 @@ describe( 'api', () => {
 		const result = await api.fetchCatalog();
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				path: '/content-ops/v1/catalog',
+				path: '/batchpilot/v1/catalog',
 				method: 'GET',
 			} )
 		);
@@ -47,7 +47,7 @@ describe( 'api', () => {
 
 		expect( apiFetch ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				path: '/content-ops/v1/preview',
+				path: '/batchpilot/v1/preview',
 				method: 'POST',
 				signal: controller.signal,
 				data: {
@@ -62,12 +62,12 @@ describe( 'api', () => {
 
 	it( 'normalizes errors with a code, message, and context', () => {
 		const err = normalizeError( {
-			code: 'co.preview.stale_token',
+			code: 'bp.preview.stale_token',
 			message: 'Preview token invalid or expired.',
 			data: { status: 409 },
 		} );
 		expect( err ).toEqual( {
-			code: 'co.preview.stale_token',
+			code: 'bp.preview.stale_token',
 			message: 'Preview token invalid or expired.',
 			status: 409,
 			context: {},

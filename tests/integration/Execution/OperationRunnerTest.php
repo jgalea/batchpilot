@@ -1,23 +1,23 @@
 <?php
-namespace ContentOps\Tests\Integration\Execution;
+namespace BatchPilot\Tests\Integration\Execution;
 
-use ContentOps\Execution\ExecutionService;
-use ContentOps\Execution\OperationRunner;
-use ContentOps\History\OperationRepository;
-use ContentOps\History\SnapshotRepository;
-use ContentOps\Operations\DeleteOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\Execution\OperationRunner;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\History\SnapshotRepository;
+use BatchPilot\Operations\DeleteOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class OperationRunnerTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public function test_handle_runs_operation_synchronously(): void {

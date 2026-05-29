@@ -1,11 +1,11 @@
 <?php
-namespace ContentOps\Abilities;
+namespace BatchPilot\Abilities;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\CLI\DoctorCommand;
-use ContentOps\Execution\ExecutionService;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\CLI\DoctorCommand;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 
 final class AbilitiesBridge {
 
@@ -57,10 +57,10 @@ final class AbilitiesBridge {
 	private function do_register_abilities(): void {
 		if ( function_exists( 'wp_register_ability_category' ) ) {
 			wp_register_ability_category(
-				'content-ops',
+				'batchpilot',
 				[
-					'label'       => __( 'Content Ops', 'content-ops' ),
-					'description' => __( 'Bulk operations for WordPress and WooCommerce content.', 'content-ops' ),
+					'label'       => __( 'BatchPilot', 'batchpilot' ),
+					'description' => __( 'Bulk operations for WordPress and WooCommerce content.', 'batchpilot' ),
 				]
 			);
 		}
@@ -68,11 +68,11 @@ final class AbilitiesBridge {
 		$doctor = new DoctorCommand( $this->action_scheduler );
 
 		wp_register_ability(
-			'content-ops/doctor',
+			'batchpilot/doctor',
 			[
-				'label'               => __( 'Content Ops: doctor', 'content-ops' ),
-				'description'         => __( 'Report Content Ops environment health.', 'content-ops' ),
-				'category'            => 'content-ops',
+				'label'               => __( 'BatchPilot: doctor', 'batchpilot' ),
+				'description'         => __( 'Report BatchPilot environment health.', 'batchpilot' ),
+				'category'            => 'batchpilot',
 				'input_schema'        => [
 					'type'                 => 'object',
 					'properties'           => new \stdClass(),
@@ -95,9 +95,9 @@ final class AbilitiesBridge {
 		);
 
 		$cap_map = [
-			'delete'    => 'content_ops_delete',
-			'duplicate' => 'content_ops_duplicate',
-			'edit'      => 'content_ops_edit',
+			'delete'    => 'batchpilot_delete',
+			'duplicate' => 'batchpilot_duplicate',
+			'edit'      => 'batchpilot_edit',
 		];
 
 		$execution = $this->execution;
@@ -110,7 +110,7 @@ final class AbilitiesBridge {
 
 				$target_slug = $target->slug();
 				$op_slug     = $op->slug();
-				$name        = 'content-ops/' . $target_slug . '_' . $op_slug;
+				$name        = 'batchpilot/' . $target_slug . '_' . $op_slug;
 				$cap         = $cap_map[ $op_slug ] ?? 'manage_options';
 
 				wp_register_ability(
@@ -118,7 +118,7 @@ final class AbilitiesBridge {
 					[
 						'label'               => sprintf( '%s: %s', $target->label(), $op->label() ),
 						'description'         => sprintf( 'Preview a %1$s %2$s bulk operation.', $target_slug, $op_slug ),
-						'category'            => 'content-ops',
+						'category'            => 'batchpilot',
 						'input_schema'        => [
 							'type'       => 'object',
 							'properties' => [

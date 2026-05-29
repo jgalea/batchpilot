@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\History;
+namespace BatchPilot\History;
 
 use wpdb;
 
@@ -12,7 +12,7 @@ final class SnapshotRepository {
 	}
 
 	private function table(): string {
-		return $this->db->prefix . 'co_snapshots';
+		return $this->db->prefix . 'batchpilot_snapshots';
 	}
 
 	/** @param Snapshot[] $snapshots */

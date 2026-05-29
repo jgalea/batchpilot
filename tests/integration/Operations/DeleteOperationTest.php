@@ -1,21 +1,21 @@
 <?php
-namespace ContentOps\Tests\Integration\Operations;
+namespace BatchPilot\Tests\Integration\Operations;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Operations\DeleteOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Operations\DeleteOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class DeleteOperationTest extends TestCase {
 
 	public static function wpSetUpBeforeClass( \WP_UnitTest_Factory $factory ): void {
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public static function wpTearDownAfterClass(): void {
-		\ContentOps\Database\Schema::drop_all();
+		\BatchPilot\Database\Schema::drop_all();
 	}
 
 	private function op(): DeleteOperation {
@@ -23,7 +23,7 @@ final class DeleteOperationTest extends TestCase {
 		return new DeleteOperation(
 			new TokenGenerator( 'test-salt' ),
 			new TokenStore( 300 ),
-			new \ContentOps\History\OperationRepository( $wpdb )
+			new \BatchPilot\History\OperationRepository( $wpdb )
 		);
 	}
 
@@ -119,7 +119,7 @@ final class DeleteOperationTest extends TestCase {
 
 	public function test_undo_restores_trashed_posts(): void {
 		global $wpdb;
-		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
 
 		$ids = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
 		foreach ( $ids as $id ) {
@@ -127,7 +127,7 @@ final class DeleteOperationTest extends TestCase {
 		}
 
 		$saved = $repo->create(
-			\ContentOps\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => false ] )
+			\BatchPilot\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => false ] )
 		);
 		$repo->mark_completed( $saved->id(), $ids );
 
@@ -143,10 +143,10 @@ final class DeleteOperationTest extends TestCase {
 
 	public function test_undo_rejects_permanent_deletes(): void {
 		global $wpdb;
-		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
 
 		$saved = $repo->create(
-			\ContentOps\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => true ] )
+			\BatchPilot\History\Operation::newly_created( 'delete', 'post', 0, [], [ 'permanent' => true ] )
 		);
 		$repo->mark_completed( $saved->id(), [ 123 ] );
 
@@ -154,17 +154,17 @@ final class DeleteOperationTest extends TestCase {
 		$result = $op->undo( $saved->id() );
 
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.undo.permanent_delete', $result->get_error()->code() );
+		$this->assertSame( 'bp.undo.permanent_delete', $result->get_error()->code() );
 	}
 
 	public function test_undo_rejects_missing_operation(): void {
 		global $wpdb;
-		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
 
 		$op     = new DeleteOperation( new TokenGenerator( 'test-salt' ), new TokenStore( 300 ), $repo );
 		$result = $op->undo( 999999 );
 
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
+		$this->assertSame( 'bp.undo.not_found', $result->get_error()->code() );
 	}
 }

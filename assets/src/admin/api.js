@@ -3,7 +3,7 @@ import apiFetch from '@wordpress/api-fetch';
 export const normalizeError = ( err ) => {
 	if ( err && err.name === 'AbortError' ) {
 		return {
-			code: 'co.client.aborted',
+			code: 'bp.client.aborted',
 			message: 'Request aborted.',
 			status: 0,
 			context: {},
@@ -19,7 +19,7 @@ export const normalizeError = ( err ) => {
 		};
 	}
 	return {
-		code: 'co.client.unknown',
+		code: 'bp.client.unknown',
 		message: ( err && err.message ) || String( err ),
 		status: 0,
 		context: {},
@@ -29,7 +29,7 @@ export const normalizeError = ( err ) => {
 export const createApi = ( fetchFn = apiFetch ) => {
 	const call = ( path, method, data, signal ) =>
 		fetchFn( {
-			path: `/content-ops/v1${ path }`,
+			path: `/batchpilot/v1${ path }`,
 			method,
 			...( data !== undefined ? { data } : {} ),
 			...( signal ? { signal } : {} ),

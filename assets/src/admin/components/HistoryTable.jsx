@@ -16,13 +16,13 @@ const relativeTime = ( iso ) => {
 	}
 	const diff = Math.max( 0, Math.floor( ( Date.now() - then ) / 1000 ) );
 	if ( diff < MIN ) {
-		return __( 'just now', 'content-ops' );
+		return __( 'just now', 'batchpilot' );
 	}
 	if ( diff < HOUR ) {
 		const m = Math.floor( diff / MIN );
 		return sprintf(
 			/* translators: %d: number of minutes */
-			_n( '%d minute ago', '%d minutes ago', m, 'content-ops' ),
+			_n( '%d minute ago', '%d minutes ago', m, 'batchpilot' ),
 			m
 		);
 	}
@@ -30,23 +30,23 @@ const relativeTime = ( iso ) => {
 		const h = Math.floor( diff / HOUR );
 		return sprintf(
 			/* translators: %d: number of hours */
-			_n( '%d hour ago', '%d hours ago', h, 'content-ops' ),
+			_n( '%d hour ago', '%d hours ago', h, 'batchpilot' ),
 			h
 		);
 	}
 	const d = Math.floor( diff / DAY );
 	return sprintf(
 		/* translators: %d: number of days */
-		_n( '%d day ago', '%d days ago', d, 'content-ops' ),
+		_n( '%d day ago', '%d days ago', d, 'batchpilot' ),
 		d
 	);
 };
 
 const statusLabel = {
-	completed: __( 'Completed', 'content-ops' ),
-	running: __( 'Running', 'content-ops' ),
-	failed: __( 'Failed', 'content-ops' ),
-	queued: __( 'Queued', 'content-ops' ),
+	completed: __( 'Completed', 'batchpilot' ),
+	running: __( 'Running', 'batchpilot' ),
+	failed: __( 'Failed', 'batchpilot' ),
+	queued: __( 'Queued', 'batchpilot' ),
 };
 
 const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
@@ -77,23 +77,23 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 
 	if ( rows === null ) {
 		return (
-			<div className="co-history co-history--loading" role="status">
+			<div className="bp-history bp-history--loading" role="status">
 				<Spinner />
-				<span>{ __( 'Loading history…', 'content-ops' ) }</span>
+				<span>{ __( 'Loading history…', 'batchpilot' ) }</span>
 			</div>
 		);
 	}
 
 	if ( rows.length === 0 && page === 0 ) {
 		return (
-			<div className="co-history co-history--empty" role="status">
-				<strong className="co-history__empty-title">
-					{ __( 'No operations yet', 'content-ops' ) }
+			<div className="bp-history bp-history--empty" role="status">
+				<strong className="bp-history__empty-title">
+					{ __( 'No operations yet', 'batchpilot' ) }
 				</strong>
-				<span className="co-history__empty-hint">
+				<span className="bp-history__empty-hint">
 					{ __(
 						'Run your first bulk operation from the Operations page. It will appear here with full details and an Undo option.',
-						'content-ops'
+						'batchpilot'
 					) }
 				</span>
 			</div>
@@ -101,20 +101,20 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 	}
 
 	return (
-		<div className={ `co-history${ loading ? ' is-loading' : '' }` }>
-			<table className="co-history__table">
+		<div className={ `bp-history${ loading ? ' is-loading' : '' }` }>
+			<table className="bp-history__table">
 				<thead>
 					<tr>
-						<th>{ __( 'When', 'content-ops' ) }</th>
-						<th>{ __( 'Operation', 'content-ops' ) }</th>
-						<th>{ __( 'Target', 'content-ops' ) }</th>
-						<th className="co-history__col-count">
-							{ __( 'Items', 'content-ops' ) }
+						<th>{ __( 'When', 'batchpilot' ) }</th>
+						<th>{ __( 'Operation', 'batchpilot' ) }</th>
+						<th>{ __( 'Target', 'batchpilot' ) }</th>
+						<th className="bp-history__col-count">
+							{ __( 'Items', 'batchpilot' ) }
 						</th>
-						<th>{ __( 'Status', 'content-ops' ) }</th>
-						<th>{ __( 'User', 'content-ops' ) }</th>
-						<th className="co-history__col-actions">
-							{ __( 'Actions', 'content-ops' ) }
+						<th>{ __( 'Status', 'batchpilot' ) }</th>
+						<th>{ __( 'User', 'batchpilot' ) }</th>
+						<th className="bp-history__col-actions">
+							{ __( 'Actions', 'batchpilot' ) }
 						</th>
 					</tr>
 				</thead>
@@ -125,48 +125,48 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 								<time
 									dateTime={ r.created_at }
 									title={ r.created_at }
-									className="co-history__time"
+									className="bp-history__time"
 								>
 									{ relativeTime( r.created_at ) }
 								</time>
 							</td>
 							<td>
 								<span
-									className={ `co-chip co-chip--op co-chip--op-${ r.type }` }
+									className={ `bp-chip bp-chip--op bp-chip--op-${ r.type }` }
 								>
 									{ r.type }
 								</span>
 							</td>
 							<td>
-								<span className="co-history__target">
+								<span className="bp-history__target">
 									{ r.target }
 								</span>
 							</td>
-							<td className="co-history__col-count">
-								<span className="co-history__count">
+							<td className="bp-history__col-count">
+								<span className="bp-history__count">
 									{ r.affected_count }
 								</span>
 							</td>
 							<td>
 								<span
-									className={ `co-status co-status--${ r.status }` }
+									className={ `bp-status bp-status--${ r.status }` }
 								>
 									<span
-										className="co-status__dot"
+										className="bp-status__dot"
 										aria-hidden="true"
 									/>
 									{ statusLabel[ r.status ] || r.status }
 								</span>
 							</td>
 							<td>
-								<span className="co-history__user">
+								<span className="bp-history__user">
 									{ r.user_id && r.user_id > 0
 										? `#${ r.user_id }`
-										: __( 'CLI', 'content-ops' ) }
+										: __( 'CLI', 'batchpilot' ) }
 								</span>
 							</td>
-							<td className="co-history__col-actions">
-								<div className="co-history__row-actions">
+							<td className="bp-history__col-actions">
+								<div className="bp-history__row-actions">
 									<Button
 										variant="tertiary"
 										onClick={ () =>
@@ -174,7 +174,7 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 											onRowAction( 'view', r )
 										}
 									>
-										{ __( 'Details', 'content-ops' ) }
+										{ __( 'Details', 'batchpilot' ) }
 									</Button>
 									{ r.status === 'completed' && (
 										<Button
@@ -184,7 +184,7 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 												onRowAction( 'undo', r )
 											}
 										>
-											{ __( 'Undo', 'content-ops' ) }
+											{ __( 'Undo', 'batchpilot' ) }
 										</Button>
 									) }
 									<Button
@@ -194,7 +194,7 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 											onRowAction( 'rerun', r )
 										}
 									>
-										{ __( 'Re-run', 'content-ops' ) }
+										{ __( 'Re-run', 'batchpilot' ) }
 									</Button>
 								</div>
 							</td>
@@ -203,20 +203,20 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 				</tbody>
 			</table>
 			<nav
-				className="co-history__pagination"
-				aria-label={ __( 'History pagination', 'content-ops' ) }
+				className="bp-history__pagination"
+				aria-label={ __( 'History pagination', 'batchpilot' ) }
 			>
 				<Button
 					variant="secondary"
 					disabled={ page === 0 }
 					onClick={ () => setPage( ( p ) => Math.max( 0, p - 1 ) ) }
 				>
-					{ __( '← Previous', 'content-ops' ) }
+					{ __( '← Previous', 'batchpilot' ) }
 				</Button>
-				<span className="co-history__page-indicator">
+				<span className="bp-history__page-indicator">
 					{ sprintf(
 						/* translators: %d: page number, 1-indexed */
-						__( 'Page %d', 'content-ops' ),
+						__( 'Page %d', 'batchpilot' ),
 						page + 1
 					) }
 				</span>
@@ -225,7 +225,7 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 					disabled={ rows.length < pageSize }
 					onClick={ () => setPage( ( p ) => p + 1 ) }
 				>
-					{ __( 'Next →', 'content-ops' ) }
+					{ __( 'Next →', 'batchpilot' ) }
 				</Button>
 			</nav>
 		</div>

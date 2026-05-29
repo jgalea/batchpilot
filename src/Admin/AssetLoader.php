@@ -1,11 +1,11 @@
 <?php
-namespace ContentOps\Admin;
+namespace BatchPilot\Admin;
 
-use ContentOps\Capabilities\Capabilities;
+use BatchPilot\Capabilities\Capabilities;
 
 final class AssetLoader {
 
-	public const HANDLE = 'content-ops-admin';
+	public const HANDLE = 'batchpilot-admin';
 
 	private string $plugin_file;
 
@@ -18,7 +18,7 @@ final class AssetLoader {
 	}
 
 	public function enqueue( string $hook_suffix ): void {
-		if ( ! $this->is_content_ops_page( $hook_suffix ) ) {
+		if ( ! $this->is_batchpilot_page( $hook_suffix ) ) {
 			return;
 		}
 
@@ -29,7 +29,7 @@ final class AssetLoader {
 			? require $asset_path
 			: [
 				'dependencies' => [ 'wp-element' ],
-				'version'      => CONTENT_OPS_VERSION,
+				'version'      => BATCHPILOT_VERSION,
 			];
 
 		wp_enqueue_script(
@@ -49,11 +49,11 @@ final class AssetLoader {
 			(string) $asset['version']
 		);
 
-		wp_set_script_translations( self::HANDLE, 'content-ops' );
+		wp_set_script_translations( self::HANDLE, 'batchpilot' );
 
 		wp_add_inline_script(
 			self::HANDLE,
-			'window.contentOpsAdmin = ' . wp_json_encode( $this->bootstrap_payload() ) . ';',
+			'window.batchPilotAdmin = ' . wp_json_encode( $this->bootstrap_payload() ) . ';',
 			'before'
 		);
 	}
@@ -69,23 +69,23 @@ final class AssetLoader {
 		$caps['manage_options'] = current_user_can( 'manage_options' );
 
 		return [
-			'namespace'    => 'content-ops/v1',
-			'restUrl'      => esc_url_raw( rest_url( 'content-ops/v1/' ) ),
+			'namespace'    => 'batchpilot/v1',
+			'restUrl'      => esc_url_raw( rest_url( 'batchpilot/v1/' ) ),
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
 			'capabilities' => $caps,
 			'adminUrl'     => admin_url(),
 			'pluginUrl'    => plugin_dir_url( $this->plugin_file ),
-			'version'      => CONTENT_OPS_VERSION,
+			'version'      => BATCHPILOT_VERSION,
 			'pages'        => [
-				'operations' => admin_url( 'admin.php?page=content-ops-operations' ),
-				'history'    => admin_url( 'admin.php?page=content-ops-history' ),
-				'dashboard'  => admin_url( 'admin.php?page=content-ops' ),
-				'settings'   => admin_url( 'admin.php?page=content-ops-settings' ),
+				'operations' => admin_url( 'admin.php?page=batchpilot-operations' ),
+				'history'    => admin_url( 'admin.php?page=batchpilot-history' ),
+				'dashboard'  => admin_url( 'admin.php?page=batchpilot' ),
+				'settings'   => admin_url( 'admin.php?page=batchpilot-settings' ),
 			],
 		];
 	}
 
-	private function is_content_ops_page( string $hook_suffix ): bool {
+	private function is_batchpilot_page( string $hook_suffix ): bool {
 		return in_array( $hook_suffix, AdminMenu::page_hook_suffixes(), true );
 	}
 }

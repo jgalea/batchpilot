@@ -1,15 +1,15 @@
 <?php
-namespace ContentOps\Contracts;
+namespace BatchPilot\Contracts;
 
-use ContentOps\Errors\ContentOpsError;
+use BatchPilot\Errors\BatchPilotError;
 
 final class UndoResult {
 
 	private bool $ok;
 	private int $restored;
-	private ?ContentOpsError $error;
+	private ?BatchPilotError $error;
 
-	private function __construct( bool $ok, int $restored, ?ContentOpsError $error ) {
+	private function __construct( bool $ok, int $restored, ?BatchPilotError $error ) {
 		$this->ok       = $ok;
 		$this->restored = $restored;
 		$this->error    = $error;
@@ -19,7 +19,7 @@ final class UndoResult {
 		return new self( true, $restored, null );
 	}
 
-	public static function error( ContentOpsError $error ): self {
+	public static function error( BatchPilotError $error ): self {
 		return new self( false, 0, $error );
 	}
 
@@ -31,7 +31,7 @@ final class UndoResult {
 		return $this->restored;
 	}
 
-	public function get_error(): ?ContentOpsError {
+	public function get_error(): ?BatchPilotError {
 		return $this->error;
 	}
 }

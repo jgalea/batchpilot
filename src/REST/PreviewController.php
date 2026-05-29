@@ -1,17 +1,17 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Execution\ExecutionService;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
 final class PreviewController extends RestController {
 
 	private const CAP_MAP = [
-		'delete'    => 'content_ops_delete',
-		'duplicate' => 'content_ops_duplicate',
-		'edit'      => 'content_ops_edit',
+		'delete'    => 'batchpilot_delete',
+		'duplicate' => 'batchpilot_duplicate',
+		'edit'      => 'batchpilot_edit',
 	];
 
 	private ExecutionService $execution;
@@ -44,14 +44,14 @@ final class PreviewController extends RestController {
 			if ( null === $error ) {
 				return new WP_REST_Response(
 					[
-						'code'    => 'co.internal',
+						'code'    => 'bp.internal',
 						'message' => 'Unknown preview failure.',
 					],
 					500
 				);
 			}
 			$code   = $error->code();
-			$status = 0 === strpos( $code, 'co.target.' ) || 0 === strpos( $code, 'co.operation.' ) ? 400 : 422;
+			$status = 0 === strpos( $code, 'bp.target.' ) || 0 === strpos( $code, 'bp.operation.' ) ? 400 : 422;
 			return $this->error_response( $error, $status );
 		}
 

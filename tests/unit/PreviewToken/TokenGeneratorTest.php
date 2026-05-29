@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Unit\PreviewToken;
+namespace BatchPilot\Tests\Unit\PreviewToken;
 
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class TokenGeneratorTest extends TestCase {
 

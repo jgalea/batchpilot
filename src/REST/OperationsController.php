@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -35,7 +35,7 @@ final class OperationsController extends RestController {
 		$op = $this->operations->find( (int) $request['id'] );
 		if ( null === $op ) {
 			return $this->error_response(
-				new ContentOpsError( 'co.operation.not_found', 'Operation not found.', [ 'id' => (int) $request['id'] ] ),
+				new BatchPilotError( 'bp.operation.not_found', 'Operation not found.', [ 'id' => (int) $request['id'] ] ),
 				404
 			);
 		}

@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Contracts;
+namespace BatchPilot\Contracts;
 
-use ContentOps\Errors\ContentOpsError;
+use BatchPilot\Errors\BatchPilotError;
 
 final class BatchResult {
 
@@ -11,7 +11,7 @@ final class BatchResult {
 	private int $failed;
 	/** @var array<int|string, string> */
 	private array $item_errors;
-	private ?ContentOpsError $error;
+	private ?BatchPilotError $error;
 
 	/**
 	 * @param array<int|string, string> $item_errors
@@ -22,7 +22,7 @@ final class BatchResult {
 		int $succeeded,
 		int $failed,
 		array $item_errors,
-		?ContentOpsError $error
+		?BatchPilotError $error
 	) {
 		$this->ok          = $ok;
 		$this->processed   = $processed;
@@ -45,7 +45,7 @@ final class BatchResult {
 		return new self( true, $processed, $succeeded, $failed, $item_errors, null );
 	}
 
-	public static function error( ContentOpsError $error ): self {
+	public static function error( BatchPilotError $error ): self {
 		return new self( false, 0, 0, 0, [], $error );
 	}
 
@@ -72,7 +72,7 @@ final class BatchResult {
 		return $this->item_errors;
 	}
 
-	public function get_error(): ?ContentOpsError {
+	public function get_error(): ?BatchPilotError {
 		return $this->error;
 	}
 }

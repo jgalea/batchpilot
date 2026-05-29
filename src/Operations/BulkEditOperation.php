@@ -1,18 +1,18 @@
 <?php
-namespace ContentOps\Operations;
+namespace BatchPilot\Operations;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\OperationInterface;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Contracts\UndoResult;
-use ContentOps\Contracts\ValidationResult;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\OperationRepository;
-use ContentOps\History\SnapshotRepository;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\OperationInterface;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Contracts\UndoResult;
+use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\History\SnapshotRepository;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
 
 final class BulkEditOperation implements OperationInterface {
 
@@ -40,7 +40,7 @@ final class BulkEditOperation implements OperationInterface {
 	}
 
 	public function label(): string {
-		return __( 'Bulk edit', 'content-ops' );
+		return __( 'Bulk edit', 'batchpilot' );
 	}
 
 	/**
@@ -53,48 +53,48 @@ final class BulkEditOperation implements OperationInterface {
 				'set_status'       => [
 					'type'        => 'string',
 					'widget'      => 'post_status',
-					'label'       => __( 'Set status to', 'content-ops' ),
-					'description' => __( 'Change the publication status of every matched item.', 'content-ops' ),
+					'label'       => __( 'Set status to', 'batchpilot' ),
+					'description' => __( 'Change the publication status of every matched item.', 'batchpilot' ),
 				],
 				'reassign_author'  => [
 					'type'        => 'integer',
 					'widget'      => 'user',
-					'label'       => __( 'Reassign author to', 'content-ops' ),
-					'description' => __( 'Every matched item will be reassigned to this user.', 'content-ops' ),
+					'label'       => __( 'Reassign author to', 'batchpilot' ),
+					'description' => __( 'Every matched item will be reassigned to this user.', 'batchpilot' ),
 				],
 				'shift_dates_days' => [
 					'type'        => 'integer',
-					'label'       => __( 'Shift publish dates by (days)', 'content-ops' ),
-					'description' => __( 'Positive to push forward, negative to pull back. Example: −30 shifts posts a month earlier.', 'content-ops' ),
+					'label'       => __( 'Shift publish dates by (days)', 'batchpilot' ),
+					'description' => __( 'Positive to push forward, negative to pull back. Example: −30 shifts posts a month earlier.', 'batchpilot' ),
 				],
 				'taxonomy_add'     => [
 					'type'        => 'object',
 					'widget'      => 'taxonomy_terms',
-					'label'       => __( 'Add taxonomy terms', 'content-ops' ),
-					'description' => __( 'Pick a taxonomy and one or more terms. They will be added to every matched item (existing terms are preserved).', 'content-ops' ),
+					'label'       => __( 'Add taxonomy terms', 'batchpilot' ),
+					'description' => __( 'Pick a taxonomy and one or more terms. They will be added to every matched item (existing terms are preserved).', 'batchpilot' ),
 				],
 				'taxonomy_remove'  => [
 					'type'        => 'object',
 					'widget'      => 'taxonomy_terms',
-					'label'       => __( 'Remove taxonomy terms', 'content-ops' ),
-					'description' => __( 'Pick a taxonomy and the terms to remove from every matched item.', 'content-ops' ),
+					'label'       => __( 'Remove taxonomy terms', 'batchpilot' ),
+					'description' => __( 'Pick a taxonomy and the terms to remove from every matched item.', 'batchpilot' ),
 				],
 				'password'         => [
 					'type'        => 'string',
 					'widget'      => 'password',
-					'label'       => __( 'Set password', 'content-ops' ),
-					'description' => __( 'Password-protect every matched item. Leave empty to clear an existing password.', 'content-ops' ),
+					'label'       => __( 'Set password', 'batchpilot' ),
+					'description' => __( 'Password-protect every matched item. Leave empty to clear an existing password.', 'batchpilot' ),
 				],
 				'comment_status'   => [
 					'type'        => 'string',
 					'enum'        => [ 'open', 'closed' ],
-					'label'       => __( 'Comments', 'content-ops' ),
-					'description' => __( 'Allow or disallow comments on all matched items.', 'content-ops' ),
+					'label'       => __( 'Comments', 'batchpilot' ),
+					'description' => __( 'Allow or disallow comments on all matched items.', 'batchpilot' ),
 				],
 				'menu_order'       => [
 					'type'        => 'integer',
-					'label'       => __( 'Menu order', 'content-ops' ),
-					'description' => __( 'Numeric order used by themes to sort posts/pages.', 'content-ops' ),
+					'label'       => __( 'Menu order', 'batchpilot' ),
+					'description' => __( 'Numeric order used by themes to sort posts/pages.', 'batchpilot' ),
 				],
 			],
 		];
@@ -106,8 +106,8 @@ final class BulkEditOperation implements OperationInterface {
 	public function validate( QueryArgs $args, array $params ): ValidationResult {
 		if ( isset( $params['set_status'] ) && null === get_post_status_object( (string) $params['set_status'] ) ) {
 			return ValidationResult::error(
-				new ContentOpsError(
-					'co.params.invalid_status',
+				new BatchPilotError(
+					'bp.params.invalid_status',
 					'Unknown post status.',
 					[ 'set_status' => $params['set_status'] ]
 				)
@@ -118,8 +118,8 @@ final class BulkEditOperation implements OperationInterface {
 			$user_id = (int) $params['reassign_author'];
 			if ( $user_id <= 0 || false === get_userdata( $user_id ) ) {
 				return ValidationResult::error(
-					new ContentOpsError(
-						'co.params.invalid_author',
+					new BatchPilotError(
+						'bp.params.invalid_author',
 						'User not found.',
 						[ 'reassign_author' => $user_id ]
 					)
@@ -129,19 +129,19 @@ final class BulkEditOperation implements OperationInterface {
 
 		if ( isset( $params['shift_dates_days'] ) && ! is_int( $params['shift_dates_days'] ) ) {
 			return ValidationResult::error(
-				new ContentOpsError( 'co.params.invalid_shift', 'shift_dates_days must be an integer.' )
+				new BatchPilotError( 'bp.params.invalid_shift', 'shift_dates_days must be an integer.' )
 			);
 		}
 
 		if ( isset( $params['menu_order'] ) && ! is_int( $params['menu_order'] ) ) {
 			return ValidationResult::error(
-				new ContentOpsError( 'co.params.invalid_menu_order', 'menu_order must be an integer.' )
+				new BatchPilotError( 'bp.params.invalid_menu_order', 'menu_order must be an integer.' )
 			);
 		}
 
 		if ( isset( $params['comment_status'] ) && ! in_array( $params['comment_status'], [ 'open', 'closed' ], true ) ) {
 			return ValidationResult::error(
-				new ContentOpsError( 'co.params.invalid_comment_status', 'comment_status must be open or closed.' )
+				new BatchPilotError( 'bp.params.invalid_comment_status', 'comment_status must be open or closed.' )
 			);
 		}
 
@@ -152,7 +152,7 @@ final class BulkEditOperation implements OperationInterface {
 			$spec = $params[ $key ];
 			if ( ! is_array( $spec ) || empty( $spec['taxonomy'] ) || ! taxonomy_exists( (string) $spec['taxonomy'] ) ) {
 				return ValidationResult::error(
-					new ContentOpsError( 'co.params.invalid_taxonomy', 'Unknown taxonomy.', [ 'param' => $key ] )
+					new BatchPilotError( 'bp.params.invalid_taxonomy', 'Unknown taxonomy.', [ 'param' => $key ] )
 				);
 			}
 		}
@@ -205,31 +205,31 @@ final class BulkEditOperation implements OperationInterface {
 			$update = [ 'ID' => $id ];
 
 			if ( isset( $params['set_status'] ) ) {
-				$snapshots[]           = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_status', (string) $post->post_status );
+				$snapshots[]           = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_status', (string) $post->post_status );
 				$update['post_status'] = (string) $params['set_status'];
 			}
 			if ( isset( $params['reassign_author'] ) ) {
-				$snapshots[]           = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_author', (string) $post->post_author );
+				$snapshots[]           = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_author', (string) $post->post_author );
 				$update['post_author'] = (int) $params['reassign_author'];
 			}
 			if ( isset( $params['shift_dates_days'] ) ) {
-				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_date', (string) $post->post_date );
-				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_date_gmt', (string) $post->post_date_gmt );
+				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date', (string) $post->post_date );
+				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date_gmt', (string) $post->post_date_gmt );
 				$shifted                 = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
 				$shifted_gmt             = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date_gmt ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
 				$update['post_date']     = $shifted;
 				$update['post_date_gmt'] = $shifted_gmt;
 			}
 			if ( isset( $params['password'] ) ) {
-				$snapshots[]             = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'post_password', (string) $post->post_password );
+				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_password', (string) $post->post_password );
 				$update['post_password'] = (string) $params['password'];
 			}
 			if ( isset( $params['comment_status'] ) ) {
-				$snapshots[]              = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'comment_status', (string) $post->comment_status );
+				$snapshots[]              = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'comment_status', (string) $post->comment_status );
 				$update['comment_status'] = (string) $params['comment_status'];
 			}
 			if ( isset( $params['menu_order'] ) ) {
-				$snapshots[]          = new \ContentOps\History\Snapshot( $operation_id, 'post', $id, 'menu_order', (string) $post->menu_order );
+				$snapshots[]          = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'menu_order', (string) $post->menu_order );
 				$update['menu_order'] = (int) $params['menu_order'];
 			}
 
@@ -243,7 +243,7 @@ final class BulkEditOperation implements OperationInterface {
 			if ( isset( $params['taxonomy_add'] ) ) {
 				$tax         = $params['taxonomy_add'];
 				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
-				$snapshots[] = new \ContentOps\History\Snapshot(
+				$snapshots[] = new \BatchPilot\History\Snapshot(
 					$operation_id,
 					'post',
 					$id,
@@ -255,7 +255,7 @@ final class BulkEditOperation implements OperationInterface {
 			if ( isset( $params['taxonomy_remove'] ) ) {
 				$tax         = $params['taxonomy_remove'];
 				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
-				$snapshots[] = new \ContentOps\History\Snapshot(
+				$snapshots[] = new \BatchPilot\History\Snapshot(
 					$operation_id,
 					'post',
 					$id,
@@ -282,7 +282,7 @@ final class BulkEditOperation implements OperationInterface {
 	public function undo( int $operation_id ): UndoResult {
 		$op = $this->operations->find( $operation_id );
 		if ( null === $op ) {
-			return UndoResult::error( new ContentOpsError( 'co.undo.not_found', 'Operation not found.', [ 'operation_id' => $operation_id ] ) );
+			return UndoResult::error( new BatchPilotError( 'bp.undo.not_found', 'Operation not found.', [ 'operation_id' => $operation_id ] ) );
 		}
 
 		$snaps = $this->snapshots->for_operation( $operation_id );

@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\Presets;
+namespace BatchPilot\Presets;
 
 final class PresetCatalog {
 
@@ -10,8 +10,8 @@ final class PresetCatalog {
 		return [
 			[
 				'slug'        => 'trash-old-drafts',
-				'label'       => __( 'Trash drafts older than 90 days', 'content-ops' ),
-				'description' => __( 'Moves draft posts unmodified for 90 days into the trash.', 'content-ops' ),
+				'label'       => __( 'Trash drafts older than 90 days', 'batchpilot' ),
+				'description' => __( 'Moves draft posts unmodified for 90 days into the trash.', 'batchpilot' ),
 				'target'      => 'post',
 				'operation'   => 'delete',
 				'filters'     => [
@@ -22,8 +22,8 @@ final class PresetCatalog {
 			],
 			[
 				'slug'        => 'trash-auto-drafts',
-				'label'       => __( 'Trash auto-drafts', 'content-ops' ),
-				'description' => __( 'Moves auto-draft posts into the trash.', 'content-ops' ),
+				'label'       => __( 'Trash auto-drafts', 'batchpilot' ),
+				'description' => __( 'Moves auto-draft posts into the trash.', 'batchpilot' ),
 				'target'      => 'post',
 				'operation'   => 'delete',
 				'filters'     => [ 'status' => [ 'auto-draft' ] ],

@@ -1,18 +1,18 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\OperationRepository;
-use ContentOps\Registry\OperationRegistry;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Registry\OperationRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
 final class UndoController extends RestController {
 
 	private const CAP_MAP = [
-		'delete'    => 'content_ops_delete',
-		'duplicate' => 'content_ops_duplicate',
-		'edit'      => 'content_ops_edit',
+		'delete'    => 'batchpilot_delete',
+		'duplicate' => 'batchpilot_duplicate',
+		'edit'      => 'batchpilot_edit',
 	];
 
 	private OperationRegistry $operations;
@@ -40,7 +40,7 @@ final class UndoController extends RestController {
 		$op = $this->repo->find( $id );
 		if ( null === $op ) {
 			return $this->error_response(
-				new ContentOpsError( 'co.operation.not_found', 'Operation not found.', [ 'id' => $id ] ),
+				new BatchPilotError( 'bp.operation.not_found', 'Operation not found.', [ 'id' => $id ] ),
 				404
 			);
 		}
@@ -48,7 +48,7 @@ final class UndoController extends RestController {
 		$runner = $this->operations->get( $op->type() );
 		if ( null === $runner ) {
 			return $this->error_response(
-				new ContentOpsError( 'co.operation.unknown', 'Operation type no longer registered.', [ 'type' => $op->type() ] ),
+				new BatchPilotError( 'bp.operation.unknown', 'Operation type no longer registered.', [ 'type' => $op->type() ] ),
 				400
 			);
 		}

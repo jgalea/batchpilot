@@ -1,5 +1,5 @@
 {
-  "name": "jeangalea/content-ops",
+  "name": "jeangalea/batchpilot",
   "description": "Bulk operations for WordPress and WooCommerce, designed for humans and AI agents.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
@@ -21,13 +21,13 @@
   },
   "autoload": {
     "psr-4": {
-      "ContentOps\\": "src/"
+      "BatchPilot\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "ContentOps\\Tests\\Unit\\": "tests/unit/",
-      "ContentOps\\Tests\\Integration\\": "tests/integration/"
+      "BatchPilot\\Tests\\Unit\\": "tests/unit/",
+      "BatchPilot\\Tests\\Integration\\": "tests/integration/"
     }
   },
   "config": {

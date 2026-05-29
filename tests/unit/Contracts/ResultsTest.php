@@ -1,12 +1,12 @@
 <?php
-namespace ContentOps\Tests\Unit\Contracts;
+namespace BatchPilot\Tests\Unit\Contracts;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\UndoResult;
-use ContentOps\Contracts\ValidationResult;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\UndoResult;
+use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class ResultsTest extends TestCase {
 
@@ -17,7 +17,7 @@ final class ResultsTest extends TestCase {
 	}
 
 	public function test_validation_error(): void {
-		$error  = new ContentOpsError( 'co.filter.invalid', 'Invalid filter.' );
+		$error  = new BatchPilotError( 'bp.filter.invalid', 'Invalid filter.' );
 		$result = ValidationResult::error( $error );
 
 		$this->assertFalse( $result->is_ok() );
@@ -35,7 +35,7 @@ final class ResultsTest extends TestCase {
 	}
 
 	public function test_preview_error(): void {
-		$preview = PreviewResult::error( new ContentOpsError( 'co.query.too_many', 'Too many matches.' ) );
+		$preview = PreviewResult::error( new BatchPilotError( 'bp.query.too_many', 'Too many matches.' ) );
 		$this->assertFalse( $preview->is_ok() );
 	}
 
@@ -70,7 +70,7 @@ final class ResultsTest extends TestCase {
 	}
 
 	public function test_batch_error_exposes_zero_state(): void {
-		$error = new ContentOpsError( 'co.batch.failed', 'Batch failed.' );
+		$error = new BatchPilotError( 'bp.batch.failed', 'Batch failed.' );
 		$batch = BatchResult::error( $error );
 
 		$this->assertFalse( $batch->is_ok() );
@@ -82,7 +82,7 @@ final class ResultsTest extends TestCase {
 	}
 
 	public function test_undo_error_exposes_zero_state(): void {
-		$error = new ContentOpsError( 'co.undo.failed', 'Undo failed.' );
+		$error = new BatchPilotError( 'bp.undo.failed', 'Undo failed.' );
 		$undo  = UndoResult::error( $error );
 
 		$this->assertFalse( $undo->is_ok() );

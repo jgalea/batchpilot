@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\REST\RestController;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\REST\RestController;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_Error;
 use WP_REST_Response;
 
@@ -11,7 +11,7 @@ final class RestControllerTest extends TestCase {
 
 	public function test_error_response_has_canonical_shape(): void {
 		$controller = new class() extends RestController {};
-		$error      = new ContentOpsError( 'co.filter.invalid', 'Bad filter.', [ 'key' => 'status' ] );
+		$error      = new BatchPilotError( 'bp.filter.invalid', 'Bad filter.', [ 'key' => 'status' ] );
 
 		$response = $controller->error_response( $error, 422 );
 
@@ -19,7 +19,7 @@ final class RestControllerTest extends TestCase {
 		$this->assertSame( 422, $response->get_status() );
 		$this->assertSame(
 			[
-				'code'    => 'co.filter.invalid',
+				'code'    => 'bp.filter.invalid',
 				'message' => 'Bad filter.',
 				'context' => [ 'key' => 'status' ],
 			],
@@ -34,7 +34,7 @@ final class RestControllerTest extends TestCase {
 		$result     = $controller->require_capability( 'manage_options' );
 
 		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertSame( 'co.auth.forbidden', $result->get_error_code() );
+		$this->assertSame( 'bp.auth.forbidden', $result->get_error_code() );
 	}
 
 	public function test_capability_passes_for_admin(): void {

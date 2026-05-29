@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\Abilities;
+namespace BatchPilot\Tests\Integration\Abilities;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class AbilitiesMatrixTest extends TestCase {
 
@@ -12,10 +12,10 @@ final class AbilitiesMatrixTest extends TestCase {
 
 		do_action( 'abilities_api_init' );
 
-		$this->assertNotNull( wp_get_ability( 'content-ops/post_delete' ) );
-		$this->assertNotNull( wp_get_ability( 'content-ops/post_duplicate' ) );
-		$this->assertNotNull( wp_get_ability( 'content-ops/post_edit' ) );
-		$this->assertNotNull( wp_get_ability( 'content-ops/page_delete' ) );
-		$this->assertNotNull( wp_get_ability( 'content-ops/doctor' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post_delete' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post_duplicate' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post_edit' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/page_delete' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/doctor' ) );
 	}
 }

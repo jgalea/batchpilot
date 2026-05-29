@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\Tests\Unit;
+namespace BatchPilot\Tests\Unit;
 
 use Brain\Monkey;
 use PHPUnit\Framework\TestCase as BaseTestCase;

@@ -1,25 +1,25 @@
 <?php
-namespace ContentOps\Admin;
+namespace BatchPilot\Admin;
 
 final class AdminMenu {
 
-	public const PARENT_SLUG = 'content-ops';
+	public const PARENT_SLUG = 'batchpilot';
 
 	public const PAGES = [
 		'dashboard'  => [
-			'slug'      => 'content-ops',
+			'slug'      => 'batchpilot',
 			'title_key' => 'Dashboard',
 		],
 		'operations' => [
-			'slug'      => 'content-ops-operations',
+			'slug'      => 'batchpilot-operations',
 			'title_key' => 'Operations',
 		],
 		'history'    => [
-			'slug'      => 'content-ops-history',
+			'slug'      => 'batchpilot-history',
 			'title_key' => 'History',
 		],
 		'settings'   => [
-			'slug'      => 'content-ops-settings',
+			'slug'      => 'batchpilot-settings',
 			'title_key' => 'Settings',
 		],
 	];
@@ -30,8 +30,8 @@ final class AdminMenu {
 
 	public function register_menus(): void {
 		add_menu_page(
-			__( 'Content Ops', 'content-ops' ),
-			__( 'Content Ops', 'content-ops' ),
+			__( 'BatchPilot', 'batchpilot' ),
+			__( 'BatchPilot', 'batchpilot' ),
 			'manage_options',
 			self::PARENT_SLUG,
 			function () {
@@ -45,9 +45,9 @@ final class AdminMenu {
 			add_submenu_page(
 				self::PARENT_SLUG,
 				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralDomain
-				__( $info['title_key'], 'content-ops' ),
+				__( $info['title_key'], 'batchpilot' ),
 				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralDomain
-				__( $info['title_key'], 'content-ops' ),
+				__( $info['title_key'], 'batchpilot' ),
 				'manage_options',
 				$info['slug'],
 				function () use ( $key ) {
@@ -63,7 +63,7 @@ final class AdminMenu {
 			return;
 		}
 		printf(
-			'<div class="wrap"><div class="content-ops-app" id="content-ops-%1$s-root"></div></div>',
+			'<div class="wrap"><div class="batchpilot-app" id="batchpilot-%1$s-root"></div></div>',
 			esc_attr( $page_key )
 		);
 	}
@@ -73,10 +73,10 @@ final class AdminMenu {
 	 */
 	public static function page_hook_suffixes(): array {
 		return [
-			'dashboard'  => 'toplevel_page_content-ops',
-			'operations' => 'content-ops_page_content-ops-operations',
-			'history'    => 'content-ops_page_content-ops-history',
-			'settings'   => 'content-ops_page_content-ops-settings',
+			'dashboard'  => 'toplevel_page_batchpilot',
+			'operations' => 'batchpilot_page_batchpilot-operations',
+			'history'    => 'batchpilot_page_batchpilot-history',
+			'settings'   => 'batchpilot_page_batchpilot-settings',
 		];
 	}
 }

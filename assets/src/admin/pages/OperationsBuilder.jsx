@@ -39,18 +39,18 @@ const filtersToArgs = ( rows ) => {
 
 const Step = ( { number, title, description, done, disabled, children } ) => (
 	<section
-		className={ `co-step${ disabled ? ' co-step--disabled' : '' }${
-			done ? ' co-step--done' : ''
+		className={ `bp-step${ disabled ? ' bp-step--disabled' : '' }${
+			done ? ' bp-step--done' : ''
 		}` }
 	>
-		<div className="co-step__header">
-			<span className="co-step__number">{ number }</span>
-			<div className="co-step__titles">
-				<h2 className="co-step__title">{ title }</h2>
-				<p className="co-step__description">{ description }</p>
+		<div className="bp-step__header">
+			<span className="bp-step__number">{ number }</span>
+			<div className="bp-step__titles">
+				<h2 className="bp-step__title">{ title }</h2>
+				<p className="bp-step__description">{ description }</p>
 			</div>
 		</div>
-		<div className="co-step__body">{ children }</div>
+		<div className="bp-step__body">{ children }</div>
 	</section>
 );
 
@@ -142,7 +142,7 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 	if ( error ) {
 		return (
-			<div className="co-stack">
+			<div className="bp-stack">
 				<Notice status="error" role="alert">
 					{ error.message }
 				</Notice>
@@ -151,7 +151,7 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 	}
 	if ( ! catalog ) {
 		return (
-			<div className="co-stack">
+			<div className="bp-stack">
 				<Spinner />
 			</div>
 		);
@@ -191,26 +191,26 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 	return (
 		<BuilderContext.Provider value={ { state, dispatch, catalog, api } }>
-			<div className="co-stack">
-				<header className="co-page-header">
-					<span className="co-eyebrow">
-						{ __( 'Builder', 'content-ops' ) }
+			<div className="bp-stack">
+				<header className="bp-page-header">
+					<span className="bp-eyebrow">
+						{ __( 'Builder', 'batchpilot' ) }
 					</span>
-					<h1>{ __( 'Operations', 'content-ops' ) }</h1>
-					<p className="co-page-subtitle">
+					<h1>{ __( 'Operations', 'batchpilot' ) }</h1>
+					<p className="bp-page-subtitle">
 						{ __(
 							'Build a bulk operation in four steps: pick a target, add filters, choose an operation, preview, then execute.',
-							'content-ops'
+							'batchpilot'
 						) }
 					</p>
 				</header>
 
 				<Step
 					number="1"
-					title={ __( 'Target', 'content-ops' ) }
+					title={ __( 'Target', 'batchpilot' ) }
 					description={ __(
 						'What kind of content are you operating on?',
-						'content-ops'
+						'batchpilot'
 					) }
 					done={ !! state.target }
 				>
@@ -225,16 +225,16 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 				<Step
 					number="2"
-					title={ __( 'Filters', 'content-ops' ) }
+					title={ __( 'Filters', 'batchpilot' ) }
 					description={
 						state.target
 							? __(
 									'Narrow the matching set. All filters must match.',
-									'content-ops'
+									'batchpilot'
 							  )
 							: __(
 									'Filter options unlock once you pick a target.',
-									'content-ops'
+									'batchpilot'
 							  )
 					}
 					disabled={ ! state.target }
@@ -249,10 +249,10 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 							dispatch={ dispatch }
 						/>
 					) : (
-						<p className="co-empty">
+						<p className="bp-empty">
 							{ __(
 								'Pick a target above to add filters.',
-								'content-ops'
+								'batchpilot'
 							) }
 						</p>
 					) }
@@ -260,16 +260,16 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 				<Step
 					number="3"
-					title={ __( 'Operation', 'content-ops' ) }
+					title={ __( 'Operation', 'batchpilot' ) }
 					description={
 						state.target
 							? __(
 									'What should happen to the matched items?',
-									'content-ops'
+									'batchpilot'
 							  )
 							: __(
 									'Choose Delete, Duplicate, or Bulk edit once a target is selected.',
-									'content-ops'
+									'batchpilot'
 							  )
 					}
 					disabled={ ! state.target }
@@ -289,9 +289,9 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 								}
 							/>
 							{ state.operation && (
-								<div className="co-step__subsection">
-									<h3 className="co-section-title">
-										{ __( 'Parameters', 'content-ops' ) }
+								<div className="bp-step__subsection">
+									<h3 className="bp-section-title">
+										{ __( 'Parameters', 'batchpilot' ) }
 									</h3>
 									<OperationParamsForm
 										schema={
@@ -310,10 +310,10 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 							) }
 						</>
 					) : (
-						<p className="co-empty">
+						<p className="bp-empty">
 							{ __(
 								'Pick a target above to choose an operation.',
-								'content-ops'
+								'batchpilot'
 							) }
 						</p>
 					) }
@@ -321,16 +321,16 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 
 				<Step
 					number="4"
-					title={ __( 'Preview & execute', 'content-ops' ) }
+					title={ __( 'Preview & execute', 'batchpilot' ) }
 					description={
 						state.operation
 							? __(
 									'Live-preview the match; execute when ready.',
-									'content-ops'
+									'batchpilot'
 							  )
 							: __(
 									'Preview becomes available once a target and operation are selected.',
-									'content-ops'
+									'batchpilot'
 							  )
 					}
 					disabled={ ! state.operation }
@@ -342,7 +342,7 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 								previewing={ previewing }
 								previewError={ previewError }
 							/>
-							<div className="co-execute-row">
+							<div className="bp-execute-row">
 								<ExecuteButton
 									preview={ preview }
 									operation={ state.operation }
@@ -363,10 +363,10 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 							) }
 						</>
 					) : (
-						<p className="co-empty">
+						<p className="bp-empty">
 							{ __(
 								'Complete steps 1–3 to preview and execute.',
-								'content-ops'
+								'batchpilot'
 							) }
 						</p>
 					) }

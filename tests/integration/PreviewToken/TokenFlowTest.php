@@ -1,10 +1,10 @@
 <?php
-namespace ContentOps\Tests\Integration\PreviewToken;
+namespace BatchPilot\Tests\Integration\PreviewToken;
 
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\PreviewToken\TokenVerifier;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\PreviewToken\TokenVerifier;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class TokenFlowTest extends TestCase {
 

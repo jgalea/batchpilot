@@ -1,17 +1,17 @@
 <?php
-namespace ContentOps\Operations;
+namespace BatchPilot\Operations;
 
-use ContentOps\Contracts\BatchResult;
-use ContentOps\Contracts\OperationInterface;
-use ContentOps\Contracts\PreviewResult;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Contracts\TargetInterface;
-use ContentOps\Contracts\UndoResult;
-use ContentOps\Contracts\ValidationResult;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\History\OperationRepository;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
+use BatchPilot\Contracts\BatchResult;
+use BatchPilot\Contracts\OperationInterface;
+use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Contracts\UndoResult;
+use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
 
 final class DeleteOperation implements OperationInterface {
 
@@ -36,7 +36,7 @@ final class DeleteOperation implements OperationInterface {
 	}
 
 	public function label(): string {
-		return __( 'Delete', 'content-ops' );
+		return __( 'Delete', 'batchpilot' );
 	}
 
 	/**
@@ -49,8 +49,8 @@ final class DeleteOperation implements OperationInterface {
 				'permanent' => [
 					'type'        => 'boolean',
 					'default'     => false,
-					'label'       => __( 'Permanently delete (skip trash)', 'content-ops' ),
-					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default — items go to the Trash and can be restored.', 'content-ops' ),
+					'label'       => __( 'Permanently delete (skip trash)', 'batchpilot' ),
+					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default — items go to the Trash and can be restored.', 'batchpilot' ),
 				],
 			],
 		];
@@ -127,8 +127,8 @@ final class DeleteOperation implements OperationInterface {
 		$op = $this->operations->find( $operation_id );
 		if ( null === $op ) {
 			return UndoResult::error(
-				new ContentOpsError(
-					'co.undo.not_found',
+				new BatchPilotError(
+					'bp.undo.not_found',
 					'Operation not found.',
 					[ 'operation_id' => $operation_id ]
 				)
@@ -137,8 +137,8 @@ final class DeleteOperation implements OperationInterface {
 
 		if ( ! empty( $op->params()['permanent'] ) ) {
 			return UndoResult::error(
-				new ContentOpsError(
-					'co.undo.permanent_delete',
+				new BatchPilotError(
+					'bp.undo.permanent_delete',
 					'Permanent deletions cannot be undone.',
 					[ 'operation_id' => $operation_id ]
 				)

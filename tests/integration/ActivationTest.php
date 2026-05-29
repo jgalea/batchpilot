@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Integration;
+namespace BatchPilot\Tests\Integration;
 
-use ContentOps\Activator;
-use ContentOps\Database\Schema;
+use BatchPilot\Activator;
+use BatchPilot\Database\Schema;
 
 final class ActivationTest extends TestCase {
 

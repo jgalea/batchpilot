@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Admin\Settings;
+use BatchPilot\Admin\Settings;
 use WP_REST_Request;
 use WP_REST_Response;
 

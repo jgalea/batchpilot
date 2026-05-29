@@ -1,5 +1,5 @@
 {
-  "name": "content-ops",
+  "name": "batchpilot",
   "version": "0.1.0-alpha",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "env:start": "wp-env start",
     "env:stop": "wp-env stop",
     "env:destroy": "wp-env destroy",
-    "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/content-ops composer test:integration"
+    "env:test": "wp-env run tests-cli --env-cwd=wp-content/plugins/batchpilot composer test:integration"
   },
   "devDependencies": {
     "@playwright/test": "^1.59.1",

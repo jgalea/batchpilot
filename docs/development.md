@@ -29,7 +29,7 @@ npm run build                # build admin JS
 
 ```
 npm run env:start
-wp-env run cli --env-cwd=wp-content/plugins/content-ops wp content-ops doctor --format=json
+wp-env run cli --env-cwd=wp-content/plugins/batchpilot wp batchpilot doctor --format=json
 ```
 
 Should return a JSON report with environment health.

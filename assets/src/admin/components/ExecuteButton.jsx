@@ -7,25 +7,25 @@ const labelFor = ( operation, count ) => {
 		case 'delete':
 			return sprintf(
 				/* translators: %d: number of items */
-				__( 'Delete %d items', 'content-ops' ),
+				__( 'Delete %d items', 'batchpilot' ),
 				count
 			);
 		case 'duplicate':
 			return sprintf(
 				/* translators: %d: number of items */
-				__( 'Duplicate %d items', 'content-ops' ),
+				__( 'Duplicate %d items', 'batchpilot' ),
 				count
 			);
 		case 'edit':
 			return sprintf(
 				/* translators: %d: number of items */
-				__( 'Bulk-edit %d items', 'content-ops' ),
+				__( 'Bulk-edit %d items', 'batchpilot' ),
 				count
 			);
 		default:
 			return sprintf(
 				/* translators: %d: number of items */
-				__( 'Run on %d items', 'content-ops' ),
+				__( 'Run on %d items', 'batchpilot' ),
 				count
 			);
 	}
@@ -52,19 +52,19 @@ const ExecuteButton = ( {
 
 	const label = preview
 		? labelFor( operation, count )
-		: __( 'Preview first', 'content-ops' );
+		: __( 'Preview first', 'batchpilot' );
 
 	return (
-		<div className="co-execute">
+		<div className="bp-execute">
 			{ unfiltered && (
 				<Notice
 					status="warning"
 					isDismissible={ false }
-					className="co-execute__notice"
+					className="bp-execute__notice"
 				>
 					{ __(
 						'No filters added. This will match EVERY item of this target. Add filters to narrow the set.',
-						'content-ops'
+						'batchpilot'
 					) }
 				</Notice>
 			) }
@@ -72,13 +72,13 @@ const ExecuteButton = ( {
 				<Notice
 					status="warning"
 					isDismissible={ false }
-					className="co-execute__notice"
+					className="bp-execute__notice"
 				>
 					{ sprintf(
 						/* translators: %d: number of items */
 						__(
 							'You are about to delete %d items. Double-check the preview above.',
-							'content-ops'
+							'batchpilot'
 						),
 						count
 					) }
@@ -86,11 +86,11 @@ const ExecuteButton = ( {
 			) }
 			{ needsConfirm && (
 				<label
-					className="co-execute__confirm"
-					htmlFor="co-execute__confirm-input"
+					className="bp-execute__confirm"
+					htmlFor="bp-execute__confirm-input"
 				>
 					<input
-						id="co-execute__confirm-input"
+						id="bp-execute__confirm-input"
 						type="checkbox"
 						checked={ confirmed }
 						onChange={ ( e ) => setConfirmed( e.target.checked ) }
@@ -98,7 +98,7 @@ const ExecuteButton = ( {
 					<span>
 						{ __(
 							'I understand — proceed with this destructive action.',
-							'content-ops'
+							'batchpilot'
 						) }
 					</span>
 				</label>
@@ -109,7 +109,7 @@ const ExecuteButton = ( {
 				isDestructive={ isDestructive }
 				disabled={ ! canRun }
 				onClick={ onExecute }
-				className="co-execute__button"
+				className="bp-execute__button"
 			>
 				{ label }
 			</Button>

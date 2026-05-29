@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration;
+namespace BatchPilot\Tests\Integration;
 
-use ContentOps\Plugin;
+use BatchPilot\Plugin;
 use WP_UnitTestCase;
 
 abstract class TestCase extends WP_UnitTestCase {
@@ -10,7 +10,7 @@ abstract class TestCase extends WP_UnitTestCase {
 		parent::set_up();
 
 		if ( null === Plugin::instance() ) {
-			Plugin::boot( dirname( __DIR__, 2 ) . '/content-ops.php' );
+			Plugin::boot( dirname( __DIR__, 2 ) . '/batchpilot.php' );
 		}
 	}
 }

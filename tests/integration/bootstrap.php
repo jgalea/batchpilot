@@ -12,7 +12,7 @@ if ( false === $wp_phpunit_dir ) {
 $_tests_dir = rtrim( $wp_phpunit_dir, '/\\' );
 
 $GLOBALS['wp_tests_options'] = [
-	'active_plugins' => [ 'content-ops/content-ops.php' ],
+	'active_plugins' => [ 'batchpilot/batchpilot.php' ],
 ];
 
 require_once $_tests_dir . '/includes/functions.php';
@@ -20,7 +20,7 @@ require_once $_tests_dir . '/includes/functions.php';
 tests_add_filter(
 	'muplugins_loaded',
 	static function (): void {
-		require dirname( __DIR__, 2 ) . '/content-ops.php';
+		require dirname( __DIR__, 2 ) . '/batchpilot.php';
 	}
 );
 

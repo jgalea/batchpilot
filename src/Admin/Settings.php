@@ -1,9 +1,9 @@
 <?php
-namespace ContentOps\Admin;
+namespace BatchPilot\Admin;
 
 final class Settings {
 
-	public const OPTION = 'content_ops_settings';
+	public const OPTION = 'batchpilot_settings';
 
 	public const DEFAULTS = [
 		'async_threshold'          => 100,
@@ -14,7 +14,7 @@ final class Settings {
 	];
 
 	public function register(): void {
-		add_filter( 'content_ops_async_threshold', [ $this, 'filter_async_threshold' ] );
+		add_filter( 'batchpilot_async_threshold', [ $this, 'filter_async_threshold' ] );
 	}
 
 	/**

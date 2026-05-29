@@ -1,8 +1,8 @@
 <?php
-namespace ContentOps\Tests\Unit\Presets;
+namespace BatchPilot\Tests\Unit\Presets;
 
-use ContentOps\Presets\PresetCatalog;
-use ContentOps\Tests\Unit\TestCase;
+use BatchPilot\Presets\PresetCatalog;
+use BatchPilot\Tests\Unit\TestCase;
 
 final class PresetCatalogTest extends TestCase {
 

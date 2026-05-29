@@ -1,8 +1,8 @@
 const PAGE_IDS = {
-	dashboard: 'content-ops-dashboard-root',
-	operations: 'content-ops-operations-root',
-	history: 'content-ops-history-root',
-	settings: 'content-ops-settings-root',
+	dashboard: 'batchpilot-dashboard-root',
+	operations: 'batchpilot-operations-root',
+	history: 'batchpilot-history-root',
+	settings: 'batchpilot-settings-root',
 };
 
 export const detectPage = ( doc = document ) => {

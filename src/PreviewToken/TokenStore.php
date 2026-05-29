@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\PreviewToken;
+namespace BatchPilot\PreviewToken;
 
 final class TokenStore {
 

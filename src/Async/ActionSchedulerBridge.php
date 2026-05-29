@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\Async;
+namespace BatchPilot\Async;
 
 final class ActionSchedulerBridge {
 

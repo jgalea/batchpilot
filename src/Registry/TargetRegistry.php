@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Registry;
+namespace BatchPilot\Registry;
 
-use ContentOps\Contracts\TargetInterface;
+use BatchPilot\Contracts\TargetInterface;
 use LogicException;
 
 final class TargetRegistry {

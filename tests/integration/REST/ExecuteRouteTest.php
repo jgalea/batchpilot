@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_REST_Request;
 use WP_REST_Server;
 
@@ -11,7 +11,7 @@ final class ExecuteRouteTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
@@ -20,7 +20,7 @@ final class ExecuteRouteTest extends TestCase {
 
 		$admin = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$role  = get_role( 'administrator' );
-		foreach ( \ContentOps\Capabilities\Capabilities::ALL as $cap ) {
+		foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $cap ) {
 			$role->add_cap( $cap );
 		}
 		wp_set_current_user( $admin );
@@ -32,7 +32,7 @@ final class ExecuteRouteTest extends TestCase {
 	 * @return array<string, mixed>
 	 */
 	private function preview( array $filters = [ 'status' => [ 'draft' ] ], array $params = [ 'permanent' => false ] ): array {
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/preview' );
 		$req->set_body_params(
 			[
 				'target'    => 'post',
@@ -50,7 +50,7 @@ final class ExecuteRouteTest extends TestCase {
 		$preview = $this->preview();
 		$token   = $preview['preview_token'];
 
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/execute' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/execute' );
 		$req->set_body_params(
 			[
 				'preview_token' => $token,
@@ -76,7 +76,7 @@ final class ExecuteRouteTest extends TestCase {
 	public function test_execute_rejects_invalid_token(): void {
 		self::factory()->post->create( [ 'post_status' => 'draft' ] );
 
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/execute' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/execute' );
 		$req->set_body_params(
 			[
 				'preview_token' => 'not-a-real-token',
@@ -88,15 +88,15 @@ final class ExecuteRouteTest extends TestCase {
 		);
 		$response = $this->server->dispatch( $req );
 		$this->assertSame( 409, $response->get_status() );
-		$this->assertSame( 'co.preview.stale_token', $response->get_data()['code'] );
+		$this->assertSame( 'bp.preview.stale_token', $response->get_data()['code'] );
 	}
 
 	public function test_execute_queues_above_threshold(): void {
-		add_filter( 'content_ops_async_threshold', static fn () => 2 );
+		add_filter( 'batchpilot_async_threshold', static fn () => 2 );
 		self::factory()->post->create_many( 3, [ 'post_status' => 'draft' ] );
 
 		$preview = $this->preview();
-		$req     = new WP_REST_Request( 'POST', '/content-ops/v1/execute' );
+		$req     = new WP_REST_Request( 'POST', '/batchpilot/v1/execute' );
 		$req->set_body_params(
 			[
 				'preview_token' => $preview['preview_token'],

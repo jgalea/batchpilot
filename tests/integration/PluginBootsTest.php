@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration;
+namespace BatchPilot\Tests\Integration;
 
-use ContentOps\Plugin;
+use BatchPilot\Plugin;
 
 final class PluginBootsTest extends TestCase {
 
@@ -9,15 +9,15 @@ final class PluginBootsTest extends TestCase {
 		$this->assertInstanceOf( Plugin::class, Plugin::instance() );
 	}
 
-	public function test_content_ops_booted_action_fires(): void {
+	public function test_batchpilot_booted_action_fires(): void {
 		$fired    = 0;
 		$callback = static function () use ( &$fired ): void {
 			++$fired;
 		};
 
-		add_action( 'content_ops_booted', $callback );
+		add_action( 'batchpilot_booted', $callback );
 		Plugin::instance()->on_plugins_loaded();
-		remove_action( 'content_ops_booted', $callback );
+		remove_action( 'batchpilot_booted', $callback );
 
 		$this->assertSame( 1, $fired );
 	}

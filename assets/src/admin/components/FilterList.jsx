@@ -31,23 +31,23 @@ const FilterList = ( { filters, defs, dispatch } ) => {
 	} ) );
 
 	return (
-		<div className="co-filter-list">
+		<div className="bp-filter-list">
 			{ filters.length === 0 ? (
-				<div className="co-filter-empty" role="status">
-					<strong className="co-filter-empty__title">
-						{ __( 'No filters yet', 'content-ops' ) }
+				<div className="bp-filter-empty" role="status">
+					<strong className="bp-filter-empty__title">
+						{ __( 'No filters yet', 'batchpilot' ) }
 					</strong>
-					<span className="co-filter-empty__hint">
+					<span className="bp-filter-empty__hint">
 						{ __(
 							'Without filters, this operation will match EVERY item of the selected target. Add at least one filter to narrow the set.',
-							'content-ops'
+							'batchpilot'
 						) }
 					</span>
 				</div>
 			) : (
-				<ul className="co-filter-list__items">
+				<ul className="bp-filter-list__items">
 					{ filters.map( ( row ) => (
-						<li key={ row.id } className="co-filter-list__item">
+						<li key={ row.id } className="bp-filter-list__item">
 							<FilterRow
 								row={ row }
 								defs={ defs }
@@ -69,30 +69,30 @@ const FilterList = ( { filters, defs, dispatch } ) => {
 					) ) }
 				</ul>
 			) }
-			<div className="co-filter-list__actions">
+			<div className="bp-filter-list__actions">
 				{ menuControls.length > 0 ? (
 					<DropdownMenu
 						icon={ filterIcon }
-						label={ __( 'Add filter', 'content-ops' ) }
-						text={ __( 'Add filter', 'content-ops' ) }
+						label={ __( 'Add filter', 'batchpilot' ) }
+						text={ __( 'Add filter', 'batchpilot' ) }
 						controls={ menuControls }
 						toggleProps={ {
 							variant: 'secondary',
-							className: 'co-filter-list__add',
+							className: 'bp-filter-list__add',
 						} }
 					/>
 				) : (
 					<Button
 						variant="secondary"
 						disabled
-						className="co-filter-list__add"
+						className="bp-filter-list__add"
 					>
-						{ __( 'All filters added', 'content-ops' ) }
+						{ __( 'All filters added', 'batchpilot' ) }
 					</Button>
 				) }
 				{ filters.length > 1 && (
-					<span className="co-filter-list__meta">
-						{ __( 'All filters must match (AND).', 'content-ops' ) }
+					<span className="bp-filter-list__meta">
+						{ __( 'All filters must match (AND).', 'batchpilot' ) }
 					</span>
 				) }
 			</div>

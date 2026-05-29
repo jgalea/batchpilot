@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Contracts;
+namespace BatchPilot\Contracts;
 
-use ContentOps\Errors\ContentOpsError;
+use BatchPilot\Errors\BatchPilotError;
 
 final class PreviewResult {
 
@@ -12,7 +12,7 @@ final class PreviewResult {
 	private string $preview_token;
 	/** @var string[] */
 	private array $warnings;
-	private ?ContentOpsError $error;
+	private ?BatchPilotError $error;
 
 	/**
 	 * @param int[]    $sample_ids
@@ -24,7 +24,7 @@ final class PreviewResult {
 		array $sample_ids,
 		string $preview_token,
 		array $warnings,
-		?ContentOpsError $error
+		?BatchPilotError $error
 	) {
 		$this->ok            = $ok;
 		$this->count         = $count;
@@ -42,7 +42,7 @@ final class PreviewResult {
 		return new self( true, $count, $sample_ids, $preview_token, $warnings, null );
 	}
 
-	public static function error( ContentOpsError $error ): self {
+	public static function error( BatchPilotError $error ): self {
 		return new self( false, 0, [], '', [], $error );
 	}
 
@@ -72,7 +72,7 @@ final class PreviewResult {
 		return $this->warnings;
 	}
 
-	public function get_error(): ?ContentOpsError {
+	public function get_error(): ?BatchPilotError {
 		return $this->error;
 	}
 }

@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps\Contracts;
+namespace BatchPilot\Contracts;
 
 use InvalidArgumentException;
 

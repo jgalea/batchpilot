@@ -5,10 +5,10 @@ import { normalizeError } from '../api';
 
 const hposDetail = ( hpos ) => {
 	if ( ! hpos.available ) {
-		return __( 'Not applicable.', 'content-ops' );
+		return __( 'Not applicable.', 'batchpilot' );
 	}
 	if ( ! hpos.enabled ) {
-		return __( 'Available but disabled.', 'content-ops' );
+		return __( 'Available but disabled.', 'batchpilot' );
 	}
 	return '';
 };
@@ -16,12 +16,12 @@ const hposDetail = ( hpos ) => {
 const Row = ( { id, label, status, detail } ) => (
 	<li data-testid={ `health-${ id }` } data-status={ status }>
 		<span
-			className={ `content-ops-health-dot content-ops-health-dot--${ status }` }
+			className={ `batchpilot-health-dot batchpilot-health-dot--${ status }` }
 			aria-hidden="true"
 		/>
 		<strong>{ label }</strong>
 		{ detail && (
-			<span className="content-ops-health-detail"> { detail }</span>
+			<span className="batchpilot-health-detail"> { detail }</span>
 		) }
 	</li>
 );
@@ -64,29 +64,29 @@ const HealthPanel = ( { api } ) => {
 	const items = [
 		{
 			id: 'action_scheduler',
-			label: __( 'Action Scheduler', 'content-ops' ),
+			label: __( 'Action Scheduler', 'batchpilot' ),
 			status: report.action_scheduler.available ? 'ok' : 'warn',
 		},
 		{
 			id: 'abilities_api',
-			label: __( 'Abilities API', 'content-ops' ),
+			label: __( 'Abilities API', 'batchpilot' ),
 			status: report.abilities_api.available ? 'ok' : 'warn',
 			detail: report.abilities_api.available
 				? ''
 				: __(
 						'Optional — install to expose MCP tools.',
-						'content-ops'
+						'batchpilot'
 				  ),
 		},
 		{
 			id: 'hpos',
-			label: __( 'HPOS (WooCommerce)', 'content-ops' ),
+			label: __( 'HPOS (WooCommerce)', 'batchpilot' ),
 			status: report.hpos.enabled ? 'ok' : 'warn',
 			detail: hposDetail( report.hpos ),
 		},
 		{
 			id: 'tables',
-			label: __( 'Database tables', 'content-ops' ),
+			label: __( 'Database tables', 'batchpilot' ),
 			status: report.tables.missing.length === 0 ? 'ok' : 'error',
 			detail:
 				report.tables.missing.length === 0
@@ -95,10 +95,10 @@ const HealthPanel = ( { api } ) => {
 		},
 		{
 			id: 'cron',
-			label: __( 'WP-Cron', 'content-ops' ),
+			label: __( 'WP-Cron', 'batchpilot' ),
 			status: report.cron.disabled ? 'warn' : 'ok',
 			detail: report.cron.disabled
-				? __( 'DISABLE_WP_CRON is set.', 'content-ops' )
+				? __( 'DISABLE_WP_CRON is set.', 'batchpilot' )
 				: '',
 		},
 	];
@@ -106,7 +106,7 @@ const HealthPanel = ( { api } ) => {
 	return (
 		<Card>
 			<CardBody>
-				<ul className="content-ops-health-list">
+				<ul className="batchpilot-health-list">
 					{ items.map( ( item ) => (
 						<Row key={ item.id } { ...item } />
 					) ) }

@@ -1,5 +1,5 @@
 <?php
-namespace ContentOps;
+namespace BatchPilot;
 
 final class Deactivator {
 	public static function deactivate(): void {

@@ -2,8 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import OperationsBuilder from '../pages/OperationsBuilder';
 
 beforeAll( () => {
-	global.window.contentOpsAdmin = {
-		namespace: 'content-ops/v1',
+	global.window.batchPilotAdmin = {
+		namespace: 'batchpilot/v1',
 		restUrl: 'x',
 		nonce: 'n',
 		capabilities: {},

@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_REST_Request;
 use WP_REST_Server;
 
@@ -20,7 +20,7 @@ final class CatalogRouteTest extends TestCase {
 	}
 
 	public function test_catalog_returns_targets_and_operations(): void {
-		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/catalog' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/catalog' ) );
 		$this->assertSame( 200, $response->get_status() );
 
 		$data = $response->get_data();
@@ -50,12 +50,12 @@ final class CatalogRouteTest extends TestCase {
 
 	public function test_catalog_rejects_non_admin(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/catalog' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/catalog' ) );
 		$this->assertSame( 403, $response->get_status() );
 	}
 
 	public function test_catalog_exposes_built_in_presets(): void {
-		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/catalog' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/catalog' ) );
 		$data     = $response->get_data();
 		$slugs    = array_map( static fn ( $p ) => $p['slug'], $data['presets'] );
 		$this->assertContains( 'trash-old-drafts', $slugs );

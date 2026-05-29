@@ -1,21 +1,21 @@
 <?php
-namespace ContentOps\Tests\Integration\Operations;
+namespace BatchPilot\Tests\Integration\Operations;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Operations\BulkEditOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Operations\BulkEditOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class BulkEditOperationTest extends TestCase {
 
 	public static function wpSetUpBeforeClass( \WP_UnitTest_Factory $factory ): void {
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public static function wpTearDownAfterClass(): void {
-		\ContentOps\Database\Schema::drop_all();
+		\BatchPilot\Database\Schema::drop_all();
 	}
 
 	private function op(): BulkEditOperation {
@@ -23,8 +23,8 @@ final class BulkEditOperationTest extends TestCase {
 		return new BulkEditOperation(
 			new TokenGenerator( 'test-salt' ),
 			new TokenStore( 300 ),
-			new \ContentOps\History\OperationRepository( $wpdb ),
-			new \ContentOps\History\SnapshotRepository( $wpdb )
+			new \BatchPilot\History\OperationRepository( $wpdb ),
+			new \BatchPilot\History\SnapshotRepository( $wpdb )
 		);
 	}
 
@@ -37,19 +37,19 @@ final class BulkEditOperationTest extends TestCase {
 	public function test_validate_rejects_unknown_status(): void {
 		$result = $this->op()->validate( QueryArgs::from_array( [] ), [ 'set_status' => 'banana' ] );
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_status', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_status', $result->get_error()->code() );
 	}
 
 	public function test_validate_rejects_non_integer_shift(): void {
 		$result = $this->op()->validate( QueryArgs::from_array( [] ), [ 'shift_dates_days' => 'lots' ] );
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_shift', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_shift', $result->get_error()->code() );
 	}
 
 	public function test_validate_rejects_bad_comment_status(): void {
 		$result = $this->op()->validate( QueryArgs::from_array( [] ), [ 'comment_status' => 'maybe' ] );
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_comment_status', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_comment_status', $result->get_error()->code() );
 	}
 
 	public function test_validate_rejects_unknown_taxonomy(): void {
@@ -63,7 +63,7 @@ final class BulkEditOperationTest extends TestCase {
 			]
 		);
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_taxonomy', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_taxonomy', $result->get_error()->code() );
 	}
 
 	public function test_validate_accepts_combined_params(): void {
@@ -96,8 +96,8 @@ final class BulkEditOperationTest extends TestCase {
 
 	public function test_execute_batch_changes_status_and_snapshots_old_value(): void {
 		global $wpdb;
-		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
-		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$repo   = new \BatchPilot\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \BatchPilot\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
 		$ids    = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
 
 		$result = $this->op()->execute_batch(
@@ -115,7 +115,7 @@ final class BulkEditOperationTest extends TestCase {
 			$this->assertSame( 'draft', get_post_status( $id ) );
 		}
 
-		$snapshots = ( new \ContentOps\History\SnapshotRepository( $wpdb ) )->for_operation( $op_row->id() );
+		$snapshots = ( new \BatchPilot\History\SnapshotRepository( $wpdb ) )->for_operation( $op_row->id() );
 		$this->assertCount( 2, $snapshots );
 		foreach ( $snapshots as $snap ) {
 			$this->assertSame( 'post_status', $snap->field() );
@@ -125,8 +125,8 @@ final class BulkEditOperationTest extends TestCase {
 
 	public function test_execute_batch_shifts_dates(): void {
 		global $wpdb;
-		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
-		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$repo   = new \BatchPilot\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \BatchPilot\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
 		$id     = (int) self::factory()->post->create(
 			[
 				'post_status'   => 'publish',
@@ -149,8 +149,8 @@ final class BulkEditOperationTest extends TestCase {
 
 	public function test_execute_batch_adds_taxonomy_terms(): void {
 		global $wpdb;
-		$repo    = new \ContentOps\History\OperationRepository( $wpdb );
-		$op_row  = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$repo    = new \BatchPilot\History\OperationRepository( $wpdb );
+		$op_row  = $repo->create( \BatchPilot\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
 		$id      = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
 		$term_id = (int) self::factory()->term->create( [ 'taxonomy' => 'category' ] );
 
@@ -172,8 +172,8 @@ final class BulkEditOperationTest extends TestCase {
 
 	public function test_undo_restores_status_from_snapshot(): void {
 		global $wpdb;
-		$repo   = new \ContentOps\History\OperationRepository( $wpdb );
-		$op_row = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [ 'set_status' => 'draft' ] ) );
+		$repo   = new \BatchPilot\History\OperationRepository( $wpdb );
+		$op_row = $repo->create( \BatchPilot\History\Operation::newly_created( 'edit', 'post', 0, [], [ 'set_status' => 'draft' ] ) );
 		$ids    = self::factory()->post->create_many( 2, [ 'post_status' => 'publish' ] );
 
 		$op = $this->op();
@@ -198,8 +198,8 @@ final class BulkEditOperationTest extends TestCase {
 
 	public function test_undo_restores_taxonomy_terms(): void {
 		global $wpdb;
-		$repo    = new \ContentOps\History\OperationRepository( $wpdb );
-		$op_row  = $repo->create( \ContentOps\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
+		$repo    = new \BatchPilot\History\OperationRepository( $wpdb );
+		$op_row  = $repo->create( \BatchPilot\History\Operation::newly_created( 'edit', 'post', 0, [], [] ) );
 		$id      = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
 		$term_id = (int) self::factory()->term->create( [ 'taxonomy' => 'category' ] );
 
@@ -226,6 +226,6 @@ final class BulkEditOperationTest extends TestCase {
 	public function test_undo_missing_operation_returns_error(): void {
 		$result = $this->op()->undo( 999999 );
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
+		$this->assertSame( 'bp.undo.not_found', $result->get_error()->code() );
 	}
 }

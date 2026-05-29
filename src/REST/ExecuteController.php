@@ -1,24 +1,24 @@
 <?php
-namespace ContentOps\REST;
+namespace BatchPilot\REST;
 
-use ContentOps\Async\ActionSchedulerBridge;
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Errors\ContentOpsError;
-use ContentOps\Execution\ExecutionService;
-use ContentOps\Execution\OperationRunner;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\PreviewToken\TokenVerifier;
-use ContentOps\Registry\OperationRegistry;
-use ContentOps\Registry\TargetRegistry;
+use BatchPilot\Async\ActionSchedulerBridge;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\Execution\ExecutionService;
+use BatchPilot\Execution\OperationRunner;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\PreviewToken\TokenVerifier;
+use BatchPilot\Registry\OperationRegistry;
+use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
 final class ExecuteController extends RestController {
 
 	private const CAP_MAP = [
-		'delete'    => 'content_ops_delete',
-		'duplicate' => 'content_ops_duplicate',
-		'edit'      => 'content_ops_edit',
+		'delete'    => 'batchpilot_delete',
+		'duplicate' => 'batchpilot_duplicate',
+		'edit'      => 'batchpilot_edit',
 	];
 
 	private ExecutionService $execution;
@@ -64,8 +64,8 @@ final class ExecuteController extends RestController {
 		$op_obj     = $this->operations->get( $operation );
 		if ( null === $target_obj || null === $op_obj ) {
 			return $this->error_response(
-				new ContentOpsError(
-					null === $target_obj ? 'co.target.unknown' : 'co.operation.unknown',
+				new BatchPilotError(
+					null === $target_obj ? 'bp.target.unknown' : 'bp.operation.unknown',
 					'Unknown target or operation.'
 				),
 				400
@@ -85,7 +85,7 @@ final class ExecuteController extends RestController {
 		];
 		if ( ! $this->verifier->verify( $token, $payload ) ) {
 			return $this->error_response(
-				new ContentOpsError( 'co.preview.stale_token', 'Preview token invalid or expired. Re-preview before executing.' ),
+				new BatchPilotError( 'bp.preview.stale_token', 'Preview token invalid or expired. Re-preview before executing.' ),
 				409
 			);
 		}
@@ -94,13 +94,13 @@ final class ExecuteController extends RestController {
 		$user_id = (int) get_current_user_id();
 		$op_id   = $this->execution->record( $target, $operation, $user_id, $filters, $params );
 
-		$threshold = (int) apply_filters( 'content_ops_async_threshold', 100 );
+		$threshold = (int) apply_filters( 'batchpilot_async_threshold', 100 );
 		if ( $count > $threshold && $this->scheduler->is_available() ) {
 			$this->scheduler->schedule_single_action(
 				time(),
 				OperationRunner::HOOK,
 				[ $op_id ],
-				'content-ops'
+				'batchpilot'
 			);
 			return new WP_REST_Response(
 				[
@@ -115,7 +115,7 @@ final class ExecuteController extends RestController {
 		if ( ! $result->is_ok() ) {
 			$error = $result->get_error();
 			if ( null === $error ) {
-				$error = new ContentOpsError( 'co.internal', 'Unknown execution failure.' );
+				$error = new BatchPilotError( 'bp.internal', 'Unknown execution failure.' );
 			}
 			return $this->error_response( $error, 500 );
 		}

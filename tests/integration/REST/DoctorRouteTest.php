@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_REST_Request;
 use WP_REST_Server;
 
@@ -21,7 +21,7 @@ final class DoctorRouteTest extends TestCase {
 	}
 
 	public function test_doctor_returns_expected_shape(): void {
-		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/doctor' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/doctor' ) );
 
 		$this->assertSame( 200, $response->get_status() );
 		$data = $response->get_data();
@@ -35,7 +35,7 @@ final class DoctorRouteTest extends TestCase {
 	public function test_doctor_requires_manage_options(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
 
-		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/content-ops/v1/doctor' ) );
+		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/doctor' ) );
 		$this->assertSame( 403, $response->get_status() );
 	}
 }

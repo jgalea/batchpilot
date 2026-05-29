@@ -10,28 +10,28 @@ import { __ } from '@wordpress/i18n';
 import { normalizeError } from '../api';
 
 const Section = ( { title, description, children } ) => (
-	<section className="co-settings__section">
-		<header className="co-settings__section-header">
-			<h2 className="co-settings__section-title">{ title }</h2>
+	<section className="bp-settings__section">
+		<header className="bp-settings__section-header">
+			<h2 className="bp-settings__section-title">{ title }</h2>
 			{ description && (
-				<p className="co-settings__section-description">
+				<p className="bp-settings__section-description">
 					{ description }
 				</p>
 			) }
 		</header>
-		<div className="co-settings__fields">{ children }</div>
+		<div className="bp-settings__fields">{ children }</div>
 	</section>
 );
 
 const Field = ( { label, help, children } ) => (
-	<div className="co-settings__field">
-		<div className="co-settings__field-text">
-			<span className="co-settings__field-label">{ label }</span>
+	<div className="bp-settings__field">
+		<div className="bp-settings__field-text">
+			<span className="bp-settings__field-label">{ label }</span>
 			{ help && (
-				<span className="co-settings__field-help">{ help }</span>
+				<span className="bp-settings__field-help">{ help }</span>
 			) }
 		</div>
-		<div className="co-settings__field-input">{ children }</div>
+		<div className="bp-settings__field-input">{ children }</div>
 	</div>
 );
 
@@ -53,10 +53,10 @@ const SettingsForm = ( { api } ) => {
 
 	if ( ! values ) {
 		return (
-			<div className="co-settings co-settings--loading">
+			<div className="bp-settings bp-settings--loading">
 				<Spinner />
-				<span className="co-settings__loading-text">
-					{ __( 'Loading settings…', 'content-ops' ) }
+				<span className="bp-settings__loading-text">
+					{ __( 'Loading settings…', 'batchpilot' ) }
 				</span>
 			</div>
 		);
@@ -72,7 +72,7 @@ const SettingsForm = ( { api } ) => {
 			setValues( next );
 			setNotice( {
 				status: 'success',
-				text: __( 'Settings saved.', 'content-ops' ),
+				text: __( 'Settings saved.', 'batchpilot' ),
 			} );
 		} catch ( err ) {
 			setNotice( {
@@ -85,36 +85,36 @@ const SettingsForm = ( { api } ) => {
 	};
 
 	return (
-		<div className="co-settings">
+		<div className="bp-settings">
 			{ notice && (
 				<Notice
 					status={ notice.status }
 					onRemove={ () => setNotice( null ) }
-					className="co-settings__notice"
+					className="bp-settings__notice"
 				>
 					{ notice.text }
 				</Notice>
 			) }
 
 			<Section
-				title={ __( 'Execution', 'content-ops' ) }
+				title={ __( 'Execution', 'batchpilot' ) }
 				description={ __(
-					'Control when Content Ops flips from synchronous runs to background processing via Action Scheduler.',
-					'content-ops'
+					'Control when BatchPilot flips from synchronous runs to background processing via Action Scheduler.',
+					'batchpilot'
 				) }
 			>
 				<Field
-					label={ __( 'Async threshold', 'content-ops' ) }
+					label={ __( 'Async threshold', 'batchpilot' ) }
 					help={ __(
 						'Operations matching at least this many items run in the background. Lower = safer on shared hosts.',
-						'content-ops'
+						'batchpilot'
 					) }
 				>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						hideLabelFromVision
-						label={ __( 'Async threshold', 'content-ops' ) }
+						label={ __( 'Async threshold', 'batchpilot' ) }
 						type="number"
 						min={ 1 }
 						value={ String( values.async_threshold ) }
@@ -127,17 +127,17 @@ const SettingsForm = ( { api } ) => {
 				</Field>
 
 				<Field
-					label={ __( 'Batch size', 'content-ops' ) }
+					label={ __( 'Batch size', 'batchpilot' ) }
 					help={ __(
-						'How many items Content Ops processes per batch. Keep low if your host is slow or memory-bound.',
-						'content-ops'
+						'How many items BatchPilot processes per batch. Keep low if your host is slow or memory-bound.',
+						'batchpilot'
 					) }
 				>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						hideLabelFromVision
-						label={ __( 'Batch size', 'content-ops' ) }
+						label={ __( 'Batch size', 'batchpilot' ) }
 						type="number"
 						min={ 1 }
 						value={ String( values.batch_size ) }
@@ -149,25 +149,25 @@ const SettingsForm = ( { api } ) => {
 			</Section>
 
 			<Section
-				title={ __( 'Delete behaviour', 'content-ops' ) }
+				title={ __( 'Delete behaviour', 'batchpilot' ) }
 				description={ __(
 					'Defaults applied when running a Delete operation. You can always override per run.',
-					'content-ops'
+					'batchpilot'
 				) }
 			>
 				<Field
-					label={ __( 'Permanent delete by default', 'content-ops' ) }
+					label={ __( 'Permanent delete by default', 'batchpilot' ) }
 					help={ __(
 						'When on, Delete skips the Trash and removes items immediately. Undo will not be available.',
-						'content-ops'
+						'batchpilot'
 					) }
 				>
 					<ToggleControl
 						__nextHasNoMarginBottom
 						label={
 							values.delete_permanent_default
-								? __( 'Skip trash', 'content-ops' )
-								: __( 'Move to trash', 'content-ops' )
+								? __( 'Skip trash', 'batchpilot' )
+								: __( 'Move to trash', 'batchpilot' )
 						}
 						checked={ !! values.delete_permanent_default }
 						onChange={ ( v ) =>
@@ -178,24 +178,24 @@ const SettingsForm = ( { api } ) => {
 			</Section>
 
 			<Section
-				title={ __( 'History retention', 'content-ops' ) }
+				title={ __( 'History retention', 'batchpilot' ) }
 				description={ __(
-					'How long Content Ops keeps operation records, snapshots, and undo data.',
-					'content-ops'
+					'How long BatchPilot keeps operation records, snapshots, and undo data.',
+					'batchpilot'
 				) }
 			>
 				<Field
-					label={ __( 'Retention window', 'content-ops' ) }
+					label={ __( 'Retention window', 'batchpilot' ) }
 					help={ __(
 						'Days to keep completed operations. Older entries (and their undo snapshots) are pruned on a daily cron.',
-						'content-ops'
+						'batchpilot'
 					) }
 				>
 					<TextControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
 						hideLabelFromVision
-						label={ __( 'Retention (days)', 'content-ops' ) }
+						label={ __( 'Retention (days)', 'batchpilot' ) }
 						type="number"
 						min={ 1 }
 						value={ String( values.history_retention_days ) }
@@ -208,7 +208,7 @@ const SettingsForm = ( { api } ) => {
 				</Field>
 			</Section>
 
-			<div className="co-settings__actions">
+			<div className="bp-settings__actions">
 				<Button
 					variant="primary"
 					isBusy={ saving }
@@ -216,8 +216,8 @@ const SettingsForm = ( { api } ) => {
 					disabled={ saving }
 				>
 					{ saving
-						? __( 'Saving…', 'content-ops' )
-						: __( 'Save settings', 'content-ops' ) }
+						? __( 'Saving…', 'batchpilot' )
+						: __( 'Save settings', 'batchpilot' ) }
 				</Button>
 			</div>
 		</div>

@@ -1,16 +1,16 @@
 <?php
-namespace ContentOps\Tests\Integration\CLI;
+namespace BatchPilot\Tests\Integration\CLI;
 
-use ContentOps\CLI\HistoryCommand;
-use ContentOps\History\Operation;
-use ContentOps\History\OperationRepository;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\CLI\HistoryCommand;
+use BatchPilot\History\Operation;
+use BatchPilot\History\OperationRepository;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class HistoryCommandTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public function test_history_lists_recent_first(): void {

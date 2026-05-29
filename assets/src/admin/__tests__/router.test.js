@@ -17,24 +17,24 @@ describe( 'detectPage', () => {
 	beforeEach( clearBody );
 
 	it( 'returns dashboard page when dashboard root is present', () => {
-		mountRoot( 'content-ops-dashboard-root' );
+		mountRoot( 'batchpilot-dashboard-root' );
 		const result = detectPage( document );
 		expect( result.page ).toBe( 'dashboard' );
 		expect( result.mount ).toBeInstanceOf( HTMLElement );
 	} );
 
 	it( 'returns operations page when operations root is present', () => {
-		mountRoot( 'content-ops-operations-root' );
+		mountRoot( 'batchpilot-operations-root' );
 		expect( detectPage( document ).page ).toBe( 'operations' );
 	} );
 
 	it( 'returns history page when history root is present', () => {
-		mountRoot( 'content-ops-history-root' );
+		mountRoot( 'batchpilot-history-root' );
 		expect( detectPage( document ).page ).toBe( 'history' );
 	} );
 
 	it( 'returns settings page when settings root is present', () => {
-		mountRoot( 'content-ops-settings-root' );
+		mountRoot( 'batchpilot-settings-root' );
 		expect( detectPage( document ).page ).toBe( 'settings' );
 	} );
 

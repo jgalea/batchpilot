@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Tests\Integration\REST;
+namespace BatchPilot\Tests\Integration\REST;
 
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Tests\Integration\TestCase;
 use WP_REST_Request;
 use WP_REST_Server;
 
@@ -11,7 +11,7 @@ final class PreviewRouteTest extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
@@ -20,7 +20,7 @@ final class PreviewRouteTest extends TestCase {
 
 		$admin = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$role  = get_role( 'administrator' );
-		foreach ( \ContentOps\Capabilities\Capabilities::ALL as $cap ) {
+		foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $cap ) {
 			$role->add_cap( $cap );
 		}
 		wp_set_current_user( $admin );
@@ -29,7 +29,7 @@ final class PreviewRouteTest extends TestCase {
 	public function test_preview_returns_count_and_token(): void {
 		self::factory()->post->create_many( 3, [ 'post_status' => 'draft' ] );
 
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/preview' );
 		$req->set_body_params(
 			[
 				'target'    => 'post',
@@ -48,7 +48,7 @@ final class PreviewRouteTest extends TestCase {
 	}
 
 	public function test_preview_unknown_operation_returns_400(): void {
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/preview' );
 		$req->set_body_params(
 			[
 				'target'    => 'post',
@@ -59,12 +59,12 @@ final class PreviewRouteTest extends TestCase {
 		);
 		$response = $this->server->dispatch( $req );
 		$this->assertSame( 400, $response->get_status() );
-		$this->assertSame( 'co.operation.unknown', $response->get_data()['code'] );
+		$this->assertSame( 'bp.operation.unknown', $response->get_data()['code'] );
 	}
 
 	public function test_preview_rejects_user_without_capability(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
-		$req = new WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/preview' );
 		$req->set_body_params(
 			[
 				'target'    => 'post',
@@ -89,7 +89,7 @@ final class PreviewRouteTest extends TestCase {
 			]
 		);
 
-		$request = new \WP_REST_Request( 'POST', '/content-ops/v1/preview' );
+		$request = new \WP_REST_Request( 'POST', '/batchpilot/v1/preview' );
 		$request->set_body_params(
 			[
 				'target'    => 'post',

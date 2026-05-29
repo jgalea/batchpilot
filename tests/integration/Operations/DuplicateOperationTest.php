@@ -1,21 +1,21 @@
 <?php
-namespace ContentOps\Tests\Integration\Operations;
+namespace BatchPilot\Tests\Integration\Operations;
 
-use ContentOps\Contracts\QueryArgs;
-use ContentOps\Operations\DuplicateOperation;
-use ContentOps\PreviewToken\TokenGenerator;
-use ContentOps\PreviewToken\TokenStore;
-use ContentOps\Targets\PostTarget;
-use ContentOps\Tests\Integration\TestCase;
+use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Operations\DuplicateOperation;
+use BatchPilot\PreviewToken\TokenGenerator;
+use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\Targets\PostTarget;
+use BatchPilot\Tests\Integration\TestCase;
 
 final class DuplicateOperationTest extends TestCase {
 
 	public static function wpSetUpBeforeClass( \WP_UnitTest_Factory $factory ): void {
-		\ContentOps\Database\Schema::install();
+		\BatchPilot\Database\Schema::install();
 	}
 
 	public static function wpTearDownAfterClass(): void {
-		\ContentOps\Database\Schema::drop_all();
+		\BatchPilot\Database\Schema::drop_all();
 	}
 
 	private function op(): DuplicateOperation {
@@ -23,7 +23,7 @@ final class DuplicateOperationTest extends TestCase {
 		return new DuplicateOperation(
 			new TokenGenerator( 'test-salt' ),
 			new TokenStore( 300 ),
-			new \ContentOps\History\OperationRepository( $wpdb )
+			new \BatchPilot\History\OperationRepository( $wpdb )
 		);
 	}
 
@@ -39,7 +39,7 @@ final class DuplicateOperationTest extends TestCase {
 			[ 'target_status' => 'banana' ]
 		);
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_status', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_status', $result->get_error()->code() );
 	}
 
 	public function test_validate_rejects_missing_author(): void {
@@ -48,7 +48,7 @@ final class DuplicateOperationTest extends TestCase {
 			[ 'reassign_author' => 999999 ]
 		);
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.params.invalid_author', $result->get_error()->code() );
+		$this->assertSame( 'bp.params.invalid_author', $result->get_error()->code() );
 	}
 
 	public function test_validate_accepts_valid_params(): void {
@@ -160,7 +160,7 @@ final class DuplicateOperationTest extends TestCase {
 
 	public function test_undo_deletes_the_duplicate_posts(): void {
 		global $wpdb;
-		$repo = new \ContentOps\History\OperationRepository( $wpdb );
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
 
 		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
 		$op     = $this->op();
@@ -168,7 +168,7 @@ final class DuplicateOperationTest extends TestCase {
 		$new_ids = $op->last_new_ids();
 
 		$saved = $repo->create(
-			\ContentOps\History\Operation::newly_created( 'duplicate', 'post', 0, [], [] )
+			\BatchPilot\History\Operation::newly_created( 'duplicate', 'post', 0, [], [] )
 		);
 		$repo->mark_completed( $saved->id(), $new_ids );
 
@@ -186,6 +186,6 @@ final class DuplicateOperationTest extends TestCase {
 		$op     = $this->op();
 		$result = $op->undo( 999999 );
 		$this->assertFalse( $result->is_ok() );
-		$this->assertSame( 'co.undo.not_found', $result->get_error()->code() );
+		$this->assertSame( 'bp.undo.not_found', $result->get_error()->code() );
 	}
 }

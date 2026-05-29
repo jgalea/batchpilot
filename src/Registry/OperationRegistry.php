@@ -1,7 +1,7 @@
 <?php
-namespace ContentOps\Registry;
+namespace BatchPilot\Registry;
 
-use ContentOps\Contracts\OperationInterface;
+use BatchPilot\Contracts\OperationInterface;
 use LogicException;
 
 final class OperationRegistry {
