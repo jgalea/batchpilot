@@ -28,16 +28,27 @@ final class CatalogController extends RestController {
 	}
 
 	public function handle( WP_REST_Request $request ): WP_REST_Response {
+		$op_slugs = array_map( static fn ( $op ) => $op->slug(), $this->operations->all() );
+
 		$targets = [];
 		foreach ( $this->targets->all() as $target ) {
 			$filters = [];
 			foreach ( $target->get_filters() as $filter ) {
 				$filters[] = $filter->to_array();
 			}
+
+			$supported = array_values(
+				array_filter(
+					$op_slugs,
+					static fn ( string $slug ): bool => $target->supports_operation( $slug )
+				)
+			);
+
 			$targets[] = [
-				'slug'    => $target->slug(),
-				'label'   => $target->label(),
-				'filters' => $filters,
+				'slug'                 => $target->slug(),
+				'label'                => $target->label(),
+				'filters'              => $filters,
+				'supported_operations' => $supported,
 			];
 		}
 

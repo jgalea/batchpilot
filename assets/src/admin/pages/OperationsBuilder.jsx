@@ -279,7 +279,11 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 						<>
 							<OperationPicker
 								operations={ catalog.operations }
-								supported={ [ 'delete', 'duplicate', 'edit' ] }
+								supported={
+									catalog.targets.find(
+										( t ) => t.slug === state.target
+									)?.supported_operations || []
+								}
 								selected={ state.operation }
 								onSelect={ ( slug ) =>
 									dispatch( {

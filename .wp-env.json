@@ -3,12 +3,14 @@
   "phpVersion": "7.4",
   "plugins": [],
   "mappings": {
-    "wp-content/plugins/batchpilot": "."
+    "wp-content/plugins/batchpilot": ".",
+    "wp-content/plugins/batchpilot-pro": "../batchpilot-pro"
   },
   "env": {
     "tests": {
       "mappings": {
-        "wp-content/plugins/batchpilot": "."
+        "wp-content/plugins/batchpilot": ".",
+        "wp-content/plugins/batchpilot-pro": "../batchpilot-pro"
       }
     }
   }
