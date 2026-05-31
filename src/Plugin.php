@@ -87,6 +87,31 @@ final class Plugin {
 		$operation_registry->register( new \BatchPilot\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo ) );
 		$operation_registry->register( new \BatchPilot\Operations\BulkEditOperation( $token_generator, $token_store, $operations_repo, $snapshots_repo ) );
 
+		/**
+		 * Fires after the built-in targets are registered, before ExecutionService is wired.
+		 * Third-party plugins (incl. BatchPilot Pro) register additional Targets here.
+		 *
+		 * @param \BatchPilot\Registry\TargetRegistry        $target_registry
+		 * @param \BatchPilot\PreviewToken\TokenGenerator    $token_generator
+		 * @param \BatchPilot\PreviewToken\TokenStore        $token_store
+		 * @param \BatchPilot\History\OperationRepository    $operations_repo
+		 * @param \BatchPilot\History\SnapshotRepository     $snapshots_repo
+		 */
+		\do_action( 'batchpilot_register_targets', $target_registry, $token_generator, $token_store, $operations_repo, $snapshots_repo );
+
+		/**
+		 * Fires after the built-in operations are registered, before ExecutionService is wired.
+		 * Third-party plugins register additional Operations here. The token generator/store
+		 * and history repositories are passed so Pro operations can share the same plumbing.
+		 *
+		 * @param \BatchPilot\Registry\OperationRegistry     $operation_registry
+		 * @param \BatchPilot\PreviewToken\TokenGenerator    $token_generator
+		 * @param \BatchPilot\PreviewToken\TokenStore        $token_store
+		 * @param \BatchPilot\History\OperationRepository    $operations_repo
+		 * @param \BatchPilot\History\SnapshotRepository     $snapshots_repo
+		 */
+		\do_action( 'batchpilot_register_operations', $operation_registry, $token_generator, $token_store, $operations_repo, $snapshots_repo );
+
 		$this->set( 'target.registry', $target_registry );
 		$this->set( 'operation.registry', $operation_registry );
 
