@@ -176,7 +176,16 @@ final class PostTarget implements TargetInterface {
 	}
 
 	public function supports_operation( string $operation_slug ): bool {
-		return in_array( $operation_slug, self::SUPPORTED, true );
+		/**
+		 * Filters the operations PostTarget reports as supported for a given post type.
+		 * Pro / third-party plugins extend this to register additional operations
+		 * (e.g. find-replace) against the existing post target without subclassing.
+		 *
+		 * @param string[] $supported Default supported operation slugs.
+		 * @param string   $post_type The post type this target is bound to.
+		 */
+		$supported = \apply_filters( 'batchpilot_post_target_supported_operations', self::SUPPORTED, $this->post_type );
+		return in_array( $operation_slug, (array) $supported, true );
 	}
 
 	/**

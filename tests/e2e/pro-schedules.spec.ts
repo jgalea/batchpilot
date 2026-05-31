@@ -33,25 +33,34 @@ test.describe( 'BatchPilot Pro — Schedules UI', () => {
 		await page
 			.getByRole( 'dialog', { name: 'New schedule' } )
 			.waitFor( { timeout: 5000 } );
-		await page.waitForTimeout( 500 );
+		await page.waitForTimeout( 400 );
+
+		await page.getByLabel( 'Name' ).fill( 'UI test schedule' );
+		await page.getByLabel( 'Target' ).selectOption( 'post' );
+		await page.waitForTimeout( 300 );
+
+		// Add a Status filter via the FilterEditor.
+		await page.getByRole( 'button', { name: 'Add filter' } ).click();
+		await page
+			.getByRole( 'combobox', { name: 'Filter' } )
+			.selectOption( 'status' );
+		await page.getByRole( 'checkbox', { name: 'Draft' } ).check();
+
+		await page.getByLabel( 'Operation' ).selectOption( 'delete' );
+		await page.waitForTimeout( 300 );
+
+		// Optional: fill notification fields so the screenshot shows the section.
+		await page
+			.getByLabel( 'Email address' )
+			.fill( 'ops@example.com' );
+
 		await page.screenshot( {
 			path: `${ SHOTS_DIR }/pro-02-schedule-form.png`,
 			fullPage: true,
 		} );
 
-		// Fill in a schedule that will trash drafts.
-		await page.getByLabel( 'Name' ).fill( 'UI test schedule' );
-		await page.getByLabel( 'Target' ).selectOption( 'post' );
-		await page.getByLabel( 'Operation' ).selectOption( 'delete' );
-		await page.getByLabel( 'Recurrence' ).selectOption( '86400' );
-		await page
-			.getByLabel( 'Filters (JSON)' )
-			.fill( '{"status":["draft"]}' );
-		await page.getByLabel( 'Params (JSON)' ).fill( '{"permanent":false}' );
-
 		await page.getByRole( 'button', { name: 'Create schedule' } ).click();
 
-		// After creation the modal closes and the new schedule appears in the table.
 		await page
 			.getByRole( 'cell', { name: 'UI test schedule' } )
 			.waitFor( { timeout: 5000 } );

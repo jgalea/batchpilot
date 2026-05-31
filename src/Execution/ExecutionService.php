@@ -141,6 +141,19 @@ final class ExecutionService {
 
 		$this->operations_repo->mark_completed( $operation_id, $affected );
 
-		return BatchResult::of( $total_processed, $total_succeeded, $total_failed, $item_errors );
+		$result = BatchResult::of( $total_processed, $total_succeeded, $total_failed, $item_errors );
+
+		/**
+		 * Fires after a synchronous operation run is recorded as completed.
+		 * Pro / third-party plugins use this to send notifications, webhooks,
+		 * or trigger downstream workflows.
+		 *
+		 * @param int          $operation_id  History row id for this run.
+		 * @param BatchResult  $result        Aggregated processed/succeeded/failed counts.
+		 * @param Operation    $operation_row The persisted history row.
+		 */
+		\do_action( 'batchpilot_operation_completed', $operation_id, $result, $row );
+
+		return $result;
 	}
 }
