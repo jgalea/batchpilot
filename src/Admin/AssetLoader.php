@@ -9,7 +9,8 @@ use BatchPilot\Capabilities\Capabilities;
 
 final class AssetLoader {
 
-	public const HANDLE = 'batchpilot-admin';
+	public const HANDLE         = 'batchpilot-admin';
+	public const WIDGETS_HANDLE = 'batchpilot-widgets';
 
 	private string $plugin_file;
 
@@ -18,7 +19,33 @@ final class AssetLoader {
 	}
 
 	public function register(): void {
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue' ] );
+		// Register the shared widget bundle early so other plugins (BatchPilot Pro,
+		// third parties) can list it as a script dependency. Registration happens
+		// on every admin page; actual enqueue only happens for batchpilot pages or
+		// when downstream scripts depending on batchpilot-widgets are enqueued.
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_widget_bundle' ], 5 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue' ], 10 );
+	}
+
+	public function register_widget_bundle(): void {
+		$plugin_dir = plugin_dir_path( $this->plugin_file );
+		$plugin_url = plugin_dir_url( $this->plugin_file );
+
+		$asset_path = $plugin_dir . 'assets/build/widgets.asset.php';
+		$asset      = file_exists( $asset_path )
+			? require $asset_path
+			: [
+				'dependencies' => [ 'wp-element', 'wp-components', 'wp-i18n' ],
+				'version'      => BATCHPILOT_VERSION,
+			];
+
+		wp_register_script(
+			self::WIDGETS_HANDLE,
+			$plugin_url . 'assets/build/widgets.js',
+			(array) $asset['dependencies'],
+			(string) $asset['version'],
+			true
+		);
 	}
 
 	public function enqueue( string $hook_suffix ): void {
@@ -36,10 +63,16 @@ final class AssetLoader {
 				'version'      => BATCHPILOT_VERSION,
 			];
 
+		// admin.js consumes the widget bundle at runtime via window.batchPilot.widgets,
+		// so it must load AFTER widgets.js. Append the widgets handle to admin's
+		// dependency list; WP enqueues dependencies in order.
+		$dependencies   = (array) $asset['dependencies'];
+		$dependencies[] = self::WIDGETS_HANDLE;
+
 		wp_enqueue_script(
 			self::HANDLE,
 			$plugin_url . 'assets/build/admin.js',
-			(array) $asset['dependencies'],
+			$dependencies,
 			(string) $asset['version'],
 			true
 		);

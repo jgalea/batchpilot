@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "wp-scripts build --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js",
-    "start": "wp-scripts start --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js",
+    "build": "wp-scripts build --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js widgets=./admin/widgets.js",
+    "start": "wp-scripts start --webpack-src-dir=assets/src --output-path=assets/build admin=./admin/index.js widgets=./admin/widgets.js",
     "lint:js": "wp-scripts lint-js assets/src",
     "lint:js:fix": "wp-scripts lint-js --fix assets/src",
     "test:js": "wp-scripts test-unit-js",
