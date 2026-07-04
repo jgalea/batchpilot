@@ -91,6 +91,40 @@ final class ExecuteRouteTest extends TestCase {
 		$this->assertSame( 'bp.preview.stale_token', $response->get_data()['code'] );
 	}
 
+	public function test_execute_rejects_token_previewed_by_a_different_user(): void {
+		$ids = self::factory()->post->create_many( 2, [ 'post_status' => 'draft' ] );
+
+		// Preview as the original admin (set up in set_up()).
+		$preview = $this->preview();
+
+		// A second, equally-capable administrator must not be able to redeem the first
+		// admin's preview token, even though they pass the same coarse capability check.
+		$second_admin = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$role         = get_role( 'administrator' );
+		foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $cap ) {
+			$role->add_cap( $cap );
+		}
+		wp_set_current_user( $second_admin );
+
+		$req = new WP_REST_Request( 'POST', '/batchpilot/v1/execute' );
+		$req->set_body_params(
+			[
+				'preview_token' => $preview['preview_token'],
+				'target'        => 'post',
+				'operation'     => 'delete',
+				'filters'       => [ 'status' => [ 'draft' ] ],
+				'params'        => [ 'permanent' => false ],
+			]
+		);
+		$response = $this->server->dispatch( $req );
+
+		$this->assertSame( 409, $response->get_status() );
+		$this->assertSame( 'bp.preview.stale_token', $response->get_data()['code'] );
+		foreach ( $ids as $id ) {
+			$this->assertNotSame( 'trash', get_post_status( $id ) );
+		}
+	}
+
 	public function test_execute_queues_above_threshold(): void {
 		add_filter( 'batchpilot_async_threshold', static fn () => 2 );
 		self::factory()->post->create_many( 3, [ 'post_status' => 'draft' ] );

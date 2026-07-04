@@ -41,6 +41,18 @@ final class PluginWiringTest extends TestCase {
 		);
 	}
 
+	public function test_schema_migration_self_heals_on_admin_init(): void {
+		// register_activation_hook()'s callback never fires on an in-place update (auto-
+		// update, or the dashboard "Update" button while the plugin stays active) — only
+		// on an explicit deactivate-then-reactivate. Without this admin_init hook, a
+		// schema change shipped in a later version would never reach an already-running
+		// site that simply auto-updates.
+		$this->assertNotFalse(
+			has_action( 'admin_init', [ \BatchPilot\Database\Migrations::class, 'maybe_migrate' ] ),
+			'Migrations::maybe_migrate() must be hooked on admin_init, not only on plugin activation.'
+		);
+	}
+
 	public function test_register_targets_hook_passes_the_live_registry(): void {
 		$captured = null;
 		add_action(

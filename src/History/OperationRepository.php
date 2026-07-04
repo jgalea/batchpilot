@@ -41,6 +41,24 @@ final class OperationRepository {
 		return $op->with_id( (int) $this->db->insert_id );
 	}
 
+	/**
+	 * Pins the exact set of matched object IDs for an operation deferred to async
+	 * execution, so the Action Scheduler run later executes against what was actually
+	 * shown at accept time rather than re-evaluating the filters against whatever
+	 * content matches when the cron job happens to fire.
+	 *
+	 * @param int[] $ids
+	 */
+	public function mark_queued( int $id, array $ids ): void {
+		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$this->table(),
+			[ 'queued_ids_json' => wp_json_encode( array_values( array_map( 'intval', $ids ) ) ) ],
+			[ 'id' => $id ],
+			[ '%s' ],
+			[ '%d' ]
+		);
+	}
+
 	public function mark_running( int $id ): void {
 		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$this->table(),

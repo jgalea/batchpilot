@@ -14,7 +14,6 @@ final class Settings {
 		'batch_size'               => 50,
 		'delete_permanent_default' => false,
 		'history_retention_days'   => 30,
-		'role_caps'                => [],
 	];
 
 	public function register(): void {
@@ -58,16 +57,6 @@ final class Settings {
 		}
 		if ( array_key_exists( 'history_retention_days', $input ) ) {
 			$out['history_retention_days'] = max( 1, (int) $input['history_retention_days'] );
-		}
-		if ( array_key_exists( 'role_caps', $input ) && is_array( $input['role_caps'] ) ) {
-			$caps = [];
-			foreach ( $input['role_caps'] as $role => $cap_map ) {
-				if ( ! is_array( $cap_map ) ) {
-					continue;
-				}
-				$caps[ sanitize_key( (string) $role ) ] = array_map( 'boolval', $cap_map );
-			}
-			$out['role_caps'] = $caps;
 		}
 		return $out;
 	}

@@ -54,6 +54,14 @@ final class Plugin {
 		\register_deactivation_hook( $this->plugin_file, [ Deactivator::class, 'deactivate' ] );
 		\add_action( 'plugins_loaded', [ $this, 'on_plugins_loaded' ], -1 );
 		\add_action( 'admin_init', [ \BatchPilot\Capabilities\Capabilities::class, 'ensure_granted' ] );
+		// register_activation_hook()'s callback only fires on explicit deactivate-then-
+		// reactivate, never on an in-place update (auto-update or the dashboard "Update"
+		// button while the plugin stays active) — so schema changes shipped in a later
+		// version would otherwise never reach an already-running site. maybe_migrate()
+		// short-circuits to a single cheap option read once the version matches, so it's
+		// safe to self-heal here on every admin page load, same pattern as the capability
+		// grant above.
+		\add_action( 'admin_init', [ \BatchPilot\Database\Migrations::class, 'maybe_migrate' ] );
 	}
 
 	public function on_plugins_loaded(): void {

@@ -178,6 +178,11 @@ final class BulkEditOperation implements OperationInterface {
 			'params'     => $params,
 			'sample_ids' => $sample_ids,
 			'count'      => $count,
+			// Binds the issued token to whoever previewed it, so a token (or its
+			// underlying transient key) leaking or being handed to another equally-
+			// capable user can't be replayed to execute on their behalf. See
+			// ExecuteController::handle() for the matching re-check.
+			'user_id'    => get_current_user_id(),
 		];
 
 		$token = $this->token_generator->generate( $payload );
@@ -203,6 +208,17 @@ final class BulkEditOperation implements OperationInterface {
 			if ( null === $post ) {
 				++$failed;
 				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			// Defense in depth: see the matching comment in DeleteOperation::execute_batch().
+			// batchpilot_edit gates whether bulk-edit may run at all; this re-checks WP's
+			// own per-post edit rights so a non-administrator grant of batchpilot_edit can't
+			// reach posts the user couldn't otherwise touch (e.g. another author's post on a
+			// custom post type without delete/edit_others_* mapped to batchpilot_edit).
+			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $id ) ) {
+				++$failed;
+				$item_errors[ $id ] = 'Insufficient permissions to edit this item.';
 				continue;
 			}
 
@@ -297,7 +313,11 @@ final class BulkEditOperation implements OperationInterface {
 
 		$restored = 0;
 		foreach ( $by_id as $post_id => $fields ) {
-			$update = [ 'ID' => (int) $post_id ];
+			$post_id = (int) $post_id;
+			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
+				continue;
+			}
+			$update = [ 'ID' => $post_id ];
 			foreach ( $fields as $field => $old_value ) {
 				if ( 0 === strpos( $field, 'taxonomy:' ) ) {
 					$taxonomy = substr( $field, strlen( 'taxonomy:' ) );

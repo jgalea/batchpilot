@@ -135,6 +135,11 @@ final class DuplicateOperation implements OperationInterface {
 			'params'     => $params,
 			'sample_ids' => $sample_ids,
 			'count'      => $count,
+			// Binds the issued token to whoever previewed it, so a token (or its
+			// underlying transient key) leaking or being handed to another equally-
+			// capable user can't be replayed to execute on their behalf. See
+			// ExecuteController::handle() for the matching re-check.
+			'user_id'    => get_current_user_id(),
 		];
 
 		$token = $this->token_generator->generate( $payload );
@@ -157,12 +162,32 @@ final class DuplicateOperation implements OperationInterface {
 		$failed      = 0;
 		$item_errors = [];
 
+		// Defense in depth: see the matching comment in DeleteOperation::execute_batch().
+		// batchpilot_duplicate gates whether this operation may run at all; this also
+		// re-checks the native "create new post of this type" capability once up front
+		// (it does not vary per row, since a Target is bound to a single post type).
+		$has_create_cap = true;
+		if ( get_current_user_id() > 0 ) {
+			$post_type_object = get_post_type_object( $target->slug() );
+			$create_cap       = ( null !== $post_type_object && isset( $post_type_object->cap->create_posts ) )
+				? (string) $post_type_object->cap->create_posts
+				: 'edit_posts';
+			$has_create_cap   = current_user_can( $create_cap );
+		}
+
 		foreach ( $ids as $id ) {
 			$id     = (int) $id;
 			$source = get_post( $id );
 			if ( null === $source ) {
 				++$failed;
 				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			// Per-post read check on the source, plus the one-time create check above.
+			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'read_post', $id ) ) ) {
+				++$failed;
+				$item_errors[ $id ] = 'Insufficient permissions to duplicate this item.';
 				continue;
 			}
 
@@ -233,7 +258,11 @@ final class DuplicateOperation implements OperationInterface {
 
 		$restored = 0;
 		foreach ( $op->affected_ids() as $id ) {
-			if ( wp_delete_post( (int) $id, true ) ) {
+			$id = (int) $id;
+			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
+				continue;
+			}
+			if ( wp_delete_post( $id, true ) ) {
 				++$restored;
 			}
 		}

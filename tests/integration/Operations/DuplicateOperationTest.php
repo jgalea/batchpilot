@@ -86,6 +86,31 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertArrayHasKey( 'include_children', $schema['properties'] );
 	}
 
+	public function test_execute_batch_blocks_post_user_cannot_read(): void {
+		// See the matching test in DeleteOperationTest for the threat model. Duplicating a
+		// post first requires being able to read it; a contributor can read another
+		// author's *published* post (it's public) but not their unpublished draft, so a
+		// coarse batchpilot_duplicate grant must not let them copy private/draft content
+		// belonging to someone else.
+		$other_author = self::factory()->user->create( [ 'role' => 'author' ] );
+		$contributor  = self::factory()->user->create( [ 'role' => 'contributor' ] );
+		get_role( 'contributor' )->add_cap( 'batchpilot_duplicate' );
+		$draft = self::factory()->post->create(
+			[
+				'post_status' => 'draft',
+				'post_author' => $other_author,
+			]
+		);
+
+		wp_set_current_user( $contributor );
+		$result = $this->op()->execute_batch( [ $draft ], [], new PostTarget( 'post' ) );
+		wp_set_current_user( 0 );
+
+		$this->assertSame( 0, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertArrayHasKey( $draft, $result->item_errors() );
+	}
+
 	public function test_execute_batch_duplicates_posts_with_suffix_and_draft(): void {
 		$source = (int) self::factory()->post->create(
 			[

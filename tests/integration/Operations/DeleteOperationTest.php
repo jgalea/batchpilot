@@ -117,6 +117,27 @@ final class DeleteOperationTest extends TestCase {
 		$this->assertArrayHasKey( 999999, $result->item_errors() );
 	}
 
+	public function test_execute_batch_blocks_post_user_cannot_delete(): void {
+		// Simulates a site that has granted the coarse batchpilot_delete capability to a
+		// non-administrator role (e.g. via a future role_caps rollout) without realizing
+		// that, on its own, this would let that user delete *any* post regardless of
+		// WordPress's own per-post authorship rules. A contributor only has delete_posts
+		// (their own drafts), not delete_others_posts, so they must not be able to delete
+		// another author's published post even when batchpilot_delete is granted to them.
+		$contributor = self::factory()->user->create( [ 'role' => 'contributor' ] );
+		get_role( 'contributor' )->add_cap( 'batchpilot_delete' );
+		$other_author_post = self::factory()->post->create( [ 'post_status' => 'publish' ] );
+
+		wp_set_current_user( $contributor );
+		$result = $this->op()->execute_batch( [ $other_author_post ], [ 'permanent' => false ], new PostTarget( 'post' ) );
+		wp_set_current_user( 0 );
+
+		$this->assertSame( 0, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertArrayHasKey( $other_author_post, $result->item_errors() );
+		$this->assertNotSame( 'trash', get_post_status( $other_author_post ) );
+	}
+
 	public function test_undo_restores_trashed_posts(): void {
 		global $wpdb;
 		$repo = new \BatchPilot\History\OperationRepository( $wpdb );

@@ -86,6 +86,10 @@ final class ExecuteController extends RestController {
 			'params'     => $params,
 			'sample_ids' => $sample_ids,
 			'count'      => $count,
+			// Must match the previewing user recorded in Operations/*::preview() — see the
+			// comment there. A token previewed by one user cannot be executed by another,
+			// even if both happen to hold the same coarse batchpilot_* capability.
+			'user_id'    => get_current_user_id(),
 		];
 		if ( ! $this->verifier->verify( $token, $payload ) ) {
 			return $this->error_response(
@@ -100,6 +104,13 @@ final class ExecuteController extends RestController {
 
 		$threshold = (int) apply_filters( 'batchpilot_async_threshold', 100 );
 		if ( $count > $threshold && $this->scheduler->is_available() ) {
+			// Pin the exact matched ID set now, at accept time, rather than letting the
+			// cron-driven run re-evaluate the filters whenever it actually fires. Without
+			// this, content created or edited in the gap between accepting the request and
+			// Action Scheduler picking it up could be silently swept into a batch the user
+			// never previewed or approved.
+			$this->execution->snapshot_for_queue( $op_id, $target_obj->query( $args ) );
+
 			$this->scheduler->schedule_single_action(
 				time(),
 				OperationRunner::HOOK,

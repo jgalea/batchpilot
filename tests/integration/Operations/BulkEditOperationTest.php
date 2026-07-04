@@ -123,6 +123,24 @@ final class BulkEditOperationTest extends TestCase {
 		}
 	}
 
+	public function test_execute_batch_blocks_post_user_cannot_edit(): void {
+		// See the matching test in DeleteOperationTest for the threat model: a coarse
+		// batchpilot_edit grant to a non-administrator role must not bypass WordPress's
+		// own per-post edit rights.
+		$contributor = self::factory()->user->create( [ 'role' => 'contributor' ] );
+		get_role( 'contributor' )->add_cap( 'batchpilot_edit' );
+		$other_author_post = self::factory()->post->create( [ 'post_status' => 'publish' ] );
+
+		wp_set_current_user( $contributor );
+		$result = $this->op()->execute_batch( [ $other_author_post ], [ 'set_status' => 'draft' ], new PostTarget( 'post' ) );
+		wp_set_current_user( 0 );
+
+		$this->assertSame( 0, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertArrayHasKey( $other_author_post, $result->item_errors() );
+		$this->assertSame( 'publish', get_post_status( $other_author_post ) );
+	}
+
 	public function test_execute_batch_shifts_dates(): void {
 		global $wpdb;
 		$repo   = new \BatchPilot\History\OperationRepository( $wpdb );

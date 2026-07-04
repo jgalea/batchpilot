@@ -15,6 +15,8 @@ final class Operation {
 	private array $filters;
 	/** @var array<string, mixed> */
 	private array $params;
+	/** @var int[]|null */
+	private ?array $queued_ids;
 	private int $affected_count;
 	/** @var int[] */
 	private array $affected_ids;
@@ -26,6 +28,7 @@ final class Operation {
 	/**
 	 * @param array<string, mixed> $filters
 	 * @param array<string, mixed> $params
+	 * @param int[]|null           $queued_ids
 	 * @param int[]                $affected_ids
 	 */
 	private function __construct(
@@ -35,6 +38,7 @@ final class Operation {
 		int $user_id,
 		array $filters,
 		array $params,
+		?array $queued_ids,
 		int $affected_count,
 		array $affected_ids,
 		string $status,
@@ -48,6 +52,7 @@ final class Operation {
 		$this->user_id        = $user_id;
 		$this->filters        = $filters;
 		$this->params         = $params;
+		$this->queued_ids     = $queued_ids;
 		$this->affected_count = $affected_count;
 		$this->affected_ids   = $affected_ids;
 		$this->status         = $status;
@@ -61,7 +66,7 @@ final class Operation {
 	 * @param array<string, mixed> $params
 	 */
 	public static function newly_created( string $type, string $target, int $user_id, array $filters, array $params ): self {
-		return new self( 0, $type, $target, $user_id, $filters, $params, 0, [], 'pending', null, gmdate( 'Y-m-d H:i:s' ), null );
+		return new self( 0, $type, $target, $user_id, $filters, $params, null, 0, [], 'pending', null, gmdate( 'Y-m-d H:i:s' ), null );
 	}
 
 	/**
@@ -75,6 +80,7 @@ final class Operation {
 			(int) $row['user_id'],
 			self::decode_json( $row['filters_json'] ?? null ),
 			self::decode_json( $row['params_json'] ?? null ),
+			self::decode_nullable_json( $row['queued_ids_json'] ?? null ),
 			(int) $row['affected_count'],
 			self::decode_json( $row['affected_ids_json'] ?? null ),
 			(string) $row['status'],
@@ -120,6 +126,18 @@ final class Operation {
 		return $this->params;
 	}
 
+	/**
+	 * The exact set of matched object IDs snapshotted at queue time, for operations
+	 * deferred to async (Action Scheduler) execution. Null means no snapshot was taken
+	 * (the operation ran synchronously, or predates this column) — callers should fall
+	 * back to re-deriving the matched set from filters() in that case.
+	 *
+	 * @return int[]|null
+	 */
+	public function queued_ids(): ?array {
+		return $this->queued_ids;
+	}
+
 	public function affected_count(): int {
 		return $this->affected_count;
 	}
@@ -157,5 +175,21 @@ final class Operation {
 		}
 		$decoded = json_decode( (string) $value, true );
 		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Like decode_json(), but distinguishes "absent/null" from "present but empty",
+	 * since queued_ids() needs to tell "no snapshot was taken" apart from "the
+	 * snapshot was an empty set."
+	 *
+	 * @param mixed $value
+	 * @return int[]|null
+	 */
+	private static function decode_nullable_json( $value ): ?array {
+		if ( null === $value || '' === $value ) {
+			return null;
+		}
+		$decoded = json_decode( (string) $value, true );
+		return is_array( $decoded ) ? array_map( 'intval', $decoded ) : null;
 	}
 }

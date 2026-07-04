@@ -81,6 +81,11 @@ final class DeleteOperation implements OperationInterface {
 			'params'     => $params,
 			'sample_ids' => $sample_ids,
 			'count'      => $count,
+			// Binds the issued token to whoever previewed it, so a token (or its
+			// underlying transient key) leaking or being handed to another equally-
+			// capable user can't be replayed to execute on their behalf. See
+			// ExecuteController::handle() for the matching re-check.
+			'user_id'    => get_current_user_id(),
 		];
 
 		$token = $this->token_generator->generate( $payload );
@@ -106,6 +111,21 @@ final class DeleteOperation implements OperationInterface {
 			if ( null === $post ) {
 				++$failed;
 				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			// Defense in depth: the batchpilot_delete capability gates *whether* this
+			// operation may run at all, but it is a single coarse capability and does not
+			// imply WP's native per-post delete rights (e.g. delete_others_posts, or a
+			// custom post type's own capability_type). Re-check per post so that a future
+			// non-administrator grant of batchpilot_delete can't bypass WordPress's own
+			// authorization model. Skipped only when there is no authenticated user to
+			// check against (WP-CLI run without --user), matching that context's existing
+			// trust model. See ExecutionService::run_sync() for how the submitting user's
+			// identity is restored for async/cron-driven runs.
+			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
+				++$failed;
+				$item_errors[ $id ] = 'Insufficient permissions to delete this item.';
 				continue;
 			}
 
@@ -151,7 +171,11 @@ final class DeleteOperation implements OperationInterface {
 
 		$restored = 0;
 		foreach ( $op->affected_ids() as $id ) {
-			if ( false !== wp_untrash_post( (int) $id ) ) {
+			$id = (int) $id;
+			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
+				continue;
+			}
+			if ( false !== wp_untrash_post( $id ) ) {
 				++$restored;
 			}
 		}

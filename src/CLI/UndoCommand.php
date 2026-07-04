@@ -69,6 +69,22 @@ final class UndoCommand {
 			];
 		}
 
+		// Mirrors UndoController::check_permission(): a user can only undo their own
+		// operations unless they're an administrator. Skipped when WP-CLI runs without
+		// --user (get_current_user_id() === 0), matching the existing shell-trust model
+		// used elsewhere in this plugin (e.g. DeleteOperation's per-post capability check).
+		if ( get_current_user_id() > 0 && ! current_user_can( 'manage_options' ) && get_current_user_id() !== $row->user_id() ) {
+			$err = new BatchPilotError(
+				'bp.auth.forbidden',
+				'You can only undo operations you ran yourself.',
+				[ 'id' => $id ]
+			);
+			return [
+				'exit_code' => 1,
+				'output'    => (string) wp_json_encode( $err->to_array() ),
+			];
+		}
+
 		$op = $this->operations->get( $row->type() );
 		if ( null === $op ) {
 			$err = new BatchPilotError(

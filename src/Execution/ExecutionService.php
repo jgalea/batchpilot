@@ -89,6 +89,19 @@ final class ExecutionService {
 		return $this->operations_repo->create( $op )->id();
 	}
 
+	/**
+	 * Pins the exact matched ID set for an operation being deferred to async (Action
+	 * Scheduler) execution. Call this before scheduling, with the full result of the
+	 * same query that was just shown to the user — closes the window where content
+	 * created or edited between accept time and actual cron execution could otherwise
+	 * be silently swept into a batch the user never saw or approved.
+	 *
+	 * @param int[] $ids
+	 */
+	public function snapshot_for_queue( int $operation_id, array $ids ): void {
+		$this->operations_repo->mark_queued( $operation_id, $ids );
+	}
+
 	public function run_sync( int $operation_id ): BatchResult {
 		$row = $this->operations_repo->find( $operation_id );
 		if ( null === $row ) {
@@ -104,8 +117,16 @@ final class ExecutionService {
 
 		$this->operations_repo->mark_running( $operation_id );
 
-		$args                     = QueryArgs::from_array( $row->filters() );
-		$all_ids                  = $target->query( $args );
+		// Prefer the ID set snapshotted at queue time (async/Action Scheduler path) over
+		// re-deriving it from filters now — see snapshot_for_queue(). Sync runs and rows
+		// predating this column have no snapshot, so they still re-query live.
+		$queued_ids = $row->queued_ids();
+		if ( null !== $queued_ids ) {
+			$all_ids = $queued_ids;
+		} else {
+			$args    = QueryArgs::from_array( $row->filters() );
+			$all_ids = $target->query( $args );
+		}
 		$params                   = $row->params();
 		$params['__operation_id'] = $operation_id;
 
@@ -115,27 +136,50 @@ final class ExecutionService {
 		$item_errors     = [];
 		$affected        = [];
 
-		foreach ( array_chunk( $all_ids, self::BATCH_SIZE ) as $chunk ) {
-			$result = $op->execute_batch( $chunk, $params, $target );
-			if ( ! $result->is_ok() ) {
-				$this->operations_repo->mark_failed( $operation_id, $result->get_error()->message() );
-				return $result;
-			}
-			$total_processed += $result->processed();
-			$total_succeeded += $result->succeeded();
-			$total_failed    += $result->failed();
-			foreach ( $result->item_errors() as $k => $v ) {
-				$item_errors[ $k ] = $v;
-			}
+		/*
+		 * Operations run synchronously inline with the submitting REST/CLI request, but
+		 * large batches run later via Action Scheduler — a cron-driven context with no
+		 * "current user" at all (get_current_user_id() === 0). execute_batch() uses the
+		 * current user to perform a per-post current_user_can() check as defense in depth
+		 * on top of the coarse batchpilot_* capability already checked when the operation
+		 * was accepted. Without restoring the original submitter's identity here, that
+		 * per-post check would either silently no-op (cron has no user) or, worse, run as
+		 * whatever user happens to be set in that request context. Impersonate the
+		 * recorded submitter for the duration of the batch and always restore afterwards.
+		 */
+		$restore_user_id = get_current_user_id();
+		$impersonate     = $row->user_id() > 0 && $row->user_id() !== $restore_user_id;
+		if ( $impersonate ) {
+			wp_set_current_user( $row->user_id() );
+		}
 
-			if ( $op instanceof DuplicateOperation ) {
-				$affected = array_merge( $affected, $op->last_new_ids() );
-			} else {
-				foreach ( $chunk as $id ) {
-					if ( ! isset( $result->item_errors()[ $id ] ) ) {
-						$affected[] = (int) $id;
+		try {
+			foreach ( array_chunk( $all_ids, self::BATCH_SIZE ) as $chunk ) {
+				$result = $op->execute_batch( $chunk, $params, $target );
+				if ( ! $result->is_ok() ) {
+					$this->operations_repo->mark_failed( $operation_id, $result->get_error()->message() );
+					return $result;
+				}
+				$total_processed += $result->processed();
+				$total_succeeded += $result->succeeded();
+				$total_failed    += $result->failed();
+				foreach ( $result->item_errors() as $k => $v ) {
+					$item_errors[ $k ] = $v;
+				}
+
+				if ( $op instanceof DuplicateOperation ) {
+					$affected = array_merge( $affected, $op->last_new_ids() );
+				} else {
+					foreach ( $chunk as $id ) {
+						if ( ! isset( $result->item_errors()[ $id ] ) ) {
+							$affected[] = (int) $id;
+						}
 					}
 				}
+			}
+		} finally {
+			if ( $impersonate ) {
+				wp_set_current_user( $restore_user_id );
 			}
 		}
 

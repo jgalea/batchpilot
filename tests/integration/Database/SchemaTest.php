@@ -54,9 +54,29 @@ final class SchemaTest extends TestCase {
 		Schema::install();
 		$columns = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}batchpilot_operations" );
 
-		foreach ( [ 'id', 'type', 'target', 'user_id', 'filters_json', 'params_json', 'affected_count', 'affected_ids_json', 'status', 'error_message', 'created_at', 'completed_at' ] as $column ) {
+		foreach ( [ 'id', 'type', 'target', 'user_id', 'filters_json', 'params_json', 'queued_ids_json', 'affected_count', 'affected_ids_json', 'status', 'error_message', 'created_at', 'completed_at' ] as $column ) {
 			$this->assertContains( $column, $columns, "Missing column: {$column}" );
 		}
+	}
+
+	public function test_maybe_migrate_adds_new_columns_to_an_existing_table(): void {
+		// Simulates a site already running an older version: the table exists (with all
+		// of its data) but the recorded schema version is stale. maybe_migrate() must
+		// bring the table up to date in place via dbDelta, not require a drop/recreate.
+		global $wpdb;
+		Schema::install();
+
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
+		$id   = $repo->create( \BatchPilot\History\Operation::newly_created( 'delete', 'post', 1, [], [] ) )->id();
+
+		update_option( Schema::VERSION_OPTION, '0.9.0' );
+
+		\BatchPilot\Database\Migrations::maybe_migrate();
+
+		$columns = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}batchpilot_operations" );
+		$this->assertContains( 'queued_ids_json', $columns );
+		$this->assertSame( Schema::VERSION, get_option( Schema::VERSION_OPTION ) );
+		$this->assertNotNull( $repo->find( $id ), 'Existing rows must survive the in-place upgrade.' );
 	}
 
 	private function assertTableExists( string $table ): void {

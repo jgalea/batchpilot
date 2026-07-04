@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Schema {
 
-	public const VERSION        = '1.0.0';
+	public const VERSION        = '1.1.0';
 	public const VERSION_OPTION = 'batchpilot_schema_version';
 
 	public static function install(): void {
@@ -25,6 +25,7 @@ final class Schema {
 			user_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
 			filters_json LONGTEXT NULL,
 			params_json LONGTEXT NULL,
+			queued_ids_json LONGTEXT NULL,
 			affected_count INT UNSIGNED NOT NULL DEFAULT 0,
 			affected_ids_json LONGTEXT NULL,
 			status VARCHAR(32) NOT NULL DEFAULT 'pending',

@@ -136,4 +136,75 @@ final class ExecutionServiceTest extends TestCase {
 			$this->assertSame( 'trash', get_post_status( $id ) );
 		}
 	}
+
+	public function test_run_sync_re_checks_submitters_capability_with_no_current_user(): void {
+		// Large/async batches run later via Action Scheduler's cron-driven worker, which
+		// has no "current user" at all (get_current_user_id() === 0). run_sync() must
+		// impersonate the original submitter (recorded on the operation row) so the
+		// per-post capability re-check inside execute_batch() still has someone to check
+		// against, rather than silently no-op'ing because nobody is "logged in".
+		$other_author = self::factory()->user->create( [ 'role' => 'author' ] );
+		$contributor  = self::factory()->user->create( [ 'role' => 'contributor' ] );
+		$post_id      = self::factory()->post->create(
+			[
+				'post_status' => 'publish',
+				'post_author' => $other_author,
+			]
+		);
+
+		$svc = $this->service();
+		// Recorded as if the contributor had submitted this via REST while authenticated
+		// (e.g. a future role_caps grant of batchpilot_delete to a non-admin role).
+		$op_id = $svc->record( 'post', 'delete', $contributor, [ 'ids' => [ $post_id ] ], [ 'permanent' => false ] );
+
+		$this->assertSame( 0, get_current_user_id(), 'Precondition: no current user, simulating an Action Scheduler cron run.' );
+		$result = $svc->run_sync( $op_id );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 0, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertNotSame( 'trash', get_post_status( $post_id ) );
+		$this->assertSame( 0, get_current_user_id(), 'The original (anonymous) cron context must be restored afterwards.' );
+	}
+
+	public function test_run_sync_uses_queued_snapshot_instead_of_re_querying_filters(): void {
+		// snapshot_for_queue() pins the exact matched ID set at accept time. A post that
+		// starts matching the same filter only *after* queuing (simulating content
+		// created in the gap before a delayed Action Scheduler run actually fires) must
+		// NOT be swept into the batch — only what was in the snapshot gets touched.
+		$snapshotted_ids = self::factory()->post->create_many( 2, [ 'post_status' => 'draft' ] );
+
+		$svc   = $this->service();
+		$op_id = $svc->record( 'post', 'delete', 1, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$svc->snapshot_for_queue( $op_id, $snapshotted_ids );
+
+		// Created after queuing — matches the same `status=draft` filter, but was never
+		// shown to the user and must be excluded from this run.
+		$late_id = self::factory()->post->create( [ 'post_status' => 'draft' ] );
+
+		$result = $svc->run_sync( $op_id );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->succeeded() );
+		foreach ( $snapshotted_ids as $id ) {
+			$this->assertSame( 'trash', get_post_status( $id ) );
+		}
+		$this->assertNotSame( 'trash', get_post_status( $late_id ) );
+	}
+
+	public function test_run_sync_re_queries_filters_when_no_snapshot_was_taken(): void {
+		// Sync (immediate) runs never call snapshot_for_queue() — confirms the fallback
+		// path (queued_ids() === null) still works exactly as before this column existed.
+		$ids = self::factory()->post->create_many( 2, [ 'post_status' => 'draft' ] );
+
+		$svc    = $this->service();
+		$op_id  = $svc->record( 'post', 'delete', 1, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$result = $svc->run_sync( $op_id );
+
+		$this->assertTrue( $result->is_ok() );
+		$this->assertSame( 2, $result->succeeded() );
+		foreach ( $ids as $id ) {
+			$this->assertSame( 'trash', get_post_status( $id ) );
+		}
+	}
 }
