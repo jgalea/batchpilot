@@ -11,22 +11,32 @@ final class AdminMenu {
 
 	public const PAGES = [
 		'dashboard'  => [
-			'slug'      => 'batchpilot',
-			'title_key' => 'Dashboard',
+			'slug' => 'batchpilot',
 		],
 		'operations' => [
-			'slug'      => 'batchpilot-operations',
-			'title_key' => 'Operations',
+			'slug' => 'batchpilot-operations',
 		],
 		'history'    => [
-			'slug'      => 'batchpilot-history',
-			'title_key' => 'History',
+			'slug' => 'batchpilot-history',
 		],
 		'settings'   => [
-			'slug'      => 'batchpilot-settings',
-			'title_key' => 'Settings',
+			'slug' => 'batchpilot-settings',
 		],
 	];
+
+	private static function submenu_label( string $key ): string {
+		switch ( $key ) {
+			case 'operations':
+				return __( 'Operations', 'batchpilot' );
+			case 'history':
+				return __( 'History', 'batchpilot' );
+			case 'settings':
+				return __( 'Settings', 'batchpilot' );
+			case 'dashboard':
+			default:
+				return __( 'Dashboard', 'batchpilot' );
+		}
+	}
 
 	public function register(): void {
 		add_action( 'admin_menu', [ $this, 'register_menus' ] );
@@ -46,12 +56,11 @@ final class AdminMenu {
 		);
 
 		foreach ( self::PAGES as $key => $info ) {
+			$label = self::submenu_label( $key );
 			add_submenu_page(
 				self::PARENT_SLUG,
-				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralDomain
-				__( $info['title_key'], 'batchpilot' ),
-				// phpcs:ignore WordPress.WP.I18n.NonSingularStringLiteralText, WordPress.WP.I18n.NonSingularStringLiteralDomain
-				__( $info['title_key'], 'batchpilot' ),
+				$label,
+				$label,
 				'manage_options',
 				$info['slug'],
 				function () use ( $key ) {

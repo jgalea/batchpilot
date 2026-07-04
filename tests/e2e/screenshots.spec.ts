@@ -1,7 +1,6 @@
 import { test } from './fixtures';
 
-const SHOTS_DIR =
-	process.env.SHOTS_DIR || 'test-results/screenshots';
+const SHOTS_DIR = process.env.SHOTS_DIR || 'test-results/screenshots';
 
 test.describe( 'BatchPilot wp.org screenshots', () => {
 	test.beforeAll( async ( { requestUtils } ) => {

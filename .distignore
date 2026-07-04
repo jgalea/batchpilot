@@ -1,0 +1,20 @@
+# Files and directories that should not ship to the WordPress.org package.
+/.git
+/.github
+/.editorconfig
+/.gitignore
+/.wp-env.json
+/CHANGELOG.md
+/README.md
+/docs
+/jest-unit.config.js
+/node_modules
+/package.json
+/package-lock.json
+/phpcs.xml.dist
+/phpstan.neon.dist
+/phpunit-integration.xml.dist
+/phpunit.xml.dist
+/test-results
+/tests
+/assets/src

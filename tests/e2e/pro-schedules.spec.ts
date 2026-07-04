@@ -1,8 +1,6 @@
 import { test, expect } from './fixtures';
 
-const SHOTS_DIR =
-	process.env.SHOTS_DIR ||
-	'test-results/screenshots';
+const SHOTS_DIR = process.env.SHOTS_DIR || 'test-results/screenshots';
 
 test.describe( 'BatchPilot Pro — Schedules UI', () => {
 	test.beforeEach( async ( { requestUtils } ) => {

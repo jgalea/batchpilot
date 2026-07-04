@@ -51,6 +51,16 @@ Use cases:
 2. Activate the plugin.
 3. Open BatchPilot → Operations from the admin sidebar.
 
+== Development ==
+
+Source code, including the un-minified JavaScript sources for the admin app, lives at https://github.com/jgalea/batchpilot
+
+The compiled assets in `assets/build/` are generated with [@wordpress/scripts](https://www.npmjs.com/package/@wordpress/scripts) from the sources in `assets/src/`. To rebuild:
+
+`npm install && npm run build`
+
+PHP dependencies are managed with Composer (`composer install`).
+
 == Frequently Asked Questions ==
 
 = Is everything undoable? =
