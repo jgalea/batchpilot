@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class TokenStore {
 
-	private const TRANSIENT_PREFIX = 'co_preview_token_';
+	private const TRANSIENT_PREFIX = 'batchpilot_preview_token_';
 
 	private int $ttl_seconds;
 
