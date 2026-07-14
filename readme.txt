@@ -92,7 +92,7 @@ By default, uninstall leaves your operation history in place. To drop everything
 1. Operations Builder. Pick a target, add filters, choose an operation, preview, execute.
 2. Live preview panel showing matched count and sample rows.
 3. History screen with one-click undo and re-run.
-4. Doctor screen surfacing schema, Action Scheduler, and capability state.
+4. Dashboard with quick actions, weekly stats, and environment checks for Action Scheduler, Abilities API, and database tables.
 
 == Changelog ==
 

@@ -1,6 +1,9 @@
 # Files and directories that should not ship to the WordPress.org package.
 /.git
 /.github
+/.wordpress-org
+/.distignore
+/.secret-scan-allow
 /.editorconfig
 /.gitignore
 /.wp-env.json
