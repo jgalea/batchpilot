@@ -4,6 +4,12 @@
 /.wordpress-org
 /.distignore
 /.secret-scan-allow
+
+# CI leftovers — must never ship (DOCKER_ENV dumps the runner environment).
+/DOCKER_ENV
+/Dockerfile-php-build
+/docker_tag
+/output.log
 /.editorconfig
 /.gitignore
 /.wp-env.json

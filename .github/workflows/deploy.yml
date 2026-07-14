@@ -15,12 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install production Composer dependencies
-        uses: php-actions/composer@v6
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          dev: no
-          php_version: "7.4"
-          args: --optimize-autoloader
+          php-version: "7.4"
+          tools: composer:v2
+          coverage: none
+
+      - name: Install production Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
