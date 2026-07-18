@@ -7,6 +7,7 @@ on:
     paths:
       - "readme.txt"
       - ".wordpress-org/**"
+  workflow_dispatch:
 
 jobs:
   assets:
@@ -22,3 +23,7 @@ jobs:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SLUG: batchpilot
+          # Sync only readme.txt + .wordpress-org assets. Without this the action
+          # rsyncs the whole checkout into trunk and deletes trunk/vendor (composer
+          # deps aren't committed here), which crashes on the vendor/composer revert.
+          IGNORE_OTHER_FILES: "true"
