@@ -113,6 +113,8 @@ final class AssetLoader {
 			'adminUrl'     => admin_url(),
 			'pluginUrl'    => plugin_dir_url( $this->plugin_file ),
 			'version'      => BATCHPILOT_VERSION,
+			'postTypes'    => $this->post_type_options(),
+			'roles'        => $this->role_options(),
 			'pages'        => [
 				'operations' => admin_url( 'admin.php?page=batchpilot-operations' ),
 				'history'    => admin_url( 'admin.php?page=batchpilot-history' ),
@@ -120,6 +122,37 @@ final class AssetLoader {
 				'settings'   => admin_url( 'admin.php?page=batchpilot-settings' ),
 			],
 		];
+	}
+
+	/**
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	private function post_type_options(): array {
+		$options = [];
+		foreach ( get_post_types( [ 'show_ui' => true ], 'objects' ) as $type ) {
+			if ( in_array( $type->name, [ 'attachment', 'wp_block', 'wp_template', 'wp_template_part', 'wp_navigation', 'wp_global_styles' ], true ) ) {
+				continue;
+			}
+			$options[] = [
+				'value' => (string) $type->name,
+				'label' => (string) $type->labels->name,
+			];
+		}
+		return $options;
+	}
+
+	/**
+	 * @return array<int, array{value: string, label: string}>
+	 */
+	private function role_options(): array {
+		$options = [];
+		foreach ( wp_roles()->roles as $slug => $role ) {
+			$options[] = [
+				'value' => (string) $slug,
+				'label' => translate_user_role( (string) $role['name'] ),
+			];
+		}
+		return $options;
 	}
 
 	private function is_batchpilot_page( string $hook_suffix ): bool {

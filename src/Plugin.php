@@ -185,6 +185,10 @@ final class Plugin {
 		$rewrite_workflow->register();
 		$this->set( 'rewrite.workflow', $rewrite_workflow );
 
+		$copy_actions = new \BatchPilot\Admin\CopyActions( $access, $execution, $operations_repo, $this->plugin_file );
+		$copy_actions->register();
+		$this->set( 'admin.copy_actions', $copy_actions );
+
 		\do_action( 'batchpilot_booted', $this );
 	}
 

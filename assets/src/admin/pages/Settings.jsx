@@ -6,7 +6,7 @@ import { getBootstrap } from '../bootstrap';
 const Settings = ( { api = defaultApi, bootstrap = getBootstrap() } ) => (
 	<div>
 		<h1>{ __( 'Settings', 'batchpilot' ) }</h1>
-		<SettingsForm api={ api } />
+		<SettingsForm api={ api } bootstrap={ bootstrap } />
 		<h2>{ __( 'AI agent access', 'batchpilot' ) }</h2>
 		<p>
 			{ __(
