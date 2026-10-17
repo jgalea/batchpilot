@@ -138,7 +138,13 @@ final class RewriteWorkflow {
 		$user_id = (int) get_current_user_id();
 		$params  = [ 'defer_copy_delete' => $defer_delete ];
 		if ( 0 === $user_id ) {
-			$params['scheduled_by'] = (int) $copy->post_author;
+			$user_id                = (int) $copy->post_author;
+			$params['scheduled_by'] = $user_id;
+			if ( ! user_can( $user_id, 'edit_post', $original_id ) ) {
+				update_post_meta( $copy_id, self::META_ERROR, 'The user who scheduled this rewrite can no longer edit the original.' );
+				$this->revert_to_draft( $copy_id );
+				return;
+			}
 		}
 
 		$operation_id = $this->execution->record( $original->post_type, 'republish', $user_id, [ 'ids' => [ $original_id ] ], $params );

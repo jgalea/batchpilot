@@ -208,7 +208,8 @@ final class RewriteRepublishTest extends TestCase {
 	}
 
 	public function test_scheduled_copy_is_merged_by_cron_without_a_user(): void {
-		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		$admin = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin );
 		$id = $this->published_post();
 		$this->run_op( 'rewrite', $id );
 		$copy_id = RewriteLinks::copy_of( $id );
@@ -238,7 +239,41 @@ final class RewriteRepublishTest extends TestCase {
 		$this->assertNull( get_post( $copy_id ) );
 		$ops = Plugin::instance()->get( 'history.operations' )->list( 5, 0 );
 		$this->assertSame( 'republish', $ops[0]->type() );
-		$this->assertSame( 0, $ops[0]->user_id() );
+		$this->assertSame( $admin, $ops[0]->user_id() );
+	}
+
+	public function test_scheduled_copy_is_refused_when_scheduler_cannot_edit_original(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		$id = $this->published_post();
+		$this->run_op( 'rewrite', $id );
+		$copy_id = RewriteLinks::copy_of( $id );
+		$author  = self::factory()->user->create( [ 'role' => 'author' ] );
+		wp_update_post(
+			[
+				'ID'           => $copy_id,
+				'post_author'  => $author,
+				'post_title'   => 'Unauthorised rewrite',
+				'post_content' => 'Unauthorised content',
+			]
+		);
+		global $wpdb;
+		$wpdb->update(
+			$wpdb->posts,
+			[
+				'post_status'   => 'future',
+				'post_date'     => gmdate( 'Y-m-d H:i:s', time() - 60 ),
+				'post_date_gmt' => gmdate( 'Y-m-d H:i:s', time() - 60 ),
+			],
+			[ 'ID' => $copy_id ]
+		);
+		clean_post_cache( $copy_id );
+		wp_set_current_user( 0 );
+
+		do_action( 'publish_future_post', $copy_id );
+
+		$this->assertSame( 'Original', get_post( $id )->post_title );
+		$this->assertSame( 'draft', get_post( $copy_id )->post_status );
+		$this->assertNotSame( '', (string) get_post_meta( $copy_id, \BatchPilot\Rewrite\RewriteWorkflow::META_ERROR, true ) );
 	}
 
 	public function test_scheduled_copy_not_yet_due_is_left_alone(): void {

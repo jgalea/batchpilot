@@ -111,6 +111,28 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertArrayHasKey( $draft, $result->item_errors() );
 	}
 
+	public function test_execute_batch_blocks_password_protected_post_of_another_author(): void {
+		$other_author = self::factory()->user->create( [ 'role' => 'author' ] );
+		$contributor  = self::factory()->user->create( [ 'role' => 'contributor' ] );
+		get_role( 'contributor' )->add_cap( 'batchpilot_duplicate' );
+		$protected = self::factory()->post->create(
+			[
+				'post_status'   => 'publish',
+				'post_author'   => $other_author,
+				'post_password' => 'secret',
+				'post_content'  => 'Hidden body',
+			]
+		);
+
+		wp_set_current_user( $contributor );
+		$result = $this->op()->execute_batch( [ $protected ], [], new PostTarget( 'post' ) );
+		wp_set_current_user( 0 );
+
+		$this->assertSame( 0, $result->succeeded() );
+		$this->assertSame( 1, $result->failed() );
+		$this->assertArrayHasKey( $protected, $result->item_errors() );
+	}
+
 	public function test_execute_batch_duplicates_posts_with_suffix_and_draft(): void {
 		$source = (int) self::factory()->post->create(
 			[

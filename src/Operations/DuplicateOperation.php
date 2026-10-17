@@ -194,8 +194,8 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 				continue;
 			}
 
-			// Per-post read check on the source, plus the one-time create check above.
-			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'read_post', $id ) ) ) {
+			// Per-post edit check on the source, plus the one-time create check above.
+			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'edit_post', $id ) ) ) {
 				++$failed;
 				$item_errors[ $id ] = 'Insufficient permissions to duplicate this item.';
 				continue;

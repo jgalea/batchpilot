@@ -47,7 +47,7 @@ final class Access {
 		if ( null === $type || ! current_user_can( $type->cap->create_posts ) ) {
 			return false;
 		}
-		return current_user_can( 'read_post', $post->ID );
+		return current_user_can( 'edit_post', $post->ID );
 	}
 
 	public function can_rewrite( WP_Post $post ): bool {
