@@ -102,6 +102,8 @@ final class AbilitiesBridge {
 			'delete'    => 'batchpilot_delete',
 			'duplicate' => 'batchpilot_duplicate',
 			'edit'      => 'batchpilot_edit',
+			'rewrite'   => 'batchpilot_duplicate',
+			'republish' => 'batchpilot_edit',
 		];
 
 		$execution = $this->execution;

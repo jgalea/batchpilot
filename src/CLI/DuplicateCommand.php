@@ -23,6 +23,9 @@ final class DuplicateCommand {
 	 * [--post-type=<slug>]
 	 * : Post type slug. Default: post.
 	 *
+	 * [--ids=<ids>]
+	 * : Comma-separated IDs of the posts to duplicate.
+	 *
 	 * [--status=<status>]
 	 * : Source post status or comma-separated list.
 	 *
@@ -71,6 +74,10 @@ final class DuplicateCommand {
 		$filters = [];
 		if ( isset( $assoc_args['status'] ) ) {
 			$filters['status'] = array_map( 'trim', explode( ',', (string) $assoc_args['status'] ) );
+		}
+
+		if ( isset( $assoc_args['ids'] ) ) {
+			$filters['ids'] = array_values( array_filter( array_map( 'intval', explode( ',', (string) $assoc_args['ids'] ) ) ) );
 		}
 
 		$params = [];
