@@ -62,11 +62,6 @@ final class AbilitiesBridge {
 				'label'               => __( 'BatchPilot: doctor', 'batchpilot' ),
 				'description'         => __( 'Report BatchPilot environment health.', 'batchpilot' ),
 				'category'            => 'batchpilot',
-				'input_schema'        => [
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				],
 				'output_schema'       => [
 					'type'       => 'object',
 					'properties' => [
