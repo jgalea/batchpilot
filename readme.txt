@@ -4,7 +4,7 @@ Tags: bulk delete, bulk edit, duplicate posts, bulk operations, undo
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,16 @@ By default, uninstall leaves your operation history in place. To drop everything
 
 == Changelog ==
 
+= 1.1.0 =
+
+* New: Duplicate a single post or page from the list's row actions, or copy it to a new draft from the editor. Which post types and user roles can do this is set in Settings.
+* New: Rewrite & Republish. Edit a draft copy of a live post, then publish or schedule it to replace the original's content while keeping its ID and URL. A revision of the original is kept, and the change can be undone from History.
+* New: `wp batchpilot rewrite` and `wp batchpilot republish` commands.
+* Changed: the "Duplicate with BatchPilot" row action is now "Bulk duplicate…", to tell it apart from the new Duplicate.
+* Changed: duplicating a post now requires permission to edit it, so password-protected and other users' posts can't be copied by people who can only read them.
+* Fixed: duplicated post meta containing backslashes (JSON, block data) is no longer corrupted.
+* Fixed: abilities now register correctly with the WordPress Abilities API. IDs use hyphens, for example `batchpilot/post-delete`.
+
 = 1.0.0 =
 
 Initial release.
@@ -107,11 +117,15 @@ Initial release.
 * Preview tokens (HMAC-signed, 5-minute TTL) prevent stale state from being executed.
 * Async execution via Action Scheduler when matched count exceeds the configurable threshold.
 * Surfaces: admin UI, WP-CLI (`wp batchpilot`), REST API (`/wp-json/batchpilot/v1/*`), WordPress Abilities API.
-* Post-list integration: row action ("Duplicate with BatchPilot") and bulk actions deep-link into the Operations Builder pre-filled with the selected IDs.
+* Post-list integration: row action ("Bulk duplicate…") and bulk actions deep-link into the Operations Builder pre-filled with the selected IDs.
 * Per-operation capability gates: `batchpilot_delete`, `batchpilot_edit`, `batchpilot_duplicate`, `batchpilot_move`, `batchpilot_schedule`.
 * Doctor screen and `wp batchpilot doctor` for environment checks.
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+
+Adds single-post Duplicate and Rewrite & Republish. Ability IDs now use hyphens.
 
 = 1.0.0 =
 

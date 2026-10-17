@@ -36,7 +36,7 @@ final class PostListIntegration {
 		$actions['batchpilot_duplicate'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $url ),
-			esc_html__( 'Duplicate with BatchPilot', 'batchpilot' )
+			esc_html__( 'Bulk duplicate…', 'batchpilot' )
 		);
 		return $actions;
 	}
