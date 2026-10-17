@@ -19,6 +19,8 @@ final class SettingsTest extends TestCase {
 				'batch_size'               => 50,
 				'delete_permanent_default' => false,
 				'history_retention_days'   => 30,
+				'copy_post_types'          => [ 'post', 'page' ],
+				'copy_roles'               => [ 'administrator', 'editor' ],
 			],
 			$settings->get_all()
 		);
@@ -48,5 +50,18 @@ final class SettingsTest extends TestCase {
 		$settings->register();
 		$settings->save( [ 'async_threshold' => 500 ] );
 		$this->assertSame( 500, (int) apply_filters( 'batchpilot_async_threshold', 100 ) );
+	}
+
+	public function test_copy_settings_drop_unknown_post_types_and_roles(): void {
+		$settings = new Settings();
+		$settings->save(
+			[
+				'copy_post_types' => [ 'post', 'no-such-type', 'attachment' ],
+				'copy_roles'      => [ 'author', 'no-such-role' ],
+			]
+		);
+		$saved = $settings->get_all();
+		$this->assertSame( [ 'post' ], $saved['copy_post_types'] );
+		$this->assertSame( [ 'author' ], $saved['copy_roles'] );
 	}
 }

@@ -57,6 +57,18 @@ final class CommandRegistrar {
 		);
 
 		\WP_CLI::add_command(
+			'batchpilot rewrite',
+			new RewriteCommand( $this->execution ),
+			[ 'shortdesc' => __( 'Create Rewrite & Republish draft copies of published posts.', 'batchpilot' ) ]
+		);
+
+		\WP_CLI::add_command(
+			'batchpilot republish',
+			new RepublishCommand( $this->execution ),
+			[ 'shortdesc' => __( 'Merge Rewrite & Republish copies onto their originals.', 'batchpilot' ) ]
+		);
+
+		\WP_CLI::add_command(
 			'batchpilot edit',
 			new EditCommand( $this->execution ),
 			[ 'shortdesc' => __( 'Bulk-edit posts.', 'batchpilot' ) ]

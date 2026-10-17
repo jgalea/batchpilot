@@ -11,7 +11,7 @@ use BatchPilot\Contracts\TargetInterface;
 
 final class PostTarget implements TargetInterface {
 
-	private const SUPPORTED = [ 'delete', 'duplicate', 'edit' ];
+	private const SUPPORTED = [ 'delete', 'duplicate', 'edit', 'rewrite', 'republish' ];
 
 	private string $post_type;
 

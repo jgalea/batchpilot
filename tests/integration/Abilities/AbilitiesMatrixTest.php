@@ -10,12 +10,12 @@ final class AbilitiesMatrixTest extends TestCase {
 			$this->markTestSkipped( 'Abilities API not installed in test env.' );
 		}
 
-		do_action( 'abilities_api_init' );
-
-		$this->assertNotNull( wp_get_ability( 'batchpilot/post_delete' ) );
-		$this->assertNotNull( wp_get_ability( 'batchpilot/post_duplicate' ) );
-		$this->assertNotNull( wp_get_ability( 'batchpilot/post_edit' ) );
-		$this->assertNotNull( wp_get_ability( 'batchpilot/page_delete' ) );
+				$this->assertNotNull( wp_get_ability( 'batchpilot/post-delete' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post-duplicate' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post-edit' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/page-delete' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post-rewrite' ) );
+		$this->assertNotNull( wp_get_ability( 'batchpilot/post-republish' ) );
 		$this->assertNotNull( wp_get_ability( 'batchpilot/doctor' ) );
 	}
 }

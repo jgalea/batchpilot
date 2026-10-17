@@ -83,16 +83,27 @@ final class Plugin {
 		$this->set( 'history.operations', $operations_repo );
 		$this->set( 'history.snapshots', $snapshots_repo );
 
+		$settings = new \BatchPilot\Admin\Settings();
+		$settings->register();
+		$this->set( 'admin.settings', $settings );
+
+		$copier = new \BatchPilot\Duplication\PostCopier();
+		$access = new \BatchPilot\Duplication\Access( $settings );
+		$this->set( 'duplication.access', $access );
+
 		$target_registry    = new \BatchPilot\Registry\TargetRegistry();
 		$operation_registry = new \BatchPilot\Registry\OperationRegistry();
 
 		$post_types = \apply_filters( 'batchpilot_post_types', [ 'post', 'page' ] );
-		foreach ( (array) $post_types as $post_type ) {
+		$post_types = array_unique( array_merge( (array) $post_types, $access->post_types() ) );
+		foreach ( $post_types as $post_type ) {
 			$target_registry->register( new \BatchPilot\Targets\PostTarget( (string) $post_type ) );
 		}
 
 		$operation_registry->register( new \BatchPilot\Operations\DeleteOperation( $token_generator, $token_store, $operations_repo ) );
-		$operation_registry->register( new \BatchPilot\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo ) );
+		$operation_registry->register( new \BatchPilot\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo, $copier ) );
+		$operation_registry->register( new \BatchPilot\Operations\RewriteOperation( $token_generator, $token_store, $operations_repo, $copier, $access ) );
+		$operation_registry->register( new \BatchPilot\Operations\RepublishOperation( $token_generator, $token_store, $operations_repo, $snapshots_repo, $copier ) );
 		$operation_registry->register( new \BatchPilot\Operations\BulkEditOperation( $token_generator, $token_store, $operations_repo, $snapshots_repo ) );
 
 		/**
@@ -137,10 +148,6 @@ final class Plugin {
 		$runner->register();
 		$this->set( 'execution.runner', $runner );
 
-		$settings = new \BatchPilot\Admin\Settings();
-		$settings->register();
-		$this->set( 'admin.settings', $settings );
-
 		$rest_registrar = new \BatchPilot\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $token_verifier, $token_store, $settings );
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
@@ -173,6 +180,14 @@ final class Plugin {
 		);
 		$post_list_integration->register();
 		$this->set( 'admin.post_list', $post_list_integration );
+
+		$rewrite_workflow = new \BatchPilot\Rewrite\RewriteWorkflow( $execution );
+		$rewrite_workflow->register();
+		$this->set( 'rewrite.workflow', $rewrite_workflow );
+
+		$copy_actions = new \BatchPilot\Admin\CopyActions( $access, $execution, $operations_repo, $this->plugin_file );
+		$copy_actions->register();
+		$this->set( 'admin.copy_actions', $copy_actions );
 
 		\do_action( 'batchpilot_booted', $this );
 	}

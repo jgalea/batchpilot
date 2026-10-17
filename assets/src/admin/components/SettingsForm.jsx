@@ -2,6 +2,7 @@ import { useEffect, useState } from '@wordpress/element';
 import {
 	TextControl,
 	ToggleControl,
+	CheckboxControl,
 	Button,
 	Spinner,
 	Notice,
@@ -35,7 +36,12 @@ const Field = ( { label, help, children } ) => (
 	</div>
 );
 
-const SettingsForm = ( { api } ) => {
+const toggleValue = ( list, value, on ) => {
+	const next = ( list || [] ).filter( ( v ) => v !== value );
+	return on ? [ ...next, value ] : next;
+};
+
+const SettingsForm = ( { api, bootstrap = {} } ) => {
 	const [ values, setValues ] = useState( null );
 	const [ saving, setSaving ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
@@ -174,6 +180,73 @@ const SettingsForm = ( { api } ) => {
 							update( { delete_permanent_default: v } )
 						}
 					/>
+				</Field>
+			</Section>
+
+			<Section
+				title={ __(
+					'Duplicate and Rewrite & Republish',
+					'batchpilot'
+				) }
+				description={ __(
+					'Controls the Duplicate row action, Copy to a new draft, and Rewrite & Republish in the post list and editor.',
+					'batchpilot'
+				) }
+			>
+				<Field
+					label={ __( 'Post types', 'batchpilot' ) }
+					help={ __(
+						'Post types that get these actions.',
+						'batchpilot'
+					) }
+				>
+					{ ( bootstrap.postTypes || [] ).map( ( type ) => (
+						<CheckboxControl
+							key={ type.value }
+							__nextHasNoMarginBottom
+							label={ type.label }
+							checked={ ( values.copy_post_types || [] ).includes(
+								type.value
+							) }
+							onChange={ ( on ) =>
+								update( {
+									copy_post_types: toggleValue(
+										values.copy_post_types,
+										type.value,
+										on
+									),
+								} )
+							}
+						/>
+					) ) }
+				</Field>
+
+				<Field
+					label={ __( 'Roles', 'batchpilot' ) }
+					help={ __(
+						'Roles allowed to use them. Administrators always can, and users still need permission to edit the post.',
+						'batchpilot'
+					) }
+				>
+					{ ( bootstrap.roles || [] ).map( ( role ) => (
+						<CheckboxControl
+							key={ role.value }
+							__nextHasNoMarginBottom
+							label={ role.label }
+							checked={ ( values.copy_roles || [] ).includes(
+								role.value
+							) }
+							onChange={ ( on ) =>
+								update( {
+									copy_roles: toggleValue(
+										values.copy_roles,
+										role.value,
+										on
+									),
+								} )
+							}
+						/>
+					) ) }
 				</Field>
 			</Section>
 

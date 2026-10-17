@@ -4,7 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
-## [Unreleased]
+## [1.1.0] - 2026-10-17
+
+### Added
+
+- Duplicate row action and "Copy to a new draft" link in the classic and block editors, with a configurable post-type and role list in Settings.
+- Rewrite & Republish: a linked draft copy of a published post that merges back onto the original (same ID and URL) when published or scheduled. A revision of the original is kept, only one rewrite per post is allowed, and both steps are logged in history. Undo restores the original's previous content, taxonomies and meta.
+- `rewrite` and `republish` operations, `wp batchpilot rewrite` and `wp batchpilot republish`, and REST endpoints through the existing preview/execute/undo routes.
+- `batchpilot_duplicate_excluded_meta_keys` filter (wildcards allowed). Edit locks, old-slug redirects and Yoast/Rank Math analysis scores are no longer copied.
+- `--ids` option on `wp batchpilot duplicate`.
+
+### Changed
+
+- Row action "Duplicate with BatchPilot" is now "Bulk duplicate…".
+- Duplicating requires `edit_post` on the source, in the UI and in the duplicate operation.
+- Abilities API IDs use hyphens (`batchpilot/post-delete`) and register on `wp_abilities_api_categories_init` and `wp_abilities_api_init`.
+
+### Fixed
+
+- A scheduled rewrite is refused when its author can no longer edit the original.
+- Duplicated post meta containing backslashes (JSON, block data) was corrupted on copy.
 
 ## [1.0.0] - 2026-05-29
 

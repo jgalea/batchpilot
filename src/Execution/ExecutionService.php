@@ -8,11 +8,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 use BatchPilot\Contracts\BatchResult;
 use BatchPilot\Contracts\PreviewResult;
 use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\TracksAffectedIds;
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\History\Operation;
 use BatchPilot\History\OperationRepository;
 use BatchPilot\History\SnapshotRepository;
-use BatchPilot\Operations\DuplicateOperation;
 use BatchPilot\PreviewToken\TokenGenerator;
 use BatchPilot\PreviewToken\TokenStore;
 use BatchPilot\Registry\OperationRegistry;
@@ -167,8 +167,8 @@ final class ExecutionService {
 					$item_errors[ $k ] = $v;
 				}
 
-				if ( $op instanceof DuplicateOperation ) {
-					$affected = array_merge( $affected, $op->last_new_ids() );
+				if ( $op instanceof TracksAffectedIds ) {
+					$affected = array_merge( $affected, $op->last_affected_ids() );
 				} else {
 					foreach ( $chunk as $id ) {
 						if ( ! isset( $result->item_errors()[ $id ] ) ) {

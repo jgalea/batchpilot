@@ -10,14 +10,16 @@ use BatchPilot\Contracts\OperationInterface;
 use BatchPilot\Contracts\PreviewResult;
 use BatchPilot\Contracts\QueryArgs;
 use BatchPilot\Contracts\TargetInterface;
+use BatchPilot\Contracts\TracksAffectedIds;
 use BatchPilot\Contracts\UndoResult;
 use BatchPilot\Contracts\ValidationResult;
+use BatchPilot\Duplication\PostCopier;
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\History\OperationRepository;
 use BatchPilot\PreviewToken\TokenGenerator;
 use BatchPilot\PreviewToken\TokenStore;
 
-final class DuplicateOperation implements OperationInterface {
+final class DuplicateOperation implements OperationInterface, TracksAffectedIds {
 
 	private const SAMPLE_SIZE    = 20;
 	private const DEFAULT_SUFFIX = ' (Copy)';
@@ -25,9 +27,15 @@ final class DuplicateOperation implements OperationInterface {
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
 	private OperationRepository $operations;
+	private PostCopier $copier;
 
 	/** @var int[] */
 	private array $last_new_ids = [];
+
+	/** @return int[] */
+	public function last_affected_ids(): array {
+		return $this->last_new_ids;
+	}
 
 	/** @return int[] */
 	public function last_new_ids(): array {
@@ -37,11 +45,13 @@ final class DuplicateOperation implements OperationInterface {
 	public function __construct(
 		TokenGenerator $token_generator,
 		TokenStore $token_store,
-		OperationRepository $operations
+		OperationRepository $operations,
+		?PostCopier $copier = null
 	) {
 		$this->token_generator = $token_generator;
 		$this->token_store     = $token_store;
 		$this->operations      = $operations;
+		$this->copier          = $copier ?? new PostCopier();
 	}
 
 	public function slug(): string {
@@ -184,60 +194,32 @@ final class DuplicateOperation implements OperationInterface {
 				continue;
 			}
 
-			// Per-post read check on the source, plus the one-time create check above.
-			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'read_post', $id ) ) ) {
+			// Per-post edit check on the source, plus the one-time create check above.
+			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'edit_post', $id ) ) ) {
 				++$failed;
 				$item_errors[ $id ] = 'Insufficient permissions to duplicate this item.';
 				continue;
 			}
 
-			$new_post = [
-				'post_title'   => $source->post_title . $title_suffix,
-				'post_content' => $source->post_content,
-				'post_excerpt' => $source->post_excerpt,
-				'post_type'    => $source->post_type,
-				'post_status'  => $target_status,
-				'post_author'  => $reassign_author > 0 ? $reassign_author : (int) $source->post_author,
-				'post_parent'  => (int) $source->post_parent,
-				'menu_order'   => (int) $source->menu_order,
-			];
-
-			$new_id = wp_insert_post( $new_post, true );
-			if ( is_wp_error( $new_id ) || 0 === (int) $new_id ) {
+			$new_id = $this->copier->create_copy(
+				$source,
+				[
+					'post_title'  => $source->post_title . $title_suffix,
+					'post_status' => $target_status,
+					'post_author' => $reassign_author > 0 ? $reassign_author : (int) $source->post_author,
+				]
+			);
+			if ( is_wp_error( $new_id ) ) {
 				++$failed;
-				$item_errors[ $id ] = is_wp_error( $new_id ) ? $new_id->get_error_message() : 'wp_insert_post returned 0.';
+				$item_errors[ $id ] = $new_id->get_error_message();
 				continue;
 			}
-
-			$this->copy_meta( $id, (int) $new_id );
-			$this->copy_taxonomies( $id, (int) $new_id, $source->post_type );
 
 			$this->last_new_ids[] = (int) $new_id;
 			++$succeeded;
 		}
 
 		return BatchResult::of( count( $ids ), $succeeded, $failed, $item_errors );
-	}
-
-	private function copy_meta( int $source_id, int $new_id ): void {
-		$meta = get_post_meta( $source_id );
-		foreach ( $meta as $key => $values ) {
-			if ( in_array( $key, [ '_edit_lock', '_edit_last' ], true ) ) {
-				continue;
-			}
-			foreach ( (array) $values as $value ) {
-				add_post_meta( $new_id, $key, maybe_unserialize( $value ) );
-			}
-		}
-	}
-
-	private function copy_taxonomies( int $source_id, int $new_id, string $post_type ): void {
-		foreach ( get_object_taxonomies( $post_type ) as $taxonomy ) {
-			$terms = wp_get_object_terms( $source_id, $taxonomy, [ 'fields' => 'ids' ] );
-			if ( is_array( $terms ) && ! empty( $terms ) ) {
-				wp_set_object_terms( $new_id, array_map( 'intval', $terms ), $taxonomy );
-			}
-		}
 	}
 
 	public function supports_undo(): bool {

@@ -39,36 +39,21 @@ final class AbilitiesBridge {
 			return;
 		}
 
-		if ( did_action( 'abilities_api_init' ) > 0 || did_action( 'init' ) > 0 ) {
-			$this->register_abilities();
-			return;
-		}
+		add_action( 'wp_abilities_api_categories_init', [ $this, 'register_category' ] );
+		add_action( 'wp_abilities_api_init', [ $this, 'register_abilities' ] );
+	}
 
-		add_action( 'abilities_api_init', [ $this, 'register_abilities' ] );
-		add_action( 'init', [ $this, 'register_abilities' ], 20 );
+	public function register_category(): void {
+		wp_register_ability_category(
+			'batchpilot',
+			[
+				'label'       => __( 'BatchPilot', 'batchpilot' ),
+				'description' => __( 'Bulk operations for WordPress and WooCommerce content.', 'batchpilot' ),
+			]
+		);
 	}
 
 	public function register_abilities(): void {
-		static $done = false;
-		if ( $done ) {
-			return;
-		}
-		$done = true;
-
-		$this->do_register_abilities();
-	}
-
-	private function do_register_abilities(): void {
-		if ( function_exists( 'wp_register_ability_category' ) ) {
-			wp_register_ability_category(
-				'batchpilot',
-				[
-					'label'       => __( 'BatchPilot', 'batchpilot' ),
-					'description' => __( 'Bulk operations for WordPress and WooCommerce content.', 'batchpilot' ),
-				]
-			);
-		}
-
 		$doctor = new DoctorCommand( $this->action_scheduler );
 
 		wp_register_ability(
@@ -77,11 +62,6 @@ final class AbilitiesBridge {
 				'label'               => __( 'BatchPilot: doctor', 'batchpilot' ),
 				'description'         => __( 'Report BatchPilot environment health.', 'batchpilot' ),
 				'category'            => 'batchpilot',
-				'input_schema'        => [
-					'type'                 => 'object',
-					'properties'           => new \stdClass(),
-					'additionalProperties' => false,
-				],
 				'output_schema'       => [
 					'type'       => 'object',
 					'properties' => [
@@ -95,6 +75,10 @@ final class AbilitiesBridge {
 				],
 				'permission_callback' => static fn () => current_user_can( 'manage_options' ),
 				'execute_callback'    => static fn () => $doctor->collect_report(),
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [ 'readonly' => true ],
+				],
 			]
 		);
 
@@ -102,6 +86,8 @@ final class AbilitiesBridge {
 			'delete'    => 'batchpilot_delete',
 			'duplicate' => 'batchpilot_duplicate',
 			'edit'      => 'batchpilot_edit',
+			'rewrite'   => 'batchpilot_duplicate',
+			'republish' => 'batchpilot_edit',
 		];
 
 		$execution = $this->execution;
@@ -114,7 +100,7 @@ final class AbilitiesBridge {
 
 				$target_slug = $target->slug();
 				$op_slug     = $op->slug();
-				$name        = 'batchpilot/' . $target_slug . '_' . $op_slug;
+				$name        = 'batchpilot/' . $target_slug . '-' . $op_slug;
 				$cap         = $cap_map[ $op_slug ] ?? 'manage_options';
 
 				wp_register_ability(
@@ -145,6 +131,7 @@ final class AbilitiesBridge {
 								],
 							],
 						],
+						'meta'                => [ 'show_in_rest' => true ],
 						'permission_callback' => static fn () => current_user_can( $cap ),
 						'execute_callback'    => static function ( $input ) use ( $execution, $target_slug, $op_slug ) {
 							$filters = isset( $input['filters'] ) && is_array( $input['filters'] ) ? $input['filters'] : [];
