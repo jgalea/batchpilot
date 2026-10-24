@@ -4,7 +4,7 @@ Tags: bulk delete, bulk edit, duplicate posts, bulk operations, undo
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,7 +96,7 @@ By default, uninstall leaves your operation history in place. To drop everything
 
 == Changelog ==
 
-= Unreleased =
+= 1.2.0 =
 
 * New: Settings option to delete all BatchPilot data when the plugin is uninstalled. Off by default.
 * Fixed: History older than the retention window is now removed daily. Pruning starts one retention window after updating, so existing history isn't deleted on the first run.
@@ -129,7 +129,7 @@ Initial release.
 
 == Upgrade Notice ==
 
-= Unreleased =
+= 1.2.0 =
 
 History older than the retention setting (30 days by default) is now pruned daily. Pruning starts one retention window after you update.
 
