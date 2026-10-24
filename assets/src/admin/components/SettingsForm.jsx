@@ -260,7 +260,7 @@ const SettingsForm = ( { api, bootstrap = {} } ) => {
 				<Field
 					label={ __( 'Retention window', 'batchpilot' ) }
 					help={ __(
-						'Days to keep completed operations and their undo snapshots.',
+						'Days to keep completed operations and their undo snapshots. Older history is removed daily.',
 						'batchpilot'
 					) }
 				>

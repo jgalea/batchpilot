@@ -69,7 +69,7 @@ Yes, except a permanent delete (which you have to enable explicitly). Trash, bul
 
 = How long is the history kept? =
 
-Configurable in Settings. The default retention window is 30 days.
+Configurable in Settings. The default is 30 days. History older than the retention window, with its undo snapshots, is removed daily.
 
 = Will it work on a large site? =
 

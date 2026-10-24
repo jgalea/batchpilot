@@ -21,7 +21,7 @@ foreach ( [ '_bp_rewrite_of', '_bp_rewrite_copy', '_bp_rewrite_error' ] as $batc
 	delete_post_meta_by_key( $batchpilot_meta_key );
 }
 
-$batchpilot_hooks = [ 'batchpilot_run_operation', 'batchpilot_pro_run_schedule' ];
+$batchpilot_hooks = [ 'batchpilot_run_operation', 'batchpilot_pro_run_schedule', 'batchpilot_prune_history' ];
 foreach ( $batchpilot_hooks as $batchpilot_hook ) {
 	wp_clear_scheduled_hook( $batchpilot_hook );
 	if ( function_exists( 'as_unschedule_all_actions' ) ) {
@@ -30,7 +30,7 @@ foreach ( $batchpilot_hooks as $batchpilot_hook ) {
 }
 $batchpilot_as_table = $wpdb->prefix . 'actionscheduler_actions';
 if ( $batchpilot_as_table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $batchpilot_as_table ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$batchpilot_as_table} WHERE hook IN (%s, %s)", ...$batchpilot_hooks ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$batchpilot_as_table} WHERE hook IN (%s, %s, %s)", $batchpilot_hooks[0], $batchpilot_hooks[1], $batchpilot_hooks[2] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 }
 
 $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_batchpilot_' ) . '%', $wpdb->esc_like( '_transient_timeout_batchpilot_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery

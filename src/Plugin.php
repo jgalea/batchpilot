@@ -87,6 +87,10 @@ final class Plugin {
 		$settings->register();
 		$this->set( 'admin.settings', $settings );
 
+		$pruner = new \BatchPilot\History\Pruner( $wpdb, $settings );
+		$pruner->register();
+		$this->set( 'history.pruner', $pruner );
+
 		$copier = new \BatchPilot\Duplication\PostCopier();
 		$access = new \BatchPilot\Duplication\Access( $settings );
 		$this->set( 'duplication.access', $access );

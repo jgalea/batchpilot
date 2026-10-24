@@ -13,5 +13,6 @@ final class Activator {
 	public static function activate(): void {
 		Migrations::maybe_migrate();
 		Capabilities::grant_to_admins();
+		\BatchPilot\History\Pruner::ensure_scheduled();
 	}
 }
