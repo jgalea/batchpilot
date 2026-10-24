@@ -260,7 +260,7 @@ const SettingsForm = ( { api, bootstrap = {} } ) => {
 				<Field
 					label={ __( 'Retention window', 'batchpilot' ) }
 					help={ __(
-						'Days to keep completed operations. Older entries (and their undo snapshots) are pruned on a daily cron.',
+						'Days to keep completed operations and their undo snapshots.',
 						'batchpilot'
 					) }
 				>
@@ -276,6 +276,38 @@ const SettingsForm = ( { api, bootstrap = {} } ) => {
 							update( {
 								history_retention_days: parseInt( v, 10 ) || 0,
 							} )
+						}
+					/>
+				</Field>
+			</Section>
+
+			<Section
+				title={ __( 'Uninstall', 'batchpilot' ) }
+				description={ __(
+					'What happens to BatchPilot data when the plugin is deleted.',
+					'batchpilot'
+				) }
+			>
+				<Field
+					label={ __(
+						'Delete all BatchPilot data when uninstalling',
+						'batchpilot'
+					) }
+					help={ __(
+						'Removes history, undo snapshots, schedules, settings, and capabilities. Off by default, so reinstalling keeps your history.',
+						'batchpilot'
+					) }
+				>
+					<ToggleControl
+						__nextHasNoMarginBottom
+						label={
+							values.delete_data_on_uninstall
+								? __( 'Delete data', 'batchpilot' )
+								: __( 'Keep data', 'batchpilot' )
+						}
+						checked={ !! values.delete_data_on_uninstall }
+						onChange={ ( v ) =>
+							update( { delete_data_on_uninstall: v } )
 						}
 					/>
 				</Field>

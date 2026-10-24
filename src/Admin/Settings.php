@@ -14,6 +14,7 @@ final class Settings {
 		'batch_size'               => 50,
 		'delete_permanent_default' => false,
 		'history_retention_days'   => 30,
+		'delete_data_on_uninstall' => false,
 		'copy_post_types'          => [ 'post', 'page' ],
 		'copy_roles'               => [ 'administrator', 'editor' ],
 	];
@@ -59,6 +60,9 @@ final class Settings {
 		}
 		if ( array_key_exists( 'history_retention_days', $input ) ) {
 			$out['history_retention_days'] = max( 1, (int) $input['history_retention_days'] );
+		}
+		if ( array_key_exists( 'delete_data_on_uninstall', $input ) ) {
+			$out['delete_data_on_uninstall'] = (bool) $input['delete_data_on_uninstall'];
 		}
 		if ( array_key_exists( 'copy_post_types', $input ) ) {
 			$out['copy_post_types'] = $this->sanitize_post_types( $input['copy_post_types'] );

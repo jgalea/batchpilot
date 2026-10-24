@@ -19,6 +19,7 @@ final class SettingsTest extends TestCase {
 				'batch_size'               => 50,
 				'delete_permanent_default' => false,
 				'history_retention_days'   => 30,
+				'delete_data_on_uninstall' => false,
 				'copy_post_types'          => [ 'post', 'page' ],
 				'copy_roles'               => [ 'administrator', 'editor' ],
 			],
@@ -34,6 +35,7 @@ final class SettingsTest extends TestCase {
 				'batch_size'               => '75',
 				'delete_permanent_default' => '1',
 				'history_retention_days'   => '45',
+				'delete_data_on_uninstall' => '1',
 				'unknown_key'              => 'ignored',
 			]
 		);
@@ -42,6 +44,7 @@ final class SettingsTest extends TestCase {
 		$this->assertSame( 75, $saved['batch_size'] );
 		$this->assertTrue( $saved['delete_permanent_default'] );
 		$this->assertSame( 45, $saved['history_retention_days'] );
+		$this->assertTrue( $saved['delete_data_on_uninstall'] );
 		$this->assertArrayNotHasKey( 'unknown_key', $saved );
 	}
 
