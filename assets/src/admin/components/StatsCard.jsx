@@ -4,11 +4,17 @@ import { __ } from '@wordpress/i18n';
 
 const StatsCard = ( { api } ) => {
 	const [ ops, setOps ] = useState( null );
+	const [ schedules, setSchedules ] = useState( null );
 
 	useEffect( () => {
 		api.listOperations( { limit: 100, offset: 0 } )
 			.then( setOps )
 			.catch( () => setOps( [] ) );
+		if ( api.listSchedules ) {
+			api.listSchedules()
+				.then( ( res ) => setSchedules( res.schedules || [] ) )
+				.catch( () => setSchedules( null ) );
+		}
 	}, [ api ] );
 
 	if ( ops === null ) {
@@ -30,6 +36,12 @@ const StatsCard = ( { api } ) => {
 		( sum, op ) => sum + ( op.affected_count || 0 ),
 		0
 	);
+
+	const activeSchedules = ( schedules || [] ).filter( ( s ) => s.enabled );
+	const nextRun = activeSchedules
+		.map( ( s ) => parseTs( s.next_run_at ) )
+		.filter( ( t ) => ! Number.isNaN( t ) )
+		.sort( ( a, b ) => a - b )[ 0 ];
 
 	return (
 		<div className="bp-metrics">
@@ -55,28 +67,34 @@ const StatsCard = ( { api } ) => {
 					{ items }
 				</p>
 			</div>
-			<div className="bp-metric">
-				<p className="bp-metric__label">
-					{ __( 'Active schedules', 'batchpilot' ) }
-				</p>
-				<p
-					className="bp-metric__value bp-metric__value--muted"
-					data-testid="stats-active-schedules"
-				>
-					{ __( 'N/A', 'batchpilot' ) }
-				</p>
-			</div>
-			<div className="bp-metric">
-				<p className="bp-metric__label">
-					{ __( 'Next scheduled run', 'batchpilot' ) }
-				</p>
-				<p
-					className="bp-metric__value bp-metric__value--muted"
-					data-testid="stats-next-run"
-				>
-					{ __( 'N/A', 'batchpilot' ) }
-				</p>
-			</div>
+			{ schedules !== null && (
+				<>
+					<div className="bp-metric">
+						<p className="bp-metric__label">
+							{ __( 'Active schedules', 'batchpilot' ) }
+						</p>
+						<p
+							className="bp-metric__value"
+							data-testid="stats-active-schedules"
+						>
+							{ activeSchedules.length }
+						</p>
+					</div>
+					<div className="bp-metric">
+						<p className="bp-metric__label">
+							{ __( 'Next scheduled run', 'batchpilot' ) }
+						</p>
+						<p
+							className="bp-metric__value bp-metric__value--muted"
+							data-testid="stats-next-run"
+						>
+							{ nextRun === undefined
+								? __( 'None', 'batchpilot' )
+								: new Date( nextRun ).toLocaleString() }
+						</p>
+					</div>
+				</>
+			) }
 		</div>
 	);
 };

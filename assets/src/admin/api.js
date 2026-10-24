@@ -52,6 +52,8 @@ export const createApi = ( fetchFn = apiFetch ) => {
 		undoOperation: ( id, signal ) =>
 			call( `/operations/${ id }/undo`, 'POST', undefined, signal ),
 		fetchDoctor: ( signal ) => call( '/doctor', 'GET', undefined, signal ),
+		listSchedules: ( signal ) =>
+			call( '/schedules', 'GET', undefined, signal ),
 		getSettings: ( signal ) =>
 			call( '/settings', 'GET', undefined, signal ),
 		saveSettings: ( body, signal ) =>
