@@ -25,6 +25,18 @@ jobs:
       - name: Install production Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Build admin assets
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          test -f assets/build/admin.js && test -f assets/build/widgets.js && test -f assets/build/admin.asset.php
+
       - name: WordPress Plugin Deploy
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:

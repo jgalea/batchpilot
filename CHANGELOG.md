@@ -6,6 +6,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ## [1.2.0] - 2026-10-24
 
+### Fixed
+
+- Admin screens were blank when installed from WordPress.org: the 1.1.0 package shipped without `assets/build`. The deploy workflow now builds the assets and fails if they are missing.
+
 ### Added
 
 - Setting to delete all BatchPilot data when the plugin is uninstalled (off by default).

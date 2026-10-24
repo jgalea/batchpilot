@@ -98,6 +98,7 @@ By default, uninstall leaves your operation history in place. To drop everything
 
 = 1.2.0 =
 
+* Fixed: the BatchPilot screens were blank on sites that installed 1.1.0 from WordPress.org, because the package was missing its built scripts.
 * New: Settings option to delete all BatchPilot data when the plugin is uninstalled. Off by default.
 * Fixed: History older than the retention window is now removed daily. Pruning starts one retention window after updating, so existing history isn't deleted on the first run.
 * Fixed: the dashboard shows real schedule counts instead of N/A.
