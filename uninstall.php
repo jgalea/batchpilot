@@ -38,7 +38,7 @@ $batchpilot_uninstall_site = static function (): void {
 
 	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_batchpilot_' ) . '%', $wpdb->esc_like( '_transient_timeout_batchpilot_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 
-	foreach ( [ \BatchPilot\Admin\Settings::OPTION, 'batchpilot_delete_data_on_uninstall', 'batchpilot_caps_version' ] as $option ) {
+	foreach ( [ \BatchPilot\Admin\Settings::OPTION, 'batchpilot_delete_data_on_uninstall', 'batchpilot_caps_version', 'batchpilot_pruning_started' ] as $option ) {
 		delete_option( $option );
 	}
 

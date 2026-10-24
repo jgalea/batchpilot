@@ -96,6 +96,12 @@ By default, uninstall leaves your operation history in place. To drop everything
 
 == Changelog ==
 
+= Unreleased =
+
+* New: Settings option to delete all BatchPilot data when the plugin is uninstalled. Off by default.
+* Fixed: History older than the retention window is now removed daily. Pruning starts one retention window after updating, so existing history isn't deleted on the first run.
+* Fixed: the dashboard shows real schedule counts instead of N/A.
+
 = 1.1.0 =
 
 * New: Duplicate a single post or page from the list's row actions, or copy it to a new draft from the editor. Which post types and user roles can do this is set in Settings.
@@ -122,6 +128,10 @@ Initial release.
 * Doctor screen and `wp batchpilot doctor` for environment checks.
 
 == Upgrade Notice ==
+
+= Unreleased =
+
+History older than the retention setting (30 days by default) is now pruned daily. Pruning starts one retention window after you update.
 
 = 1.1.0 =
 

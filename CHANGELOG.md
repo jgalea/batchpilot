@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Setting to delete all BatchPilot data when the plugin is uninstalled (off by default).
+
+### Fixed
+
+- History older than the retention window is now pruned daily. Pruning starts one retention window after updating, so existing history isn't removed on the first run.
+- Dashboard "Active schedules" and "Next scheduled run" show real values instead of N/A.
+
 ## [1.1.0] - 2026-10-17
 
 ### Added

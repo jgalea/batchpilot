@@ -12,6 +12,8 @@ final class Pruner {
 
 	public const HOOK = 'batchpilot_prune_history';
 
+	public const STARTED_OPTION = 'batchpilot_pruning_started';
+
 	private const BATCH_SIZE  = 200;
 	private const TIME_BUDGET = 15;
 	private const FINISHED    = [ 'completed', 'failed' ];
@@ -32,6 +34,7 @@ final class Pruner {
 
 	public static function ensure_scheduled(): void {
 		if ( ! wp_next_scheduled( self::HOOK ) ) {
+			add_option( self::STARTED_OPTION, time(), '', false );
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::HOOK );
 		}
 	}
@@ -41,7 +44,17 @@ final class Pruner {
 	}
 
 	public function prune(): int {
-		$days    = max( 1, (int) ( $this->settings->get_all()['history_retention_days'] ?? 30 ) );
+		$days = max( 1, (int) ( $this->settings->get_all()['history_retention_days'] ?? 30 ) );
+
+		$grace_start = get_option( self::STARTED_OPTION, false );
+		if ( false === $grace_start ) {
+			add_option( self::STARTED_OPTION, time(), '', false );
+			return 0;
+		}
+		if ( time() < (int) $grace_start + $days * DAY_IN_SECONDS ) {
+			return 0;
+		}
+
 		$cutoff  = gmdate( 'Y-m-d H:i:s', time() - $days * DAY_IN_SECONDS );
 		$started = time();
 		$removed = 0;
