@@ -20,12 +20,12 @@ Three operations on posts, pages, and any registered public post type:
 * Duplicate. Copies meta, taxonomies, featured image, and optionally child posts.
 * Bulk edit. Change status, author, publish dates, taxonomies, password, comment status, or menu order.
 
-Twelve filters narrow the matching set: post type, status, author, date ranges (modified, published), taxonomy terms, has comments, has featured image, parent, children.
+Thirteen filters narrow the matching set: specific IDs, post type, status, author, date ranges (modified, published), taxonomy terms, has comments, has featured image, parent, children.
 
 Four ways to drive it:
 
 * Admin UI. Stepper-driven Operations Builder with live preview.
-* WP-CLI. `wp batchpilot delete`, `duplicate`, `edit`, `history`, `undo`, `doctor`.
+* WP-CLI. `wp batchpilot delete`, `duplicate`, `edit`, `rewrite`, `republish`, `history`, `undo`, `doctor`.
 * REST API. `/wp-json/batchpilot/v1/*` endpoints with capability-gated permissions.
 * WordPress Abilities API. Each Target × Operation pair is exposed as a registered ability so AI agents and other clients can drive operations.
 
@@ -39,7 +39,7 @@ Safety features:
 
 Use cases:
 
-* Trash old drafts, auto-drafts, or revisions on a schedule.
+* Trash old drafts, auto-drafts, or revisions.
 * Re-attribute posts from a departing author.
 * Shift publish dates on a backlog.
 * Add or remove taxonomy terms across a content set.
@@ -69,7 +69,7 @@ Yes, except a permanent delete (which you have to enable explicitly). Trash, bul
 
 = How long is the history kept? =
 
-Configurable in Settings. Default is 90 days. Snapshots older than the retention window are pruned on a daily cron.
+Configurable in Settings. The default retention window is 30 days.
 
 = Will it work on a large site? =
 
@@ -85,7 +85,7 @@ WooCommerce HPOS is detected (see the Doctor screen). Direct Woo product/order o
 
 = How do I uninstall cleanly? =
 
-By default, uninstall leaves your operation history in place. To drop everything on uninstall, enable Settings → Delete data on uninstall before removing the plugin.
+By default, uninstall leaves your operation history in place. To drop everything on uninstall, enable Settings → Delete all BatchPilot data when uninstalling before removing the plugin.
 
 == Screenshots ==
 
