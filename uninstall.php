@@ -8,40 +8,59 @@ if ( ! file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 }
 require __DIR__ . '/vendor/autoload.php';
 
-$batchpilot_settings = get_option( \BatchPilot\Admin\Settings::OPTION, [] );
-if ( ! is_array( $batchpilot_settings ) || empty( $batchpilot_settings['delete_data_on_uninstall'] ) ) {
-	return;
-}
+$batchpilot_uninstall_site = static function (): void {
+	global $wpdb;
 
-global $wpdb;
-
-\BatchPilot\Database\Schema::drop_all();
-
-foreach ( [ '_bp_rewrite_of', '_bp_rewrite_copy', '_bp_rewrite_error' ] as $batchpilot_meta_key ) {
-	delete_post_meta_by_key( $batchpilot_meta_key );
-}
-
-$batchpilot_hooks = [ 'batchpilot_run_operation', 'batchpilot_pro_run_schedule', 'batchpilot_prune_history' ];
-foreach ( $batchpilot_hooks as $batchpilot_hook ) {
-	wp_clear_scheduled_hook( $batchpilot_hook );
-	if ( function_exists( 'as_unschedule_all_actions' ) ) {
-		as_unschedule_all_actions( $batchpilot_hook );
+	$settings = get_option( \BatchPilot\Admin\Settings::OPTION, [] );
+	$enabled  = ( is_array( $settings ) && ! empty( $settings['delete_data_on_uninstall'] ) )
+		|| rest_sanitize_boolean( get_option( 'batchpilot_delete_data_on_uninstall', false ) );
+	if ( ! $enabled ) {
+		return;
 	}
-}
-$batchpilot_as_table = $wpdb->prefix . 'actionscheduler_actions';
-if ( $batchpilot_as_table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $batchpilot_as_table ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$batchpilot_as_table} WHERE hook IN (%s, %s, %s)", $batchpilot_hooks[0], $batchpilot_hooks[1], $batchpilot_hooks[2] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-}
 
-$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_batchpilot_' ) . '%', $wpdb->esc_like( '_transient_timeout_batchpilot_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+	\BatchPilot\Database\Schema::drop_all();
 
-foreach ( [ \BatchPilot\Admin\Settings::OPTION, 'batchpilot_caps_version' ] as $batchpilot_option ) {
-	delete_option( $batchpilot_option );
-}
-
-$batchpilot_admin = get_role( 'administrator' );
-if ( null !== $batchpilot_admin ) {
-	foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $batchpilot_cap ) {
-		$batchpilot_admin->remove_cap( $batchpilot_cap );
+	foreach ( [ '_bp_rewrite_of', '_bp_rewrite_copy', '_bp_rewrite_error' ] as $meta_key ) {
+		delete_post_meta_by_key( $meta_key );
 	}
+
+	$hooks = [ 'batchpilot_run_operation', 'batchpilot_pro_run_schedule', 'batchpilot_prune_history' ];
+	foreach ( $hooks as $hook ) {
+		wp_clear_scheduled_hook( $hook );
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( $hook );
+		}
+	}
+	$as_table = $wpdb->prefix . 'actionscheduler_actions';
+	if ( $as_table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $as_table ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$as_table} WHERE hook IN (%s, %s, %s)", $hooks[0], $hooks[1], $hooks[2] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s", $wpdb->esc_like( '_transient_batchpilot_' ) . '%', $wpdb->esc_like( '_transient_timeout_batchpilot_' ) . '%' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+
+	foreach ( [ \BatchPilot\Admin\Settings::OPTION, 'batchpilot_delete_data_on_uninstall', 'batchpilot_caps_version' ] as $option ) {
+		delete_option( $option );
+	}
+
+	$admin = get_role( 'administrator' );
+	if ( null !== $admin ) {
+		foreach ( \BatchPilot\Capabilities\Capabilities::ALL as $cap ) {
+			$admin->remove_cap( $cap );
+		}
+	}
+};
+
+if ( is_multisite() ) {
+	foreach ( get_sites(
+		[
+			'fields' => 'ids',
+			'number' => 0,
+		]
+	) as $batchpilot_site_id ) {
+		switch_to_blog( $batchpilot_site_id );
+		$batchpilot_uninstall_site();
+		restore_current_blog();
+	}
+} else {
+	$batchpilot_uninstall_site();
 }

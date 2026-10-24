@@ -56,13 +56,13 @@ final class Settings {
 			$out['batch_size'] = max( 1, min( 500, (int) $input['batch_size'] ) );
 		}
 		if ( array_key_exists( 'delete_permanent_default', $input ) ) {
-			$out['delete_permanent_default'] = (bool) $input['delete_permanent_default'];
+			$out['delete_permanent_default'] = rest_sanitize_boolean( $input['delete_permanent_default'] );
 		}
 		if ( array_key_exists( 'history_retention_days', $input ) ) {
 			$out['history_retention_days'] = max( 1, (int) $input['history_retention_days'] );
 		}
 		if ( array_key_exists( 'delete_data_on_uninstall', $input ) ) {
-			$out['delete_data_on_uninstall'] = (bool) $input['delete_data_on_uninstall'];
+			$out['delete_data_on_uninstall'] = rest_sanitize_boolean( $input['delete_data_on_uninstall'] );
 		}
 		if ( array_key_exists( 'copy_post_types', $input ) ) {
 			$out['copy_post_types'] = $this->sanitize_post_types( $input['copy_post_types'] );
