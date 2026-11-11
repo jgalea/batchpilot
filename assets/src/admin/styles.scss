@@ -1164,8 +1164,13 @@
 		}
 	}
 
-	.bp-preview__warnings {
+	.bp-preview__warnings,
+	.bp-preview__info {
 		margin: 0 !important;
+	}
+
+	.bp-preview__info li {
+		overflow-wrap: anywhere;
 	}
 
 	.bp-preview__rows {

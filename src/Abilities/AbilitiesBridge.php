@@ -131,6 +131,10 @@ final class AbilitiesBridge {
 									'type'  => 'array',
 									'items' => [ 'type' => 'string' ],
 								],
+								'info'          => [
+									'type'  => 'array',
+									'items' => [ 'type' => 'string' ],
+								],
 							],
 						],
 						'meta'                => [ 'show_in_rest' => true ],
@@ -147,6 +151,7 @@ final class AbilitiesBridge {
 								'sample_ids'    => $result->sample_ids(),
 								'preview_token' => $result->preview_token(),
 								'warnings'      => $result->warnings(),
+								'info'          => $result->info(),
 							];
 						},
 					]

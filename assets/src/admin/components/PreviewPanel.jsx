@@ -50,6 +50,7 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 	const count = preview.count || 0;
 	const rows = preview.display_rows || [];
 	const warnings = preview.warnings || [];
+	const info = preview.info || [];
 
 	const countLabel = sprintf(
 		/* translators: %s: number of matched items, pre-formatted */
@@ -100,6 +101,20 @@ const PreviewPanel = ( { preview, previewing, previewError } ) => {
 					<ul>
 						{ warnings.map( ( w, i ) => (
 							<li key={ i }>{ w }</li>
+						) ) }
+					</ul>
+				</Notice>
+			) }
+
+			{ info.length > 0 && (
+				<Notice
+					status="info"
+					isDismissible={ false }
+					className="bp-preview__info"
+				>
+					<ul>
+						{ info.map( ( line, i ) => (
+							<li key={ i }>{ line }</li>
 						) ) }
 					</ul>
 				</Notice>
