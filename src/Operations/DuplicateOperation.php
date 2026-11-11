@@ -189,10 +189,10 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			// rights core asks for when publishing or assigning authorship by hand.
 			if ( in_array( $target_status, [ 'publish', 'future', 'private' ], true )
 				&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
-				$param_denial = 'Insufficient permissions to publish duplicates.';
+				$param_denial = __( 'Insufficient permissions to publish duplicates.', 'batchpilot' );
 			} elseif ( $reassign_author > 0 && get_current_user_id() !== $reassign_author
 				&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
-				$param_denial = 'Insufficient permissions to assign another author.';
+				$param_denial = __( 'Insufficient permissions to assign another author.', 'batchpilot' );
 			}
 		}
 
@@ -201,7 +201,7 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			$source = get_post( $id );
 			if ( null === $source ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 
@@ -214,7 +214,7 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			// Per-post edit check on the source, plus the one-time create check above.
 			if ( get_current_user_id() > 0 && ( ! $has_create_cap || ! current_user_can( 'edit_post', $id ) ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to duplicate this item.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to duplicate this item.', 'batchpilot' );
 				continue;
 			}
 

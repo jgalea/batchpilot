@@ -128,7 +128,7 @@ final class ExecutionService {
 
 		$verifier = new TokenVerifier( $this->token_generator, $this->token_store );
 		if ( ! $verifier->verify( $token, $payload ) ) {
-			return new BatchPilotError( 'bp.preview.stale_token', 'Preview token invalid or expired. Re-preview before executing.' );
+			return new BatchPilotError( 'bp.preview.stale_token', __( 'Preview token invalid or expired. Re-preview before executing.', 'batchpilot' ) );
 		}
 		$verifier->consume( $token );
 
@@ -174,7 +174,7 @@ final class ExecutionService {
 			return UndoResult::error( new BatchPilotError( 'bp.operation.not_found', 'Operation not found.', [ 'id' => $operation_id ] ) );
 		}
 		if ( 'undone' === $row->status() ) {
-			return UndoResult::error( new BatchPilotError( 'bp.undo.already_undone', 'This operation has already been undone.', [ 'id' => $operation_id ] ) );
+			return UndoResult::error( new BatchPilotError( 'bp.undo.already_undone', __( 'This operation has already been undone.', 'batchpilot' ), [ 'id' => $operation_id ] ) );
 		}
 
 		$op = $this->operations_registry->get( $row->type() );

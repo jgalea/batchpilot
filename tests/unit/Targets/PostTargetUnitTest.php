@@ -132,10 +132,27 @@ final class PostTargetUnitTest extends TestCase {
 			$query['meta_query']
 		);
 
-		$query = $this->build_query( [ 'meta' => [ 'key' => 'color', 'compare' => 'NOT EXISTS' ] ], [] );
+		$query = $this->build_query(
+			[
+				'meta' => [
+					'key'     => 'color',
+					'compare' => 'NOT EXISTS',
+				],
+			],
+			[]
+		);
 		$this->assertArrayNotHasKey( 'value', $query['meta_query'][0] );
 
-		$query = $this->build_query( [ 'meta' => [ 'key' => 'color', 'compare' => 'DROP TABLE', 'value' => 'x' ] ], [] );
+		$query = $this->build_query(
+			[
+				'meta' => [
+					'key'     => 'color',
+					'compare' => 'DROP TABLE',
+					'value'   => 'x',
+				],
+			],
+			[]
+		);
 		$this->assertSame( '=', $query['meta_query'][0]['compare'] );
 	}
 
@@ -152,7 +169,7 @@ final class PostTargetUnitTest extends TestCase {
 	 */
 	private function build_query( array $filters, array $parent_ids ): array {
 		global $wpdb;
-		$wpdb        = \Mockery::mock();
+		$wpdb        = \Mockery::mock(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 		$wpdb->posts = 'wp_posts';
 		$wpdb->shouldReceive( 'prepare' )->andReturn( 'SQL' );
 		$wpdb->shouldReceive( 'get_col' )->andReturn( $parent_ids );

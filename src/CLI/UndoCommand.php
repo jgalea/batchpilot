@@ -39,6 +39,7 @@ final class UndoCommand {
 	 * @param array<string, mixed> $assoc_args
 	 */
 	public function __invoke( array $args, array $assoc_args ): void {
+		\WP_CLI::confirm( 'Undo this operation?', $assoc_args );
 		$assoc_args['id'] = (int) ( $args[0] ?? 0 );
 		$result           = $this->run( $assoc_args );
 		if ( '' !== $result['output'] ) {

@@ -207,7 +207,7 @@ final class BulkEditOperation implements OperationInterface {
 			$post = get_post( $id );
 			if ( null === $post ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 
@@ -218,7 +218,7 @@ final class BulkEditOperation implements OperationInterface {
 			// custom post type without delete/edit_others_* mapped to batchpilot_edit).
 			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to edit this item.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to edit this item.', 'batchpilot' );
 				continue;
 			}
 
@@ -227,15 +227,15 @@ final class BulkEditOperation implements OperationInterface {
 				$denied           = null;
 				if ( isset( $params['set_status'] ) && in_array( $params['set_status'], [ 'publish', 'future', 'private' ], true )
 					&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
-					$denied = 'Insufficient permissions to publish this item.';
+					$denied = __( 'Insufficient permissions to publish this item.', 'batchpilot' );
 				} elseif ( isset( $params['reassign_author'] ) && get_current_user_id() !== (int) $params['reassign_author']
 					&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
-					$denied = 'Insufficient permissions to assign another author.';
+					$denied = __( 'Insufficient permissions to assign another author.', 'batchpilot' );
 				} else {
 					foreach ( [ 'taxonomy_add', 'taxonomy_remove' ] as $tax_key ) {
 						$taxonomy_object = isset( $params[ $tax_key ]['taxonomy'] ) ? get_taxonomy( (string) $params[ $tax_key ]['taxonomy'] ) : false;
 						if ( false !== $taxonomy_object && ! current_user_can( $taxonomy_object->cap->assign_terms ) ) {
-							$denied = 'Insufficient permissions to assign terms.';
+							$denied = __( 'Insufficient permissions to assign terms.', 'batchpilot' );
 						}
 					}
 				}
@@ -359,7 +359,6 @@ final class BulkEditOperation implements OperationInterface {
 				}
 			}
 			if ( count( $update ) > 1 ) {
-				/** @phpstan-ignore-next-line argument.type */
 				$result = wp_update_post( wp_slash( $update ), true );
 				if ( ! is_wp_error( $result ) && 0 !== (int) $result ) {
 					++$restored;

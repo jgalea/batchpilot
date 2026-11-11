@@ -38,9 +38,9 @@ final class CapabilityChecksTest extends TestCase {
 		Functions\when( 'get_post_type_object' )->justReturn(
 			(object) [
 				'cap' => (object) [
-					'publish_posts'      => 'publish_posts',
-					'edit_others_posts'  => 'edit_others_posts',
-					'create_posts'       => 'edit_posts',
+					'publish_posts'     => 'publish_posts',
+					'edit_others_posts' => 'edit_others_posts',
+					'create_posts'      => 'edit_posts',
 				],
 			]
 		);

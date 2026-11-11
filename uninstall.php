@@ -13,7 +13,7 @@ $batchpilot_uninstall_site = static function (): void {
 
 	$settings = get_option( \BatchPilot\Admin\Settings::OPTION, [] );
 	$enabled  = ( is_array( $settings ) && ! empty( $settings['delete_data_on_uninstall'] ) )
-		|| rest_sanitize_boolean( get_option( 'batchpilot_delete_data_on_uninstall', false ) );
+		|| rest_sanitize_boolean( get_option( 'batchpilot_delete_data_on_uninstall', false ) ); // @phpstan-ignore argument.templateType
 	if ( ! $enabled ) {
 		return;
 	}

@@ -5,18 +5,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use BatchPilot\Registry\TargetRegistry;
 use WP_Post;
 
 final class PostListIntegration {
 
 	private string $operations_url;
+	private ?TargetRegistry $targets;
 
-	public function __construct( string $operations_url ) {
+	public function __construct( string $operations_url, ?TargetRegistry $targets = null ) {
 		$this->operations_url = $operations_url;
+		$this->targets        = $targets;
 	}
 
 	public function register(): void {
 		foreach ( get_post_types( [ 'public' => true ] ) as $post_type ) {
+			if ( null !== $this->targets && ! $this->targets->has( (string) $post_type ) ) {
+				continue;
+			}
 			add_filter( "bulk_actions-edit-{$post_type}", [ $this, 'filter_bulk_actions' ] );
 			add_filter( "handle_bulk_actions-edit-{$post_type}", [ $this, 'handle_bulk_action' ], 10, 3 );
 		}
@@ -29,14 +35,18 @@ final class PostListIntegration {
 	 * @return array<string, string>
 	 */
 	public function filter_row_actions( array $actions, WP_Post $post ): array {
-		if ( ! current_user_can( 'batchpilot_duplicate' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+		// The Operations Builder needs manage_options, so other roles would land on a permission error.
+		if ( ! current_user_can( 'manage_options' ) || ! current_user_can( 'batchpilot_duplicate' ) ) { // phpcs:ignore WordPress.WP.Capabilities.Unknown
+			return $actions;
+		}
+		if ( null !== $this->targets && ! $this->targets->has( $post->post_type ) ) {
 			return $actions;
 		}
 		$url                             = $this->build_url( 'duplicate', $post->post_type, [ 'ids' => [ (int) $post->ID ] ] );
 		$actions['batchpilot_duplicate'] = sprintf(
 			'<a href="%s">%s</a>',
 			esc_url( $url ),
-			esc_html__( 'Bulk duplicate…', 'batchpilot' )
+			esc_html__( 'Duplicate with options…', 'batchpilot' )
 		);
 		return $actions;
 	}
@@ -46,6 +56,9 @@ final class PostListIntegration {
 	 * @return array<string, string>
 	 */
 	public function filter_bulk_actions( array $actions ): array {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return $actions;
+		}
 		return array_merge(
 			$actions,
 			[

@@ -111,7 +111,7 @@ final class DeleteOperation implements OperationInterface {
 
 			if ( null === $post ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 
@@ -126,7 +126,7 @@ final class DeleteOperation implements OperationInterface {
 			// identity is restored for async/cron-driven runs.
 			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to delete this item.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to delete this item.', 'batchpilot' );
 				continue;
 			}
 

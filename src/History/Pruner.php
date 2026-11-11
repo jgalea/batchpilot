@@ -29,7 +29,12 @@ final class Pruner {
 	}
 
 	public function register(): void {
-		add_action( self::HOOK, [ $this, 'prune' ] );
+		add_action(
+			self::HOOK,
+			function (): void {
+				$this->prune();
+			}
+		);
 		add_action( 'init', [ self::class, 'ensure_scheduled' ] );
 	}
 
@@ -70,8 +75,8 @@ final class Pruner {
 		$started = time();
 		$removed = 0;
 
-		$snapshots  = $this->db->prefix . 'batchpilot_snapshots';
-		$statuses   = implode( ', ', array_fill( 0, count( self::FINISHED ), '%s' ) );
+		$snapshots = $this->db->prefix . 'batchpilot_snapshots';
+		$statuses  = implode( ', ', array_fill( 0, count( self::FINISHED ), '%s' ) );
 
 		do {
 			$ids = $this->db->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared

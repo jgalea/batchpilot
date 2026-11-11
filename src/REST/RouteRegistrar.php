@@ -9,8 +9,6 @@ use BatchPilot\Admin\Settings;
 use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\Execution\ExecutionService;
 use BatchPilot\History\OperationRepository;
-use BatchPilot\PreviewToken\TokenStore;
-use BatchPilot\PreviewToken\TokenVerifier;
 use BatchPilot\Registry\OperationRegistry;
 use BatchPilot\Registry\TargetRegistry;
 
@@ -23,8 +21,6 @@ final class RouteRegistrar {
 	private TargetRegistry $targets;
 	private OperationRegistry $operations;
 	private OperationRepository $operations_repo;
-	private TokenVerifier $verifier;
-	private TokenStore $token_store;
 	private Settings $settings;
 
 	public function __construct(
@@ -33,8 +29,6 @@ final class RouteRegistrar {
 		TargetRegistry $targets,
 		OperationRegistry $operations,
 		OperationRepository $operations_repo,
-		TokenVerifier $verifier,
-		TokenStore $token_store,
 		Settings $settings
 	) {
 		$this->action_scheduler = $action_scheduler;
@@ -42,8 +36,6 @@ final class RouteRegistrar {
 		$this->targets          = $targets;
 		$this->operations       = $operations;
 		$this->operations_repo  = $operations_repo;
-		$this->verifier         = $verifier;
-		$this->token_store      = $token_store;
 		$this->settings         = $settings;
 	}
 
