@@ -87,7 +87,7 @@ final class BulkEditOperation implements OperationInterface {
 					'type'        => 'string',
 					'widget'      => 'password',
 					'label'       => __( 'Set password', 'batchpilot' ),
-					'description' => __( 'Password-protect every matched item. Leave empty to clear an existing password.', 'batchpilot' ),
+					'description' => __( 'Password-protect every matched item. Tick "Remove the existing password" to clear it instead.', 'batchpilot' ),
 				],
 				'comment_status'   => [
 					'type'        => 'string',

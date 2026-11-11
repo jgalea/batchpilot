@@ -54,7 +54,7 @@ final class DeleteOperation implements OperationInterface {
 					'type'        => 'boolean',
 					'default'     => false,
 					'label'       => __( 'Permanently delete (skip trash)', 'batchpilot' ),
-					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default — items go to the Trash and can be restored.', 'batchpilot' ),
+					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default: items go to the Trash and can be restored.', 'batchpilot' ),
 				],
 			],
 		];

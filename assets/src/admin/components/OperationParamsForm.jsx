@@ -83,7 +83,7 @@ const StringField = ( { prop, value, onChange, label, description } ) => (
 
 const EnumField = ( { prop, value, onChange, label, description } ) => {
 	const options = [
-		{ label: __( '— No change —', 'batchpilot' ), value: '' },
+		{ label: __( 'No change', 'batchpilot' ), value: '' },
 		...( prop.enum || [] ).map( ( v ) => ( {
 			label: humanizeKey( String( v ) ),
 			value: String( v ),
@@ -113,7 +113,7 @@ const PostStatusField = ( {
 } ) => {
 	const statuses = catalog?.vocab?.statuses || [];
 	const options = [
-		{ label: __( '— No change —', 'batchpilot' ), value: '' },
+		{ label: __( 'No change', 'batchpilot' ), value: '' },
 		...statuses.map( ( s ) => ( { label: s.label, value: s.value } ) ),
 	];
 	return (
@@ -363,7 +363,7 @@ const TaxonomyTermsField = ( {
 	};
 
 	const taxOptions = [
-		{ label: __( '— Pick a taxonomy —', 'batchpilot' ), value: '' },
+		{ label: __( 'Pick a taxonomy', 'batchpilot' ), value: '' },
 		...taxonomies.map( ( t ) => ( {
 			label: `${ t.label } (${ t.slug })`,
 			value: t.slug,

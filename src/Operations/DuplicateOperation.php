@@ -233,7 +233,13 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			}
 
 			$this->last_new_ids[] = (int) $new_id;
-			if ( ! empty( $params['include_children'] ) ) {
+			/**
+			 * Filters whether child posts are duplicated along with a source post.
+			 *
+			 * @param bool    $include Whether the include_children param was set.
+			 * @param WP_Post $source  The post being duplicated.
+			 */
+			if ( apply_filters( 'batchpilot_duplicate_include_children', ! empty( $params['include_children'] ), $source ) ) {
 				$this->copy_children( $source, (int) $new_id, $target_status, $reassign_author, $title_suffix, [ $id ] );
 			}
 			++$succeeded;
