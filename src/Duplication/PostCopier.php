@@ -90,6 +90,15 @@ final class PostCopier {
 		$this->copy_meta( (int) $source->ID, (int) $new_id, $source );
 		$this->copy_taxonomies( (int) $source->ID, (int) $new_id, $source->post_type );
 
+		/**
+		 * Fires once a copy exists with its meta and terms, so integrations can finish
+		 * work that core's insert path doesn't do, such as rebuilding lookup tables.
+		 *
+		 * @param int      $new_id New post ID.
+		 * @param \WP_Post $source Post that was copied.
+		 */
+		do_action( 'batchpilot_post_copied', (int) $new_id, $source );
+
 		return (int) $new_id;
 	}
 

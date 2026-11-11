@@ -253,6 +253,23 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertNull( get_post( $new_ids[1] ) );
 	}
 
+	public function test_copying_fires_the_post_copied_action(): void {
+		$seen = [];
+		add_action(
+			'batchpilot_post_copied',
+			static function ( $new_id, $source ) use ( &$seen ) {
+				$seen[] = [ $new_id, $source->ID ];
+			},
+			10,
+			2
+		);
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$op     = $this->op();
+		$op->execute_batch( [ $source ], [], new PostTarget( 'post' ) );
+
+		$this->assertSame( [ [ $op->last_new_ids()[0], $source ] ], $seen );
+	}
+
 	public function test_undo_missing_operation_returns_error(): void {
 		$op     = $this->op();
 		$result = $op->undo( 999999 );
