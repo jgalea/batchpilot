@@ -92,7 +92,7 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 					'type'        => 'boolean',
 					'default'     => false,
 					'label'       => __( 'Also duplicate child posts', 'batchpilot' ),
-					'description' => __( 'Recursively duplicate hierarchical children (pages, attachments) along with each matched post.', 'batchpilot' ),
+					'description' => __( 'Recursively duplicate child posts (such as sub-pages) along with each matched post.', 'batchpilot' ),
 				],
 			],
 		];
@@ -177,12 +177,23 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 		// re-checks the native "create new post of this type" capability once up front
 		// (it does not vary per row, since a Target is bound to a single post type).
 		$has_create_cap = true;
+		$param_denial   = null;
 		if ( get_current_user_id() > 0 ) {
 			$post_type_object = get_post_type_object( $target->slug() );
 			$create_cap       = ( null !== $post_type_object && isset( $post_type_object->cap->create_posts ) )
 				? (string) $post_type_object->cap->create_posts
 				: 'edit_posts';
 			$has_create_cap   = current_user_can( $create_cap );
+
+			// The target status and author are applied to the copy, so they need the same
+			// rights core asks for when publishing or assigning authorship by hand.
+			if ( in_array( $target_status, [ 'publish', 'future', 'private' ], true )
+				&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
+				$param_denial = 'Insufficient permissions to publish duplicates.';
+			} elseif ( $reassign_author > 0 && get_current_user_id() !== $reassign_author
+				&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
+				$param_denial = 'Insufficient permissions to assign another author.';
+			}
 		}
 
 		foreach ( $ids as $id ) {
@@ -191,6 +202,12 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			if ( null === $source ) {
 				++$failed;
 				$item_errors[ $id ] = 'Post not found.';
+				continue;
+			}
+
+			if ( null !== $param_denial ) {
+				++$failed;
+				$item_errors[ $id ] = $param_denial;
 				continue;
 			}
 
@@ -216,10 +233,55 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			}
 
 			$this->last_new_ids[] = (int) $new_id;
+			if ( ! empty( $params['include_children'] ) ) {
+				$this->copy_children( $source, (int) $new_id, $target_status, $reassign_author, $title_suffix, [ $id ] );
+			}
 			++$succeeded;
 		}
 
 		return BatchResult::of( count( $ids ), $succeeded, $failed, $item_errors );
+	}
+
+	/**
+	 * @param int[] $seen Source IDs already copied, to stop a parent cycle.
+	 */
+	private function copy_children( \WP_Post $source, int $new_parent_id, string $status, int $author, string $suffix, array $seen ): void {
+		$children = get_posts(
+			[
+				'post_parent'    => (int) $source->ID,
+				'post_type'      => 'any',
+				'post_status'    => 'any',
+				'posts_per_page' => -1,
+				'orderby'        => 'menu_order',
+				'order'          => 'ASC',
+			]
+		);
+
+		foreach ( $children as $child ) {
+			$child_id = (int) $child->ID;
+			if ( 'attachment' === $child->post_type || in_array( $child_id, $seen, true ) ) {
+				continue;
+			}
+			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $child_id ) ) {
+				continue;
+			}
+
+			$new_id = $this->copier->create_copy(
+				$child,
+				[
+					'post_title'  => $child->post_title . $suffix,
+					'post_status' => $status,
+					'post_author' => $author > 0 ? $author : (int) $child->post_author,
+					'post_parent' => $new_parent_id,
+				]
+			);
+			if ( is_wp_error( $new_id ) ) {
+				continue;
+			}
+
+			$this->last_new_ids[] = (int) $new_id;
+			$this->copy_children( $child, (int) $new_id, $status, $author, $suffix, array_merge( $seen, [ $child_id ] ) );
+		}
 	}
 
 	public function supports_undo(): bool {

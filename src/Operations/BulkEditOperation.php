@@ -222,6 +222,30 @@ final class BulkEditOperation implements OperationInterface {
 				continue;
 			}
 
+			if ( get_current_user_id() > 0 ) {
+				$post_type_object = get_post_type_object( $post->post_type );
+				$denied           = null;
+				if ( isset( $params['set_status'] ) && in_array( $params['set_status'], [ 'publish', 'future', 'private' ], true )
+					&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
+					$denied = 'Insufficient permissions to publish this item.';
+				} elseif ( isset( $params['reassign_author'] ) && get_current_user_id() !== (int) $params['reassign_author']
+					&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
+					$denied = 'Insufficient permissions to assign another author.';
+				} else {
+					foreach ( [ 'taxonomy_add', 'taxonomy_remove' ] as $tax_key ) {
+						$taxonomy_object = isset( $params[ $tax_key ]['taxonomy'] ) ? get_taxonomy( (string) $params[ $tax_key ]['taxonomy'] ) : false;
+						if ( false !== $taxonomy_object && ! current_user_can( $taxonomy_object->cap->assign_terms ) ) {
+							$denied = 'Insufficient permissions to assign terms.';
+						}
+					}
+				}
+				if ( null !== $denied ) {
+					++$failed;
+					$item_errors[ $id ] = $denied;
+					continue;
+				}
+			}
+
 			$update = [ 'ID' => $id ];
 
 			if ( isset( $params['set_status'] ) ) {
@@ -236,9 +260,8 @@ final class BulkEditOperation implements OperationInterface {
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date', (string) $post->post_date );
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date_gmt', (string) $post->post_date_gmt );
 				$shifted                 = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
-				$shifted_gmt             = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date_gmt ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
 				$update['post_date']     = $shifted;
-				$update['post_date_gmt'] = $shifted_gmt;
+				$update['post_date_gmt'] = '0000-00-00 00:00:00' === $post->post_date_gmt ? $post->post_date_gmt : get_gmt_from_date( $shifted );
 			}
 			if ( isset( $params['password'] ) ) {
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_password', (string) $post->post_password );
@@ -253,7 +276,7 @@ final class BulkEditOperation implements OperationInterface {
 				$update['menu_order'] = (int) $params['menu_order'];
 			}
 
-			$result = wp_update_post( $update, true );
+			$result = wp_update_post( wp_slash( $update ), true );
 			if ( is_wp_error( $result ) || 0 === (int) $result ) {
 				++$failed;
 				$item_errors[ $id ] = is_wp_error( $result ) ? $result->get_error_message() : 'wp_update_post failed.';
@@ -273,15 +296,19 @@ final class BulkEditOperation implements OperationInterface {
 				wp_set_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'], true );
 			}
 			if ( isset( $params['taxonomy_remove'] ) ) {
-				$tax         = $params['taxonomy_remove'];
-				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
-				$snapshots[] = new \BatchPilot\History\Snapshot(
-					$operation_id,
-					'post',
-					$id,
-					'taxonomy:' . (string) $tax['taxonomy'],
-					(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
-				);
+				$tax = $params['taxonomy_remove'];
+				// The add step above already captured this taxonomy's original terms; a second
+				// snapshot of the same field would overwrite them on undo.
+				if ( ! isset( $params['taxonomy_add']['taxonomy'] ) || $params['taxonomy_add']['taxonomy'] !== $tax['taxonomy'] ) {
+					$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
+					$snapshots[] = new \BatchPilot\History\Snapshot(
+						$operation_id,
+						'post',
+						$id,
+						'taxonomy:' . (string) $tax['taxonomy'],
+						(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
+					);
+				}
 				wp_remove_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'] );
 			}
 
@@ -333,7 +360,7 @@ final class BulkEditOperation implements OperationInterface {
 			}
 			if ( count( $update ) > 1 ) {
 				/** @phpstan-ignore-next-line argument.type */
-				$result = wp_update_post( $update, true );
+				$result = wp_update_post( wp_slash( $update ), true );
 				if ( ! is_wp_error( $result ) && 0 !== (int) $result ) {
 					++$restored;
 				}
