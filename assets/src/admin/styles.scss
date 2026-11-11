@@ -1360,6 +1360,21 @@
 		grid-template-columns: 1fr auto;
 	}
 
+	@media (max-width: 600px) {
+		.bp-filter-row {
+			grid-template-columns: 1fr auto;
+			gap: 8px 10px;
+		}
+
+		.bp-filter-row__label {
+			grid-column: 1 / -1;
+		}
+
+		.bp-filter-row__taxonomy {
+			grid-template-columns: 1fr;
+		}
+	}
+
 	.bp-filter-row__label {
 		font-size: 13px;
 		font-weight: 600;
