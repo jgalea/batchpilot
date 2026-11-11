@@ -104,14 +104,7 @@ final class RouteRegistrar {
 			]
 		);
 
-		$execute = new ExecuteController(
-			$this->execution,
-			$this->targets,
-			$this->operations,
-			$this->verifier,
-			$this->token_store,
-			$this->action_scheduler
-		);
+		$execute = new ExecuteController( $this->execution, $this->action_scheduler );
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/execute',
@@ -174,7 +167,7 @@ final class RouteRegistrar {
 			]
 		);
 
-		$undo = new UndoController( $this->operations, $this->operations_repo );
+		$undo = new UndoController( $this->execution, $this->operations_repo );
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/operations/(?P<id>\d+)/undo',

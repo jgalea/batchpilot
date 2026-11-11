@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\CLI\DoctorCommand;
+use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\Execution\ExecutionService;
 use BatchPilot\Registry\OperationRegistry;
 use BatchPilot\Registry\TargetRegistry;
@@ -107,7 +108,8 @@ final class AbilitiesBridge {
 					$name,
 					[
 						'label'               => sprintf( '%s: %s', $target->label(), $op->label() ),
-						'description'         => sprintf( 'Preview a %1$s %2$s bulk operation.', $target_slug, $op_slug ),
+						/* translators: 1: target slug, 2: operation slug */
+						'description'         => sprintf( __( 'Preview a %1$s %2$s bulk operation.', 'batchpilot' ), $target_slug, $op_slug ),
 						'category'            => 'batchpilot',
 						'input_schema'        => [
 							'type'       => 'object',
@@ -151,5 +153,148 @@ final class AbilitiesBridge {
 				);
 			}
 		}
+
+		$this->register_run_abilities( $cap_map );
+	}
+
+	/**
+	 * @param array<string, string> $cap_map
+	 */
+	private function register_run_abilities( array $cap_map ): void {
+		$execution = $this->execution;
+		$scheduler = $this->action_scheduler;
+
+		wp_register_ability(
+			'batchpilot/execute',
+			[
+				'label'               => __( 'BatchPilot: execute', 'batchpilot' ),
+				'description'         => __( 'Run a bulk operation that was previewed first. Needs the preview_token returned by the matching preview ability, called with the same target, operation, filters and params.', 'batchpilot' ),
+				'category'            => 'batchpilot',
+				'input_schema'        => [
+					'type'       => 'object',
+					'required'   => [ 'target', 'operation', 'preview_token' ],
+					'properties' => [
+						'target'        => [ 'type' => 'string' ],
+						'operation'     => [ 'type' => 'string' ],
+						'filters'       => [ 'type' => 'object' ],
+						'params'        => [ 'type' => 'object' ],
+						'preview_token' => [ 'type' => 'string' ],
+					],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'operation_id' => [ 'type' => 'integer' ],
+						'status'       => [ 'type' => 'string' ],
+						'batch'        => [ 'type' => 'object' ],
+					],
+				],
+				'permission_callback' => static fn ( $input = null ) => current_user_can( $cap_map[ (string) ( is_array( $input ) ? ( $input['operation'] ?? '' ) : '' ) ] ?? 'manage_options' ),
+				'execute_callback'    => static function ( $input ) use ( $execution, $scheduler ) {
+					$result = $execution->execute(
+						(string) ( $input['target'] ?? '' ),
+						(string) ( $input['operation'] ?? '' ),
+						isset( $input['filters'] ) && is_array( $input['filters'] ) ? $input['filters'] : [],
+						isset( $input['params'] ) && is_array( $input['params'] ) ? $input['params'] : [],
+						(string) ( $input['preview_token'] ?? '' ),
+						$scheduler
+					);
+					return $result instanceof BatchPilotError ? $result->to_wp_error() : $result;
+				},
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [ 'destructive' => true ],
+				],
+			]
+		);
+
+		wp_register_ability(
+			'batchpilot/undo',
+			[
+				'label'               => __( 'BatchPilot: undo', 'batchpilot' ),
+				'description'         => __( 'Undo a completed operation by its history id, when its type supports undo.', 'batchpilot' ),
+				'category'            => 'batchpilot',
+				'input_schema'        => [
+					'type'       => 'object',
+					'required'   => [ 'operation_id' ],
+					'properties' => [
+						'operation_id' => [ 'type' => 'integer' ],
+					],
+				],
+				'output_schema'       => [
+					'type'       => 'object',
+					'properties' => [
+						'restored' => [ 'type' => 'integer' ],
+					],
+				],
+				'permission_callback' => static function ( $input = null ) use ( $execution, $cap_map ) {
+					$row = $execution->find_operation( (int) ( is_array( $input ) ? ( $input['operation_id'] ?? 0 ) : 0 ) );
+					if ( null === $row ) {
+						return current_user_can( 'manage_options' );
+					}
+					return current_user_can( $cap_map[ $row->type() ] ?? 'manage_options' )
+						&& ( current_user_can( 'manage_options' ) || get_current_user_id() === $row->user_id() );
+				},
+				'execute_callback'    => static function ( $input ) use ( $execution ) {
+					$result = $execution->undo( (int) ( $input['operation_id'] ?? 0 ) );
+					if ( ! $result->is_ok() ) {
+						return $result->get_error()->to_wp_error();
+					}
+					return [ 'restored' => $result->restored() ];
+				},
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [ 'destructive' => true ],
+				],
+			]
+		);
+
+		wp_register_ability(
+			'batchpilot/history',
+			[
+				'label'               => __( 'BatchPilot: history', 'batchpilot' ),
+				'description'         => __( 'List recent bulk operations, newest first.', 'batchpilot' ),
+				'category'            => 'batchpilot',
+				'input_schema'        => [
+					'type'       => 'object',
+					'properties' => [
+						'limit'  => [
+							'type'    => 'integer',
+							'default' => 20,
+						],
+						'offset' => [
+							'type'    => 'integer',
+							'default' => 0,
+						],
+					],
+				],
+				'output_schema'       => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'object' ],
+				],
+				'permission_callback' => static fn () => current_user_can( 'manage_options' ),
+				'execute_callback'    => static function ( $input ) use ( $execution ) {
+					$limit  = max( 1, min( 100, (int) ( $input['limit'] ?? 20 ) ) );
+					$offset = max( 0, (int) ( $input['offset'] ?? 0 ) );
+					return array_map(
+						static fn ( $row ) => [
+							'id'             => $row->id(),
+							'type'           => $row->type(),
+							'target'         => $row->target(),
+							'user_id'        => $row->user_id(),
+							'status'         => $row->status(),
+							'affected_count' => $row->affected_count(),
+							'created_at'     => $row->created_at(),
+							'completed_at'   => $row->completed_at(),
+						],
+						$execution->recent_operations( $limit, $offset )
+					);
+				},
+				'meta'                => [
+					'show_in_rest' => true,
+					'annotations'  => [ 'readonly' => true ],
+				],
+			]
+		);
 	}
 }

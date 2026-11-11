@@ -7,7 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use BatchPilot\Contracts\BatchResult;
 use BatchPilot\Contracts\PreviewResult;
+use BatchPilot\Async\ActionSchedulerBridge;
 use BatchPilot\Contracts\QueryArgs;
+use BatchPilot\Contracts\UndoResult;
 use BatchPilot\Contracts\TracksAffectedIds;
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\History\Operation;
@@ -15,12 +17,11 @@ use BatchPilot\History\OperationRepository;
 use BatchPilot\History\SnapshotRepository;
 use BatchPilot\PreviewToken\TokenGenerator;
 use BatchPilot\PreviewToken\TokenStore;
+use BatchPilot\PreviewToken\TokenVerifier;
 use BatchPilot\Registry\OperationRegistry;
 use BatchPilot\Registry\TargetRegistry;
 
 final class ExecutionService {
-
-	private const BATCH_SIZE = 50;
 
 	private TargetRegistry $targets;
 	private OperationRegistry $operations_registry;
@@ -90,6 +91,110 @@ final class ExecutionService {
 			$params,
 			$this->targets->get( $target_slug )
 		);
+	}
+
+	/**
+	 * Runs a previewed operation: verifies the preview token, records the run and
+	 * either executes it inline or queues it when it exceeds the async threshold.
+	 *
+	 * @param array<string, mixed> $filters
+	 * @param array<string, mixed> $params
+	 * @return array{operation_id: int, status: string, batch?: array{processed: int, succeeded: int, failed: int}}|BatchPilotError
+	 */
+	public function execute( string $target_slug, string $operation_slug, array $filters, array $params, string $token, ActionSchedulerBridge $scheduler ) {
+		$target = $this->targets->get( $target_slug );
+		$op     = $this->operations_registry->get( $operation_slug );
+		if ( null === $target || null === $op ) {
+			return new BatchPilotError(
+				null === $target ? 'bp.target.unknown' : 'bp.operation.unknown',
+				'Unknown target or operation.'
+			);
+		}
+
+		$args    = QueryArgs::from_array( $filters );
+		$count   = $target->count( $args );
+		$payload = [
+			'target'     => $target_slug,
+			'operation'  => $operation_slug,
+			'filters'    => $filters,
+			'params'     => $params,
+			'sample_ids' => $target->query( $args, 20, 0 ),
+			'count'      => $count,
+			// Must match the previewing user recorded in Operations/*::preview(): a token
+			// previewed by one user cannot be executed by another, even if both hold the
+			// same coarse batchpilot_* capability.
+			'user_id'    => get_current_user_id(),
+		];
+
+		$verifier = new TokenVerifier( $this->token_generator, $this->token_store );
+		if ( ! $verifier->verify( $token, $payload ) ) {
+			return new BatchPilotError( 'bp.preview.stale_token', 'Preview token invalid or expired. Re-preview before executing.' );
+		}
+		$verifier->consume( $token );
+
+		$op_id = $this->record( $target_slug, $operation_slug, (int) get_current_user_id(), $filters, $params );
+
+		$threshold = (int) apply_filters( 'batchpilot_async_threshold', 100 );
+		if ( $count > $threshold && $scheduler->is_available() ) {
+			// Pin the exact matched ID set now, at accept time, so content created or edited
+			// before Action Scheduler picks the run up can't be swept into a batch the user
+			// never previewed.
+			$this->snapshot_for_queue( $op_id, $target->query( $args ) );
+			$scheduler->schedule_single_action( time(), OperationRunner::HOOK, [ $op_id ], 'batchpilot' );
+
+			return [
+				'operation_id' => $op_id,
+				'status'       => 'queued',
+			];
+		}
+
+		$result = $this->run_sync( $op_id );
+		if ( ! $result->is_ok() ) {
+			return $result->get_error() ?? new BatchPilotError( 'bp.internal', 'Unknown execution failure.' );
+		}
+
+		return [
+			'operation_id' => $op_id,
+			'status'       => 'completed',
+			'batch'        => [
+				'processed' => $result->processed(),
+				'succeeded' => $result->succeeded(),
+				'failed'    => $result->failed(),
+			],
+		];
+	}
+
+	public function find_operation( int $operation_id ): ?Operation {
+		return $this->operations_repo->find( $operation_id );
+	}
+
+	public function undo( int $operation_id ): UndoResult {
+		$row = $this->operations_repo->find( $operation_id );
+		if ( null === $row ) {
+			return UndoResult::error( new BatchPilotError( 'bp.operation.not_found', 'Operation not found.', [ 'id' => $operation_id ] ) );
+		}
+		if ( 'undone' === $row->status() ) {
+			return UndoResult::error( new BatchPilotError( 'bp.undo.already_undone', 'This operation has already been undone.', [ 'id' => $operation_id ] ) );
+		}
+
+		$op = $this->operations_registry->get( $row->type() );
+		if ( null === $op ) {
+			return UndoResult::error( new BatchPilotError( 'bp.operation.unknown', 'Operation type no longer registered.', [ 'type' => $row->type() ] ) );
+		}
+
+		$result = $op->undo( $operation_id );
+		if ( $result->is_ok() ) {
+			$this->operations_repo->mark_undone( $operation_id );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @return Operation[]
+	 */
+	public function recent_operations( int $limit, int $offset ): array {
+		return $this->operations_repo->list( $limit, $offset );
 	}
 
 	/**
@@ -171,7 +276,8 @@ final class ExecutionService {
 		}
 
 		try {
-			foreach ( array_chunk( $all_ids, self::BATCH_SIZE ) as $chunk ) {
+			$batch_size = max( 1, (int) \apply_filters( 'batchpilot_batch_size', 50 ) );
+			foreach ( array_chunk( $all_ids, $batch_size ) as $chunk ) {
 				$result = $op->execute_batch( $chunk, $params, $target );
 				if ( ! $result->is_ok() ) {
 					$this->operations_repo->mark_failed( $operation_id, $result->get_error()->message() );
@@ -201,6 +307,7 @@ final class ExecutionService {
 		}
 
 		$this->operations_repo->mark_completed( $operation_id, $affected );
+		$this->operations_repo->redact_params( $operation_id, [ 'password' ] );
 
 		$result = BatchResult::of( $total_processed, $total_succeeded, $total_failed, $item_errors );
 

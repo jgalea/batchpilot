@@ -104,6 +104,8 @@ final class Plugin {
 			$target_registry->register( new \BatchPilot\Targets\PostTarget( (string) $post_type ) );
 		}
 
+		$target_registry->register( new \BatchPilot\Targets\RevisionTarget() );
+
 		$operation_registry->register( new \BatchPilot\Operations\DeleteOperation( $token_generator, $token_store, $operations_repo ) );
 		$operation_registry->register( new \BatchPilot\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo, $copier ) );
 		$operation_registry->register( new \BatchPilot\Operations\RewriteOperation( $token_generator, $token_store, $operations_repo, $copier, $access ) );

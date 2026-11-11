@@ -103,7 +103,7 @@ final class PostTarget implements TargetInterface {
 		// whitelist these rather than querying get_post_stati() so that
 		// statuses registered for unrelated post types (Action Scheduler,
 		// WooCommerce orders, etc.) don't leak into the Posts/Pages UI.
-		$core_statuses = [ 'publish', 'draft', 'pending', 'private', 'future', 'trash' ];
+		$core_statuses = [ 'publish', 'draft', 'pending', 'private', 'future', 'auto-draft', 'trash' ];
 
 		$options = [];
 		foreach ( $core_statuses as $slug ) {

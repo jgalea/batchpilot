@@ -21,6 +21,7 @@ final class Settings {
 
 	public function register(): void {
 		add_filter( 'batchpilot_async_threshold', [ $this, 'filter_async_threshold' ] );
+		add_filter( 'batchpilot_batch_size', [ $this, 'filter_batch_size' ] );
 	}
 
 	/**
@@ -102,6 +103,14 @@ final class Settings {
 			}
 		}
 		return array_values( array_unique( $clean ) );
+	}
+
+	/**
+	 * @param mixed $default_value
+	 */
+	public function filter_batch_size( $default_value ): int {
+		$all = $this->get_all();
+		return (int) ( $all['batch_size'] ?? $default_value );
 	}
 
 	/**

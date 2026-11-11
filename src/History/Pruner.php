@@ -16,7 +16,8 @@ final class Pruner {
 
 	private const BATCH_SIZE  = 200;
 	private const TIME_BUDGET = 15;
-	private const FINISHED    = [ 'completed', 'failed' ];
+	private const FINISHED    = [ 'completed', 'failed', 'undone' ];
+	private const STALE_AFTER = HOUR_IN_SECONDS;
 
 	private wpdb $db;
 
@@ -44,6 +45,16 @@ final class Pruner {
 	}
 
 	public function prune(): int {
+		$operations = $this->db->prefix . 'batchpilot_operations';
+		$this->db->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$this->db->prepare(
+				"UPDATE {$operations} SET status = 'failed', error_message = %s, completed_at = %s WHERE status = 'running' AND created_at < %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'The run stopped before it finished.',
+				gmdate( 'Y-m-d H:i:s' ),
+				gmdate( 'Y-m-d H:i:s', time() - self::STALE_AFTER )
+			)
+		);
+
 		$days = max( 1, (int) ( $this->settings->get_all()['history_retention_days'] ?? 30 ) );
 
 		$grace_start = get_option( self::STARTED_OPTION, false );
@@ -59,7 +70,6 @@ final class Pruner {
 		$started = time();
 		$removed = 0;
 
-		$operations = $this->db->prefix . 'batchpilot_operations';
 		$snapshots  = $this->db->prefix . 'batchpilot_snapshots';
 		$statuses   = implode( ', ', array_fill( 0, count( self::FINISHED ), '%s' ) );
 

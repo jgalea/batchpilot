@@ -99,7 +99,8 @@ final class DeleteOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult {
-		$permanent   = ! empty( $params['permanent'] );
+		// Revisions have no trash, so deleting them is always permanent.
+		$permanent   = ! empty( $params['permanent'] ) || 'revision' === $target->slug();
 		$succeeded   = 0;
 		$failed      = 0;
 		$item_errors = [];
@@ -159,7 +160,7 @@ final class DeleteOperation implements OperationInterface {
 			);
 		}
 
-		if ( ! empty( $op->params()['permanent'] ) ) {
+		if ( ! empty( $op->params()['permanent'] ) || 'revision' === $op->target() ) {
 			return UndoResult::error(
 				new BatchPilotError(
 					'bp.undo.permanent_delete',
