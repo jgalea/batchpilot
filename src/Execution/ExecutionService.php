@@ -46,38 +46,50 @@ final class ExecutionService {
 	}
 
 	/**
+	 * Checks that the target and operation exist, are compatible, and that the params validate.
+	 *
+	 * @param array<string, mixed> $filters
+	 * @param array<string, mixed> $params
+	 */
+	public function validate( string $target_slug, string $operation_slug, array $filters, array $params ): ?BatchPilotError {
+		$target = $this->targets->get( $target_slug );
+		if ( null === $target ) {
+			return new BatchPilotError( 'bp.target.unknown', 'Unknown target.', [ 'target' => $target_slug ] );
+		}
+		$op = $this->operations_registry->get( $operation_slug );
+		if ( null === $op ) {
+			return new BatchPilotError( 'bp.operation.unknown', 'Unknown operation.', [ 'operation' => $operation_slug ] );
+		}
+		if ( ! $target->supports_operation( $operation_slug ) ) {
+			return new BatchPilotError(
+				'bp.target.unsupported_operation',
+				'Target does not support this operation.',
+				[
+					'target'    => $target_slug,
+					'operation' => $operation_slug,
+				]
+			);
+		}
+
+		$validation = $op->validate( QueryArgs::from_array( $filters ), $params );
+		return $validation->is_ok() ? null : $validation->get_error();
+	}
+
+	/**
 	 * @param array<string, mixed> $filters
 	 * @param array<string, mixed> $params
 	 */
 	public function preview( string $target_slug, string $operation_slug, array $filters, array $params ): PreviewResult {
-		$target = $this->targets->get( $target_slug );
-		if ( null === $target ) {
-			return PreviewResult::error( new BatchPilotError( 'bp.target.unknown', 'Unknown target.', [ 'target' => $target_slug ] ) );
-		}
-		$op = $this->operations_registry->get( $operation_slug );
-		if ( null === $op ) {
-			return PreviewResult::error( new BatchPilotError( 'bp.operation.unknown', 'Unknown operation.', [ 'operation' => $operation_slug ] ) );
-		}
-		if ( ! $target->supports_operation( $operation_slug ) ) {
-			return PreviewResult::error(
-				new BatchPilotError(
-					'bp.target.unsupported_operation',
-					'Target does not support this operation.',
-					[
-						'target'    => $target_slug,
-						'operation' => $operation_slug,
-					]
-				)
-			);
+		$error = $this->validate( $target_slug, $operation_slug, $filters, $params );
+		if ( null !== $error ) {
+			return PreviewResult::error( $error );
 		}
 
-		$args       = QueryArgs::from_array( $filters );
-		$validation = $op->validate( $args, $params );
-		if ( ! $validation->is_ok() ) {
-			return PreviewResult::error( $validation->get_error() );
-		}
-
-		return $op->preview( $args, $params, $target );
+		return $this->operations_registry->get( $operation_slug )->preview(
+			QueryArgs::from_array( $filters ),
+			$params,
+			$this->targets->get( $target_slug )
+		);
 	}
 
 	/**
@@ -113,6 +125,11 @@ final class ExecutionService {
 		if ( null === $target || null === $op ) {
 			$this->operations_repo->mark_failed( $operation_id, 'Target or operation no longer registered.' );
 			return BatchResult::error( new BatchPilotError( 'bp.run.unresolvable', 'Target or operation missing at run time.' ) );
+		}
+
+		if ( ! $target->supports_operation( $row->type() ) ) {
+			$this->operations_repo->mark_failed( $operation_id, 'Target does not support this operation.' );
+			return BatchResult::error( new BatchPilotError( 'bp.target.unsupported_operation', 'Target does not support this operation.' ) );
 		}
 
 		$this->operations_repo->mark_running( $operation_id );

@@ -2,6 +2,7 @@
 namespace BatchPilot\Tests\Unit\Targets;
 
 use Brain\Monkey\Functions;
+use BatchPilot\Contracts\QueryArgs;
 use BatchPilot\Targets\PostTarget;
 use BatchPilot\Tests\Unit\TestCase;
 
@@ -59,6 +60,8 @@ final class PostTargetUnitTest extends TestCase {
 				'has_featured_image',
 				'post_parent',
 				'has_children',
+				'search',
+				'meta',
 			],
 			$keys
 		);
@@ -80,6 +83,87 @@ final class PostTargetUnitTest extends TestCase {
 		$this->assertSame( 'taxonomy', $by_key['taxonomy'] );
 		$this->assertSame( 'bool', $by_key['has_comments'] );
 		$this->assertSame( 'post', $by_key['post_parent'] );
+	}
+
+	public function test_has_children_restricts_the_query_to_parents(): void {
+		$query = $this->build_query( [ 'has_children' => true ], [ '12', '15' ] );
+		$this->assertSame( [ 12, 15 ], $query['post__in'] );
+
+		$query = $this->build_query( [ 'has_children' => true ], [] );
+		$this->assertSame( [ 0 ], $query['post__in'] );
+	}
+
+	public function test_no_children_excludes_parents(): void {
+		$query = $this->build_query( [ 'has_children' => false ], [ '12', '15' ] );
+		$this->assertSame( [ 12, 15 ], $query['post__not_in'] );
+		$this->assertArrayNotHasKey( 'post__in', $query );
+	}
+
+	public function test_has_children_intersects_with_specific_ids(): void {
+		$query = $this->build_query(
+			[
+				'ids'          => [ 12, 99 ],
+				'has_children' => true,
+			],
+			[ '12', '15' ]
+		);
+		$this->assertSame( [ 12 ], $query['post__in'] );
+	}
+
+	public function test_custom_field_filter_builds_a_meta_clause(): void {
+		$query = $this->build_query(
+			[
+				'meta' => [
+					'key'     => 'color',
+					'compare' => 'LIKE',
+					'value'   => 'red',
+				],
+			],
+			[]
+		);
+		$this->assertSame(
+			[
+				[
+					'key'     => 'color',
+					'compare' => 'LIKE',
+					'value'   => 'red',
+				],
+			],
+			$query['meta_query']
+		);
+
+		$query = $this->build_query( [ 'meta' => [ 'key' => 'color', 'compare' => 'NOT EXISTS' ] ], [] );
+		$this->assertArrayNotHasKey( 'value', $query['meta_query'][0] );
+
+		$query = $this->build_query( [ 'meta' => [ 'key' => 'color', 'compare' => 'DROP TABLE', 'value' => 'x' ] ], [] );
+		$this->assertSame( '=', $query['meta_query'][0]['compare'] );
+	}
+
+	public function test_search_filter_matches_title_and_content(): void {
+		$query = $this->build_query( [ 'search' => ' sale ' ], [] );
+		$this->assertSame( 'sale', $query['s'] );
+		$this->assertSame( [ 'post_title', 'post_content' ], $query['search_columns'] );
+	}
+
+	/**
+	 * @param array<string, mixed> $filters
+	 * @param string[]             $parent_ids
+	 * @return array<string, mixed>
+	 */
+	private function build_query( array $filters, array $parent_ids ): array {
+		global $wpdb;
+		$wpdb        = \Mockery::mock();
+		$wpdb->posts = 'wp_posts';
+		$wpdb->shouldReceive( 'prepare' )->andReturn( 'SQL' );
+		$wpdb->shouldReceive( 'get_col' )->andReturn( $parent_ids );
+
+		$args  = QueryArgs::from_array( $filters );
+		$build = \Closure::bind(
+			fn () => $this->build_wp_query_args( $args ),
+			new PostTarget( 'page' ),
+			PostTarget::class
+		);
+		return $build();
 	}
 
 	private function stubFilterVocab(): void {
