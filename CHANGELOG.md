@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- Filters: title or content contains, and custom field (key, comparison, value).
+- Revisions target to delete old post revisions; auto-draft status filter for cleaning up auto-drafts.
+- `batchpilot/execute`, `batchpilot/undo` and `batchpilot/history` abilities.
+- Confirmation before every destructive operation and before undoing an operation.
+- History shows who ran each operation and marks undone operations.
+
+### Fixed
+
+- The "has children" filter now filters.
+- "Also duplicate child posts" now duplicates child posts.
+- Bulk edit and duplicate check publish, author and term rights per item.
+- Backslashes in bulk-edit values are preserved.
+- Shifting dates on drafts no longer writes an invalid GMT date; undoing an add and remove on the same taxonomy restores the original terms.
+- Batch size and default-permanent settings now apply.
+- Bulk-edit passwords are cleared from history once the run finishes; stale running operations are marked failed.
+- WP-CLI commands ask for confirmation unless `--yes` is passed.
+- Post list actions only appear for administrators and registered targets.
+
 ## [1.2.0] - 2026-10-24
 
 ### Fixed

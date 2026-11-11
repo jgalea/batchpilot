@@ -133,29 +133,34 @@ final class RewriteOperation implements OperationInterface, TracksAffectedIds {
 			$source = get_post( $id );
 			if ( null === $source ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 			if ( ! $this->access->post_type_enabled( $source->post_type ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Rewrite & Republish is not enabled for this post type.';
+				$item_errors[ $id ] = __( 'Rewrite & Republish is not enabled for this post type.', 'batchpilot' );
 				continue;
 			}
 			if ( ! in_array( $source->post_status, [ 'publish', 'private' ], true ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Only published posts can be rewritten.';
+				$item_errors[ $id ] = __( 'Only published posts can be rewritten.', 'batchpilot' );
 				continue;
 			}
 			if ( 0 !== RewriteLinks::original_of( $id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'This post is itself a rewrite copy.';
+				$item_errors[ $id ] = __( 'This post is itself a rewrite copy.', 'batchpilot' );
 				continue;
 			}
 			if ( $has_user ) {
 				$type = get_post_type_object( $source->post_type );
 				if ( ! current_user_can( 'edit_post', $id ) || null === $type || ! current_user_can( $type->cap->create_posts ) ) {
 					++$failed;
-					$item_errors[ $id ] = 'Insufficient permissions to rewrite this item.';
+					$item_errors[ $id ] = __( 'Insufficient permissions to rewrite this item.', 'batchpilot' );
+					continue;
+				}
+				if ( isset( $params['reassign_author'] ) && get_current_user_id() !== $author && ! current_user_can( $type->cap->edit_others_posts ) ) {
+					++$failed;
+					$item_errors[ $id ] = __( 'Insufficient permissions to assign another author.', 'batchpilot' );
 					continue;
 				}
 			}
@@ -178,7 +183,7 @@ final class RewriteOperation implements OperationInterface, TracksAffectedIds {
 			if ( ! RewriteLinks::link( $id, $copy_id ) ) {
 				wp_delete_post( $copy_id, true );
 				++$failed;
-				$item_errors[ $id ] = 'A rewrite of this post was created at the same time by someone else.';
+				$item_errors[ $id ] = __( 'A rewrite of this post was created at the same time by someone else.', 'batchpilot' );
 				continue;
 			}
 

@@ -35,7 +35,7 @@ Safety features:
 * Preview tokens (HMAC-signed, 5-minute TTL) prevent stale state from being executed.
 * Snapshots are written before mutation so Undo restores the previous state.
 * Operations over a configurable threshold (default 100 items) run in the background via Action Scheduler.
-* Per-operation capabilities: `batchpilot_delete`, `batchpilot_edit`, `batchpilot_duplicate`, `batchpilot_move`, `batchpilot_schedule`. Grant per-role or per-user.
+* Per-operation capabilities: `batchpilot_delete`, `batchpilot_edit`, `batchpilot_duplicate`. Grant per-role or per-user. WordPress's own per-item rights (edit, delete, publish, assign terms) are checked on top.
 
 Use cases:
 
@@ -73,11 +73,11 @@ Configurable in Settings. The default is 30 days. History older than the retenti
 
 = Will it work on a large site? =
 
-Operations exceeding the async threshold (default 100 items) run in the background via Action Scheduler, batched at 50 items per chunk. The plugin defers to WooCommerce's bundled Action Scheduler when present.
+Operations exceeding the async threshold (default 100 items) run in the background via Action Scheduler, in chunks of the batch size set in Settings (default 50). The plugin defers to WooCommerce's bundled Action Scheduler when present.
 
 = Can AI agents use it? =
 
-Yes. With the WordPress Abilities API installed, each Target × Operation pair is registered as an ability under the `batchpilot` category. Agents can query the catalog, preview, execute, and undo via the standard abilities surface.
+Yes. With the WordPress Abilities API installed, each Target × Operation pair is registered as an ability under the `batchpilot` category. Agents can query the catalog, preview, execute, undo, and read the history via the standard abilities surface.
 
 = Does it work with WooCommerce? =
 

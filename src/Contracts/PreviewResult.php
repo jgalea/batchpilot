@@ -16,11 +16,14 @@ final class PreviewResult {
 	private string $preview_token;
 	/** @var string[] */
 	private array $warnings;
+	/** @var string[] */
+	private array $info;
 	private ?BatchPilotError $error;
 
 	/**
 	 * @param int[]    $sample_ids
 	 * @param string[] $warnings
+	 * @param string[] $info
 	 */
 	private function __construct(
 		bool $ok,
@@ -28,6 +31,7 @@ final class PreviewResult {
 		array $sample_ids,
 		string $preview_token,
 		array $warnings,
+		array $info,
 		?BatchPilotError $error
 	) {
 		$this->ok            = $ok;
@@ -35,19 +39,21 @@ final class PreviewResult {
 		$this->sample_ids    = $sample_ids;
 		$this->preview_token = $preview_token;
 		$this->warnings      = $warnings;
+		$this->info          = $info;
 		$this->error         = $error;
 	}
 
 	/**
 	 * @param int[]    $sample_ids
 	 * @param string[] $warnings
+	 * @param string[] $info
 	 */
-	public static function of( int $count, array $sample_ids, string $preview_token, array $warnings = [] ): self {
-		return new self( true, $count, $sample_ids, $preview_token, $warnings, null );
+	public static function of( int $count, array $sample_ids, string $preview_token, array $warnings = [], array $info = [] ): self {
+		return new self( true, $count, $sample_ids, $preview_token, $warnings, $info, null );
 	}
 
 	public static function error( BatchPilotError $error ): self {
-		return new self( false, 0, [], '', [], $error );
+		return new self( false, 0, [], '', [], [], $error );
 	}
 
 	public function is_ok(): bool {
@@ -74,6 +80,13 @@ final class PreviewResult {
 	 */
 	public function warnings(): array {
 		return $this->warnings;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function info(): array {
+		return $this->info;
 	}
 
 	public function get_error(): ?BatchPilotError {

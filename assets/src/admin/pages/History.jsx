@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 import { useState } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -16,15 +17,32 @@ const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 			setViewing( row );
 		}
 		if ( action === 'undo' ) {
+			const confirmed = window.confirm(
+				// eslint-disable-line no-alert
+				__( 'Undo this operation?', 'batchpilot' )
+			);
+			if ( ! confirmed ) {
+				return;
+			}
 			try {
 				const r = await api.undoOperation( row.id );
 				setNotice( {
 					status: 'success',
-					text: sprintf(
-						/* translators: %s: restored count or identifier */
-						__( 'Restored: %s', 'batchpilot' ),
-						r.restored
-					),
+					text: r.skipped
+						? sprintf(
+								/* translators: 1: number of items restored, 2: number of items skipped. */
+								__(
+									'Restored %1$d. Skipped %2$d that were edited after they were created.',
+									'batchpilot'
+								),
+								r.restored,
+								r.skipped
+						  )
+						: sprintf(
+								/* translators: %s: restored count or identifier */
+								__( 'Restored: %s', 'batchpilot' ),
+								r.restored
+						  ),
 				} );
 				setReloadKey( ( k ) => k + 1 );
 			} catch ( err ) {

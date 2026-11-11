@@ -68,4 +68,28 @@ describe( 'HistoryTable', () => {
 			expect.any( Object )
 		);
 	} );
+
+	it( 'hides Undo for undone and non-undoable rows and shows who ran it', async () => {
+		const api = {
+			listOperations: jest.fn().mockResolvedValue( [
+				{ ...rows( 1 )[ 0 ], id: 1, status: 'undone' },
+				{ ...rows( 1 )[ 0 ], id: 2, undoable: false },
+				{
+					...rows( 1 )[ 0 ],
+					id: 3,
+					user_id: 0,
+					source: 'schedule',
+				},
+				{ ...rows( 1 )[ 0 ], id: 4, user_name: 'Jean' },
+			] ),
+		};
+		render( <HistoryTable api={ api } pageSize={ 20 } /> );
+		await waitFor( () => screen.getAllByRole( 'row' ) );
+		expect(
+			screen.getAllByRole( 'button', { name: /^undo$/i } )
+		).toHaveLength( 2 );
+		expect( screen.getByText( 'Schedule' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Jean' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Undone' ) ).toBeInTheDocument();
+	} );
 } );

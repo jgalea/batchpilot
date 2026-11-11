@@ -20,7 +20,8 @@ use BatchPilot\PreviewToken\TokenStore;
 
 final class BulkEditOperation implements OperationInterface {
 
-	private const SAMPLE_SIZE = 20;
+	private const SAMPLE_SIZE      = 20;
+	private const ALLOWED_STATUSES = [ 'draft', 'pending', 'private', 'publish', 'future', 'trash' ];
 
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
@@ -57,6 +58,12 @@ final class BulkEditOperation implements OperationInterface {
 				'set_status'       => [
 					'type'        => 'string',
 					'widget'      => 'post_status',
+					'enum'        => array_values(
+						array_filter(
+							self::ALLOWED_STATUSES,
+							static fn ( string $status ) => 'trash' !== $status || current_user_can( 'delete_posts' )
+						)
+					),
 					'label'       => __( 'Set status to', 'batchpilot' ),
 					'description' => __( 'Change the publication status of every matched item.', 'batchpilot' ),
 				],
@@ -87,7 +94,7 @@ final class BulkEditOperation implements OperationInterface {
 					'type'        => 'string',
 					'widget'      => 'password',
 					'label'       => __( 'Set password', 'batchpilot' ),
-					'description' => __( 'Password-protect every matched item. Leave empty to clear an existing password.', 'batchpilot' ),
+					'description' => __( 'Password-protect every matched item. Tick "Remove the existing password" to clear it instead.', 'batchpilot' ),
 				],
 				'comment_status'   => [
 					'type'        => 'string',
@@ -108,7 +115,7 @@ final class BulkEditOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function validate( QueryArgs $args, array $params ): ValidationResult {
-		if ( isset( $params['set_status'] ) && null === get_post_status_object( (string) $params['set_status'] ) ) {
+		if ( isset( $params['set_status'] ) && ! in_array( $params['set_status'], self::ALLOWED_STATUSES, true ) ) {
 			return ValidationResult::error(
 				new BatchPilotError(
 					'bp.params.invalid_status',
@@ -207,7 +214,7 @@ final class BulkEditOperation implements OperationInterface {
 			$post = get_post( $id );
 			if ( null === $post ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 
@@ -218,8 +225,34 @@ final class BulkEditOperation implements OperationInterface {
 			// custom post type without delete/edit_others_* mapped to batchpilot_edit).
 			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to edit this item.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to edit this item.', 'batchpilot' );
 				continue;
+			}
+
+			if ( get_current_user_id() > 0 ) {
+				$post_type_object = get_post_type_object( $post->post_type );
+				$denied           = null;
+				if ( isset( $params['set_status'] ) && in_array( $params['set_status'], [ 'publish', 'future', 'private' ], true )
+					&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
+					$denied = __( 'Insufficient permissions to publish this item.', 'batchpilot' );
+				} elseif ( isset( $params['set_status'] ) && 'trash' === $params['set_status'] && ! current_user_can( 'delete_post', $id ) ) {
+					$denied = __( 'Insufficient permissions to trash this item.', 'batchpilot' );
+				} elseif ( isset( $params['reassign_author'] ) && get_current_user_id() !== (int) $params['reassign_author']
+					&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
+					$denied = __( 'Insufficient permissions to assign another author.', 'batchpilot' );
+				} else {
+					foreach ( [ 'taxonomy_add', 'taxonomy_remove' ] as $tax_key ) {
+						$taxonomy_object = isset( $params[ $tax_key ]['taxonomy'] ) ? get_taxonomy( (string) $params[ $tax_key ]['taxonomy'] ) : false;
+						if ( false !== $taxonomy_object && ! current_user_can( $taxonomy_object->cap->assign_terms ) ) {
+							$denied = __( 'Insufficient permissions to assign terms.', 'batchpilot' );
+						}
+					}
+				}
+				if ( null !== $denied ) {
+					++$failed;
+					$item_errors[ $id ] = $denied;
+					continue;
+				}
 			}
 
 			$update = [ 'ID' => $id ];
@@ -236,9 +269,8 @@ final class BulkEditOperation implements OperationInterface {
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date', (string) $post->post_date );
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_date_gmt', (string) $post->post_date_gmt );
 				$shifted                 = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
-				$shifted_gmt             = gmdate( 'Y-m-d H:i:s', strtotime( $post->post_date_gmt ) + ( (int) $params['shift_dates_days'] * DAY_IN_SECONDS ) );
 				$update['post_date']     = $shifted;
-				$update['post_date_gmt'] = $shifted_gmt;
+				$update['post_date_gmt'] = '0000-00-00 00:00:00' === $post->post_date_gmt ? $post->post_date_gmt : get_gmt_from_date( $shifted );
 			}
 			if ( isset( $params['password'] ) ) {
 				$snapshots[]             = new \BatchPilot\History\Snapshot( $operation_id, 'post', $id, 'post_password', (string) $post->post_password );
@@ -253,7 +285,7 @@ final class BulkEditOperation implements OperationInterface {
 				$update['menu_order'] = (int) $params['menu_order'];
 			}
 
-			$result = wp_update_post( $update, true );
+			$result = wp_update_post( wp_slash( $update ), true );
 			if ( is_wp_error( $result ) || 0 === (int) $result ) {
 				++$failed;
 				$item_errors[ $id ] = is_wp_error( $result ) ? $result->get_error_message() : 'wp_update_post failed.';
@@ -273,15 +305,19 @@ final class BulkEditOperation implements OperationInterface {
 				wp_set_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'], true );
 			}
 			if ( isset( $params['taxonomy_remove'] ) ) {
-				$tax         = $params['taxonomy_remove'];
-				$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
-				$snapshots[] = new \BatchPilot\History\Snapshot(
-					$operation_id,
-					'post',
-					$id,
-					'taxonomy:' . (string) $tax['taxonomy'],
-					(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
-				);
+				$tax = $params['taxonomy_remove'];
+				// The add step above already captured this taxonomy's original terms; a second
+				// snapshot of the same field would overwrite them on undo.
+				if ( ! isset( $params['taxonomy_add']['taxonomy'] ) || $params['taxonomy_add']['taxonomy'] !== $tax['taxonomy'] ) {
+					$existing    = wp_get_object_terms( $id, (string) $tax['taxonomy'], [ 'fields' => 'ids' ] );
+					$snapshots[] = new \BatchPilot\History\Snapshot(
+						$operation_id,
+						'post',
+						$id,
+						'taxonomy:' . (string) $tax['taxonomy'],
+						(string) wp_json_encode( array_map( 'intval', is_array( $existing ) ? $existing : [] ) )
+					);
+				}
 				wp_remove_object_terms( $id, array_map( 'intval', (array) $tax['term_ids'] ), (string) $tax['taxonomy'] );
 			}
 
@@ -332,8 +368,7 @@ final class BulkEditOperation implements OperationInterface {
 				}
 			}
 			if ( count( $update ) > 1 ) {
-				/** @phpstan-ignore-next-line argument.type */
-				$result = wp_update_post( $update, true );
+				$result = wp_update_post( wp_slash( $update ), true );
 				if ( ! is_wp_error( $result ) && 0 !== (int) $result ) {
 					++$restored;
 				}

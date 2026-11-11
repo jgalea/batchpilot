@@ -47,6 +47,9 @@ final class DeleteCommand {
 	 * @param array<string, mixed> $assoc_args
 	 */
 	public function __invoke( array $args, array $assoc_args ): void {
+		if ( empty( $assoc_args['dry-run'] ) ) {
+			\WP_CLI::confirm( 'Delete the matching items?', $assoc_args );
+		}
 		$result = $this->run( $assoc_args );
 		if ( '' !== $result['output'] ) {
 			\WP_CLI::line( $result['output'] );

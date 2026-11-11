@@ -104,6 +104,8 @@ final class Plugin {
 			$target_registry->register( new \BatchPilot\Targets\PostTarget( (string) $post_type ) );
 		}
 
+		$target_registry->register( new \BatchPilot\Targets\RevisionTarget() );
+
 		$operation_registry->register( new \BatchPilot\Operations\DeleteOperation( $token_generator, $token_store, $operations_repo ) );
 		$operation_registry->register( new \BatchPilot\Operations\DuplicateOperation( $token_generator, $token_store, $operations_repo, $copier ) );
 		$operation_registry->register( new \BatchPilot\Operations\RewriteOperation( $token_generator, $token_store, $operations_repo, $copier, $access ) );
@@ -152,7 +154,7 @@ final class Plugin {
 		$runner->register();
 		$this->set( 'execution.runner', $runner );
 
-		$rest_registrar = new \BatchPilot\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $token_verifier, $token_store, $settings );
+		$rest_registrar = new \BatchPilot\REST\RouteRegistrar( $action_scheduler_bridge, $execution, $target_registry, $operation_registry, $operations_repo, $settings );
 		$rest_registrar->register();
 		$this->set( 'rest.registrar', $rest_registrar );
 
@@ -180,7 +182,8 @@ final class Plugin {
 		$this->set( 'admin.assets', $asset_loader );
 
 		$post_list_integration = new \BatchPilot\Admin\PostListIntegration(
-			admin_url( 'admin.php?page=batchpilot-operations' )
+			admin_url( 'admin.php?page=batchpilot-operations' ),
+			$target_registry
 		);
 		$post_list_integration->register();
 		$this->set( 'admin.post_list', $post_list_integration );

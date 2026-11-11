@@ -5,9 +5,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use BatchPilot\Errors\BatchPilotError;
+use BatchPilot\Execution\ExecutionService;
 use BatchPilot\History\OperationRepository;
-use BatchPilot\Registry\OperationRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -21,12 +20,12 @@ final class UndoController extends RestController {
 		'republish' => 'batchpilot_edit',
 	];
 
-	private OperationRegistry $operations;
+	private ExecutionService $execution;
 	private OperationRepository $repo;
 
-	public function __construct( OperationRegistry $operations, OperationRepository $repo ) {
-		$this->operations = $operations;
-		$this->repo       = $repo;
+	public function __construct( ExecutionService $execution, OperationRepository $repo ) {
+		$this->execution = $execution;
+		$this->repo      = $repo;
 	}
 
 	/**
@@ -60,27 +59,17 @@ final class UndoController extends RestController {
 	}
 
 	public function handle( WP_REST_Request $request ): WP_REST_Response {
-		$id = (int) $request['id'];
-		$op = $this->repo->find( $id );
-		if ( null === $op ) {
-			return $this->error_response(
-				new BatchPilotError( 'bp.operation.not_found', 'Operation not found.', [ 'id' => $id ] ),
-				404
-			);
-		}
-
-		$runner = $this->operations->get( $op->type() );
-		if ( null === $runner ) {
-			return $this->error_response(
-				new BatchPilotError( 'bp.operation.unknown', 'Operation type no longer registered.', [ 'type' => $op->type() ] ),
-				400
-			);
-		}
-
-		$result = $runner->undo( $id );
+		$result = $this->execution->undo( (int) $request['id'] );
 		if ( ! $result->is_ok() ) {
-			return $this->error_response( $result->get_error(), 422 );
+			$error = $result->get_error();
+			$code  = null === $error ? '' : $error->code();
+			return $this->error_response( $error, 'bp.operation.not_found' === $code ? 404 : ( 'bp.operation.unknown' === $code ? 400 : ( 'bp.undo.in_progress' === $code ? 409 : 422 ) ) );
 		}
-		return new WP_REST_Response( [ 'restored' => $result->restored() ] );
+		return new WP_REST_Response(
+			[
+				'restored' => $result->restored(),
+				'skipped'  => $result->skipped(),
+			]
+		);
 	}
 }

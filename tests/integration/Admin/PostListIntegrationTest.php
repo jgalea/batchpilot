@@ -22,6 +22,7 @@ final class PostListIntegrationTest extends TestCase {
 	}
 
 	public function test_injects_bulk_actions(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$integ = new PostListIntegration( 'http://example.test/' );
 		$bulk  = $integ->filter_bulk_actions( [ 'trash' => 'Trash' ] );
 		$this->assertArrayHasKey( 'batchpilot_delete', $bulk );

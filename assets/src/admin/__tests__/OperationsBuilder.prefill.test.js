@@ -30,8 +30,8 @@ describe( 'OperationsBuilder prefill', () => {
 								schema: {},
 							},
 						],
-							supported_operations: ["delete", "duplicate", "edit"],
-						},
+						supported_operations: [ 'delete', 'duplicate', 'edit' ],
+					},
 				],
 				operations: [
 					{
@@ -93,8 +93,8 @@ describe( 'OperationsBuilder prefill', () => {
 								schema: {},
 							},
 						],
-							supported_operations: ["delete", "duplicate", "edit"],
-						},
+						supported_operations: [ 'delete', 'duplicate', 'edit' ],
+					},
 				],
 				operations: [
 					{
@@ -156,8 +156,8 @@ describe( 'OperationsBuilder prefill', () => {
 								schema: {},
 							},
 						],
-							supported_operations: ["delete", "duplicate", "edit"],
-						},
+						supported_operations: [ 'delete', 'duplicate', 'edit' ],
+					},
 				],
 				operations: [
 					{

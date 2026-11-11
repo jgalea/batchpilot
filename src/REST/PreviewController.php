@@ -75,6 +75,7 @@ final class PreviewController extends RestController {
 				'sample_ids'    => $result->sample_ids(),
 				'preview_token' => $result->preview_token(),
 				'warnings'      => $result->warnings(),
+				'info'          => $result->info(),
 				'display_rows'  => $display_rows,
 			]
 		);

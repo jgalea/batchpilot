@@ -39,6 +39,7 @@ final class UndoCommand {
 	 * @param array<string, mixed> $assoc_args
 	 */
 	public function __invoke( array $args, array $assoc_args ): void {
+		\WP_CLI::confirm( 'Undo this operation?', $assoc_args );
 		$assoc_args['id'] = (int) ( $args[0] ?? 0 );
 		$result           = $this->run( $assoc_args );
 		if ( '' !== $result['output'] ) {
@@ -85,6 +86,18 @@ final class UndoCommand {
 			];
 		}
 
+		if ( 'undone' === $row->status() ) {
+			$err = new BatchPilotError(
+				'bp.undo.already_undone',
+				'This operation has already been undone.',
+				[ 'id' => $id ]
+			);
+			return [
+				'exit_code' => 1,
+				'output'    => (string) wp_json_encode( $err->to_array() ),
+			];
+		}
+
 		$op = $this->operations->get( $row->type() );
 		if ( null === $op ) {
 			$err = new BatchPilotError(
@@ -107,6 +120,8 @@ final class UndoCommand {
 				'output'    => (string) wp_json_encode( $payload ),
 			];
 		}
+
+		$this->repo->mark_undone( $id );
 
 		return [
 			'exit_code' => 0,

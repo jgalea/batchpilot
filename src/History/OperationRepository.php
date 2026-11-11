@@ -87,6 +87,16 @@ final class OperationRepository {
 		);
 	}
 
+	public function mark_undone( int $id ): void {
+		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+			$this->table(),
+			[ 'status' => 'undone' ],
+			[ 'id' => $id ],
+			[ '%s' ],
+			[ '%d' ]
+		);
+	}
+
 	public function mark_failed( int $id, string $error_message ): void {
 		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$this->table(),

@@ -21,6 +21,7 @@ final class Settings {
 
 	public function register(): void {
 		add_filter( 'batchpilot_async_threshold', [ $this, 'filter_async_threshold' ] );
+		add_filter( 'batchpilot_batch_size', [ $this, 'filter_batch_size' ] );
 	}
 
 	/**
@@ -56,13 +57,13 @@ final class Settings {
 			$out['batch_size'] = max( 1, min( 500, (int) $input['batch_size'] ) );
 		}
 		if ( array_key_exists( 'delete_permanent_default', $input ) ) {
-			$out['delete_permanent_default'] = rest_sanitize_boolean( $input['delete_permanent_default'] );
+			$out['delete_permanent_default'] = rest_sanitize_boolean( $input['delete_permanent_default'] ); // @phpstan-ignore argument.templateType
 		}
 		if ( array_key_exists( 'history_retention_days', $input ) ) {
 			$out['history_retention_days'] = max( 1, (int) $input['history_retention_days'] );
 		}
 		if ( array_key_exists( 'delete_data_on_uninstall', $input ) ) {
-			$out['delete_data_on_uninstall'] = rest_sanitize_boolean( $input['delete_data_on_uninstall'] );
+			$out['delete_data_on_uninstall'] = rest_sanitize_boolean( $input['delete_data_on_uninstall'] ); // @phpstan-ignore argument.templateType
 		}
 		if ( array_key_exists( 'copy_post_types', $input ) ) {
 			$out['copy_post_types'] = $this->sanitize_post_types( $input['copy_post_types'] );
@@ -102,6 +103,14 @@ final class Settings {
 			}
 		}
 		return array_values( array_unique( $clean ) );
+	}
+
+	/**
+	 * @param mixed $default_value
+	 */
+	public function filter_batch_size( $default_value ): int {
+		$all = $this->get_all();
+		return (int) ( $all['batch_size'] ?? $default_value );
 	}
 
 	/**

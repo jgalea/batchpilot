@@ -11,7 +11,8 @@ use BatchPilot\Contracts\TargetInterface;
 
 final class PostTarget implements TargetInterface {
 
-	private const SUPPORTED = [ 'delete', 'duplicate', 'edit', 'rewrite', 'republish' ];
+	private const SUPPORTED     = [ 'delete', 'duplicate', 'edit', 'rewrite', 'republish' ];
+	private const META_COMPARES = [ '=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'EXISTS', 'NOT EXISTS' ];
 
 	private string $post_type;
 
@@ -77,6 +78,20 @@ final class PostTarget implements TargetInterface {
 			new FilterDefinition( 'has_featured_image', __( 'Has featured image', 'batchpilot' ), 'bool' ),
 			new FilterDefinition( 'post_parent', __( 'Post parent', 'batchpilot' ), 'post' ),
 			new FilterDefinition( 'has_children', __( 'Has children', 'batchpilot' ), 'bool' ),
+			new FilterDefinition( 'search', __( 'Title or content contains', 'batchpilot' ), 'text' ),
+			new FilterDefinition(
+				'meta',
+				__( 'Custom field', 'batchpilot' ),
+				'meta',
+				[
+					'shape'    => [
+						'key'     => 'string',
+						'compare' => 'string',
+						'value'   => 'string',
+					],
+					'compares' => self::META_COMPARES,
+				]
+			),
 		];
 	}
 
@@ -88,7 +103,7 @@ final class PostTarget implements TargetInterface {
 		// whitelist these rather than querying get_post_stati() so that
 		// statuses registered for unrelated post types (Action Scheduler,
 		// WooCommerce orders, etc.) don't leak into the Posts/Pages UI.
-		$core_statuses = [ 'publish', 'draft', 'pending', 'private', 'future', 'trash' ];
+		$core_statuses = [ 'publish', 'draft', 'pending', 'private', 'future', 'auto-draft', 'trash' ];
 
 		$options = [];
 		foreach ( $core_statuses as $slug ) {
@@ -262,6 +277,21 @@ final class PostTarget implements TargetInterface {
 					'compare' => 'NOT EXISTS',
 				];
 		}
+		if ( $args->has( 'meta' ) ) {
+			$meta = $args->get( 'meta' );
+			$key  = is_array( $meta ) ? trim( (string) ( $meta['key'] ?? '' ) ) : '';
+			if ( '' !== $key ) {
+				$compare = in_array( $meta['compare'] ?? '', self::META_COMPARES, true ) ? (string) $meta['compare'] : '=';
+				$clause  = [
+					'key'     => $key,
+					'compare' => $compare,
+				];
+				if ( ! in_array( $compare, [ 'EXISTS', 'NOT EXISTS' ], true ) ) {
+					$clause['value'] = (string) ( $meta['value'] ?? '' );
+				}
+				$meta_query[] = $clause;
+			}
+		}
 		if ( ! empty( $meta_query ) ) {
 			$query['meta_query'] = $meta_query; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
 		}
@@ -292,8 +322,32 @@ final class PostTarget implements TargetInterface {
 				: 0;
 		}
 
+		if ( $args->has( 'search' ) && '' !== trim( (string) $args->get( 'search' ) ) ) {
+			$query['s']              = trim( (string) $args->get( 'search' ) );
+			$query['search_columns'] = [ 'post_title', 'post_content' ];
+		}
+
 		if ( $args->has( 'has_children' ) ) {
-			$query['co_has_children'] = (bool) $args->get( 'has_children' );
+			global $wpdb;
+			$parents = array_map(
+				'intval',
+				(array) $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare(
+						"SELECT DISTINCT post_parent FROM {$wpdb->posts} WHERE post_parent > 0 AND post_type = %s AND post_status NOT IN ( 'trash', 'auto-draft' )",
+						$this->post_type
+					)
+				)
+			);
+			if ( $args->get( 'has_children' ) ) {
+				$query['post__in'] = isset( $query['post__in'] )
+					? array_values( array_intersect( $query['post__in'], $parents ) )
+					: $parents;
+				if ( empty( $query['post__in'] ) ) {
+					$query['post__in'] = [ 0 ];
+				}
+			} elseif ( ! empty( $parents ) ) {
+				$query['post__not_in'] = $parents;
+			}
 		}
 
 		return $query;

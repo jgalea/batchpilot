@@ -40,15 +40,37 @@ const ExecuteButton = ( {
 	onExecute,
 	executing,
 	hasFilters = true,
+	destructive = operation === 'delete',
 } ) => {
 	const [ confirmed, setConfirmed ] = useState( false );
 	const disabled = ! preview || ! preview.preview_token || executing;
-	const isDestructive = operation === 'delete';
+	const isDestructive = destructive;
 	const count = preview ? preview.count : 0;
 	const unfiltered = ! hasFilters && count > 0;
 	const large = count >= LARGE_THRESHOLD;
 	const needsConfirm = isDestructive && ( unfiltered || large );
+	const verb = operation === 'delete' ? 'delete' : 'change';
 	const canRun = ! disabled && ( ! needsConfirm || confirmed );
+	const onClick = () => {
+		if (
+			isDestructive &&
+			! needsConfirm &&
+			// eslint-disable-next-line no-alert
+			! window.confirm(
+				sprintf(
+					/* translators: %d: number of items */
+					__(
+						'Run this destructive action on %d items?',
+						'batchpilot'
+					),
+					count
+				)
+			)
+		) {
+			return;
+		}
+		onExecute();
+	};
 
 	const label = preview
 		? labelFor( operation, count )
@@ -63,7 +85,7 @@ const ExecuteButton = ( {
 					className="bp-execute__notice"
 				>
 					{ __(
-						'No filters added. This will match EVERY item of this target. Add filters to narrow the set.',
+						'No filters added, so this will match every item of this target. Add filters to narrow the set.',
 						'batchpilot'
 					) }
 				</Notice>
@@ -74,14 +96,23 @@ const ExecuteButton = ( {
 					isDismissible={ false }
 					className="bp-execute__notice"
 				>
-					{ sprintf(
-						/* translators: %d: number of items */
-						__(
-							'You are about to delete %d items. Double-check the preview above.',
-							'batchpilot'
-						),
-						count
-					) }
+					{ verb === 'delete'
+						? sprintf(
+								/* translators: %d: number of items */
+								__(
+									'You are about to delete %d items. Double-check the preview above.',
+									'batchpilot'
+								),
+								count
+						  )
+						: sprintf(
+								/* translators: %d: number of items */
+								__(
+									'You are about to change %d items. Double-check the preview above.',
+									'batchpilot'
+								),
+								count
+						  ) }
 				</Notice>
 			) }
 			{ needsConfirm && (
@@ -97,7 +128,7 @@ const ExecuteButton = ( {
 					/>
 					<span>
 						{ __(
-							'I understand — proceed with this destructive action.',
+							'I understand, proceed with this destructive action.',
 							'batchpilot'
 						) }
 					</span>
@@ -108,7 +139,7 @@ const ExecuteButton = ( {
 				isBusy={ executing }
 				isDestructive={ isDestructive }
 				disabled={ ! canRun }
-				onClick={ onExecute }
+				onClick={ onClick }
 				className="bp-execute__button"
 			>
 				{ label }

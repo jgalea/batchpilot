@@ -144,17 +144,17 @@ final class RepublishOperation implements OperationInterface, TracksAffectedIds 
 			$copy     = 0 === $copy_id ? null : get_post( $copy_id );
 			if ( null === $original || null === $copy ) {
 				++$failed;
-				$item_errors[ $id ] = 'No rewrite copy found for this post.';
+				$item_errors[ $id ] = __( 'No rewrite copy found for this post.', 'batchpilot' );
 				continue;
 			}
 			if ( (int) get_post_meta( $original_id, RewriteLinks::META_COPY, true ) !== $copy_id || $original->post_type !== $copy->post_type ) {
 				++$failed;
-				$item_errors[ $id ] = 'The rewrite copy is not linked to this post.';
+				$item_errors[ $id ] = __( 'The rewrite copy is not linked to this post.', 'batchpilot' );
 				continue;
 			}
 			if ( get_current_user_id() > 0 && ! current_user_can( 'edit_post', $original_id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to edit the original post.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to edit the original post.', 'batchpilot' );
 				continue;
 			}
 

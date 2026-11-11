@@ -55,4 +55,25 @@ describe( 'PreviewPanel', () => {
 		);
 		expect( screen.getByRole( 'alert' ) ).toHaveTextContent( /bad filter/ );
 	} );
+
+	it( 'shows info lines apart from warnings', () => {
+		const { container } = render(
+			<PreviewPanel
+				preview={ {
+					count: 1,
+					display_rows: [],
+					warnings: [ 'Careful' ],
+					info: [ 'Example in post #5: "a" becomes "b".' ],
+				} }
+				previewing={ false }
+				previewError={ null }
+			/>
+		);
+		expect(
+			container.querySelector( '.bp-preview__info li' )
+		).toHaveTextContent( /Example in post #5/ );
+		expect(
+			container.querySelector( '.bp-preview__warnings li' )
+		).toHaveTextContent( 'Careful' );
+	} );
 } );

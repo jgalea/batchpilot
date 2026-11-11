@@ -73,10 +73,7 @@ const HealthPanel = ( { api } ) => {
 			status: report.abilities_api.available ? 'ok' : 'warn',
 			detail: report.abilities_api.available
 				? ''
-				: __(
-						'Optional — install to expose MCP tools.',
-						'batchpilot'
-				  ),
+				: __( 'Optional: install to expose MCP tools.', 'batchpilot' ),
 		},
 		{
 			id: 'hpos',

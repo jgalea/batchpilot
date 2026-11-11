@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use BatchPilot\Admin\Settings;
 use BatchPilot\Registry\OperationRegistry;
 use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;
@@ -52,13 +53,32 @@ final class CatalogController extends RestController {
 			];
 		}
 
+		/**
+		 * Filters the operation slugs the Operations Builder treats as destructive. They
+		 * get the confirmation step and the unfiltered-run warning before they can run.
+		 *
+		 * @param string[] $slugs Destructive operation slugs.
+		 */
+		$destructive = (array) apply_filters(
+			'batchpilot_destructive_operations',
+			[ 'delete', 'user-delete', 'comment-delete', 'term-delete', 'woo-order-delete', 'find-replace' ]
+		);
+
+		$settings = ( new Settings() )->get_all();
+
 		$ops = [];
 		foreach ( $this->operations->all() as $op ) {
+			$schema = $op->get_params_schema();
+			if ( 'delete' === $op->slug() && isset( $schema['properties']['permanent'] ) ) {
+				$schema['properties']['permanent']['default'] = (bool) $settings['delete_permanent_default'];
+			}
+
 			$ops[] = [
 				'slug'          => $op->slug(),
 				'label'         => $op->label(),
-				'params_schema' => $op->get_params_schema(),
+				'params_schema' => $schema,
 				'supports_undo' => $op->supports_undo(),
+				'destructive'   => in_array( $op->slug(), $destructive, true ),
 			];
 		}
 

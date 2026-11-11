@@ -8,15 +8,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\History\Operation;
 use BatchPilot\History\OperationRepository;
+use BatchPilot\Registry\OperationRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
 final class OperationsController extends RestController {
 
 	private OperationRepository $operations;
+	private OperationRegistry $registry;
 
-	public function __construct( OperationRepository $operations ) {
+	public function __construct( OperationRepository $operations, OperationRegistry $registry ) {
 		$this->operations = $operations;
+		$this->registry   = $registry;
 	}
 
 	/**
@@ -48,7 +51,18 @@ final class OperationsController extends RestController {
 
 	/** @return array<string, mixed> */
 	private function serialize( Operation $op ): array {
+		$user = $op->user_id() > 0 ? get_userdata( $op->user_id() ) : false;
+		$type = $this->registry->get( $op->type() );
+
+		$undoable = 'completed' === $op->status() && $op->affected_count() > 0 && null !== $type && $type->supports_undo();
+		if ( $undoable && ( 'revision' === $op->target() || ( ! empty( $op->params()['permanent'] ) && in_array( $op->type(), [ 'delete', 'woo-order-delete' ], true ) ) ) ) {
+			$undoable = false;
+		}
+
 		return [
+			'user_name'      => false === $user ? '' : (string) $user->display_name,
+			'source'         => isset( $op->params()['__schedule_id'] ) ? 'schedule' : ( $op->user_id() > 0 ? 'user' : 'system' ),
+			'undoable'       => $undoable,
 			'id'             => $op->id(),
 			'type'           => $op->type(),
 			'target'         => $op->target(),

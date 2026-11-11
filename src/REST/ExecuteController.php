@@ -6,14 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use BatchPilot\Async\ActionSchedulerBridge;
-use BatchPilot\Contracts\QueryArgs;
 use BatchPilot\Errors\BatchPilotError;
 use BatchPilot\Execution\ExecutionService;
-use BatchPilot\Execution\OperationRunner;
-use BatchPilot\PreviewToken\TokenStore;
-use BatchPilot\PreviewToken\TokenVerifier;
-use BatchPilot\Registry\OperationRegistry;
-use BatchPilot\Registry\TargetRegistry;
 use WP_REST_Request;
 use WP_REST_Response;
 
@@ -27,27 +21,18 @@ final class ExecuteController extends RestController {
 		'republish' => 'batchpilot_edit',
 	];
 
+	private const STATUS_MAP = [
+		'bp.target.unknown'      => 400,
+		'bp.operation.unknown'   => 400,
+		'bp.preview.stale_token' => 409,
+	];
+
 	private ExecutionService $execution;
-	private TargetRegistry $targets;
-	private OperationRegistry $operations;
-	private TokenVerifier $verifier;
-	private TokenStore $token_store;
 	private ActionSchedulerBridge $scheduler;
 
-	public function __construct(
-		ExecutionService $execution,
-		TargetRegistry $targets,
-		OperationRegistry $operations,
-		TokenVerifier $verifier,
-		TokenStore $token_store,
-		ActionSchedulerBridge $scheduler
-	) {
-		$this->execution   = $execution;
-		$this->targets     = $targets;
-		$this->operations  = $operations;
-		$this->verifier    = $verifier;
-		$this->token_store = $token_store;
-		$this->scheduler   = $scheduler;
+	public function __construct( ExecutionService $execution, ActionSchedulerBridge $scheduler ) {
+		$this->execution = $execution;
+		$this->scheduler = $scheduler;
 	}
 
 	/**
@@ -60,93 +45,19 @@ final class ExecuteController extends RestController {
 	}
 
 	public function handle( WP_REST_Request $request ): WP_REST_Response {
-		$token     = (string) $request->get_param( 'preview_token' );
-		$target    = (string) $request->get_param( 'target' );
-		$operation = (string) $request->get_param( 'operation' );
-		$filters   = (array) ( $request->get_param( 'filters' ) ?? [] );
-		$params    = (array) ( $request->get_param( 'params' ) ?? [] );
-
-		$target_obj = $this->targets->get( $target );
-		$op_obj     = $this->operations->get( $operation );
-		if ( null === $target_obj || null === $op_obj ) {
-			return $this->error_response(
-				new BatchPilotError(
-					null === $target_obj ? 'bp.target.unknown' : 'bp.operation.unknown',
-					'Unknown target or operation.'
-				),
-				400
-			);
-		}
-
-		$args       = QueryArgs::from_array( $filters );
-		$sample_ids = $target_obj->query( $args, 20, 0 );
-		$count      = $target_obj->count( $args );
-		$payload    = [
-			'target'     => $target,
-			'operation'  => $operation,
-			'filters'    => $filters,
-			'params'     => $params,
-			'sample_ids' => $sample_ids,
-			'count'      => $count,
-			// Must match the previewing user recorded in Operations/*::preview() — see the
-			// comment there. A token previewed by one user cannot be executed by another,
-			// even if both happen to hold the same coarse batchpilot_* capability.
-			'user_id'    => get_current_user_id(),
-		];
-		if ( ! $this->verifier->verify( $token, $payload ) ) {
-			return $this->error_response(
-				new BatchPilotError( 'bp.preview.stale_token', 'Preview token invalid or expired. Re-preview before executing.' ),
-				409
-			);
-		}
-		$this->verifier->consume( $token );
-
-		$user_id = (int) get_current_user_id();
-		$op_id   = $this->execution->record( $target, $operation, $user_id, $filters, $params );
-
-		$threshold = (int) apply_filters( 'batchpilot_async_threshold', 100 );
-		if ( $count > $threshold && $this->scheduler->is_available() ) {
-			// Pin the exact matched ID set now, at accept time, rather than letting the
-			// cron-driven run re-evaluate the filters whenever it actually fires. Without
-			// this, content created or edited in the gap between accepting the request and
-			// Action Scheduler picking it up could be silently swept into a batch the user
-			// never previewed or approved.
-			$this->execution->snapshot_for_queue( $op_id, $target_obj->query( $args ) );
-
-			$this->scheduler->schedule_single_action(
-				time(),
-				OperationRunner::HOOK,
-				[ $op_id ],
-				'batchpilot'
-			);
-			return new WP_REST_Response(
-				[
-					'operation_id' => $op_id,
-					'status'       => 'queued',
-				],
-				202
-			);
-		}
-
-		$result = $this->execution->run_sync( $op_id );
-		if ( ! $result->is_ok() ) {
-			$error = $result->get_error();
-			if ( null === $error ) {
-				$error = new BatchPilotError( 'bp.internal', 'Unknown execution failure.' );
-			}
-			return $this->error_response( $error, 500 );
-		}
-
-		return new WP_REST_Response(
-			[
-				'operation_id' => $op_id,
-				'status'       => 'completed',
-				'batch'        => [
-					'processed' => $result->processed(),
-					'succeeded' => $result->succeeded(),
-					'failed'    => $result->failed(),
-				],
-			]
+		$result = $this->execution->execute(
+			(string) $request->get_param( 'target' ),
+			(string) $request->get_param( 'operation' ),
+			(array) ( $request->get_param( 'filters' ) ?? [] ),
+			(array) ( $request->get_param( 'params' ) ?? [] ),
+			(string) $request->get_param( 'preview_token' ),
+			$this->scheduler
 		);
+
+		if ( $result instanceof BatchPilotError ) {
+			return $this->error_response( $result, self::STATUS_MAP[ $result->code() ] ?? 500 );
+		}
+
+		return new WP_REST_Response( $result, 'queued' === $result['status'] ? 202 : 200 );
 	}
 }

@@ -54,7 +54,7 @@ final class DeleteOperation implements OperationInterface {
 					'type'        => 'boolean',
 					'default'     => false,
 					'label'       => __( 'Permanently delete (skip trash)', 'batchpilot' ),
-					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default — items go to the Trash and can be restored.', 'batchpilot' ),
+					'description' => __( 'When enabled, items are hard-deleted and cannot be restored via Undo. Off by default: items go to the Trash and can be restored.', 'batchpilot' ),
 				],
 			],
 		];
@@ -99,7 +99,8 @@ final class DeleteOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function execute_batch( array $ids, array $params, TargetInterface $target ): BatchResult {
-		$permanent   = ! empty( $params['permanent'] );
+		// Revisions have no trash, so deleting them is always permanent.
+		$permanent   = ! empty( $params['permanent'] ) || 'revision' === $target->slug();
 		$succeeded   = 0;
 		$failed      = 0;
 		$item_errors = [];
@@ -110,7 +111,7 @@ final class DeleteOperation implements OperationInterface {
 
 			if ( null === $post ) {
 				++$failed;
-				$item_errors[ $id ] = 'Post not found.';
+				$item_errors[ $id ] = __( 'Post not found.', 'batchpilot' );
 				continue;
 			}
 
@@ -125,7 +126,7 @@ final class DeleteOperation implements OperationInterface {
 			// identity is restored for async/cron-driven runs.
 			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
 				++$failed;
-				$item_errors[ $id ] = 'Insufficient permissions to delete this item.';
+				$item_errors[ $id ] = __( 'Insufficient permissions to delete this item.', 'batchpilot' );
 				continue;
 			}
 
@@ -159,7 +160,7 @@ final class DeleteOperation implements OperationInterface {
 			);
 		}
 
-		if ( ! empty( $op->params()['permanent'] ) ) {
+		if ( ! empty( $op->params()['permanent'] ) || 'revision' === $op->target() ) {
 			return UndoResult::error(
 				new BatchPilotError(
 					'bp.undo.permanent_delete',

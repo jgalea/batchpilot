@@ -229,6 +229,47 @@ final class DuplicateOperationTest extends TestCase {
 		$this->assertNotNull( get_post( $source ) );
 	}
 
+	public function test_undo_keeps_copies_that_were_edited_after_creation(): void {
+		global $wpdb;
+		$repo = new \BatchPilot\History\OperationRepository( $wpdb );
+
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$op     = $this->op();
+		$op->execute_batch( [ $source, $source ], [], new PostTarget( 'post' ) );
+		$new_ids = $op->last_new_ids();
+		$this->assertCount( 2, $new_ids );
+
+		$wpdb->update( $wpdb->posts, [ 'post_modified_gmt' => '2000-01-01 00:00:00' ], [ 'ID' => $new_ids[0] ] );
+		clean_post_cache( $new_ids[0] );
+
+		$saved = $repo->create( \BatchPilot\History\Operation::newly_created( 'duplicate', 'post', 0, [], [] ) );
+		$repo->mark_completed( $saved->id(), $new_ids );
+
+		$result = $op->undo( $saved->id() );
+
+		$this->assertSame( 1, $result->restored() );
+		$this->assertSame( 1, $result->skipped() );
+		$this->assertNotNull( get_post( $new_ids[0] ) );
+		$this->assertNull( get_post( $new_ids[1] ) );
+	}
+
+	public function test_copying_fires_the_post_copied_action(): void {
+		$seen = [];
+		add_action(
+			'batchpilot_post_copied',
+			static function ( $new_id, $source ) use ( &$seen ) {
+				$seen[] = [ $new_id, $source->ID ];
+			},
+			10,
+			2
+		);
+		$source = (int) self::factory()->post->create( [ 'post_status' => 'publish' ] );
+		$op     = $this->op();
+		$op->execute_batch( [ $source ], [], new PostTarget( 'post' ) );
+
+		$this->assertSame( [ [ $op->last_new_ids()[0], $source ] ], $seen );
+	}
+
 	public function test_undo_missing_operation_returns_error(): void {
 		$op     = $this->op();
 		$result = $op->undo( 999999 );

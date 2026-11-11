@@ -47,6 +47,19 @@ final class OperationsRouteTest extends TestCase {
 		$this->assertSame( [ 'status' => [ 'draft' ] ], $data['filters'] );
 	}
 
+	public function test_undo_is_only_offered_when_something_was_affected(): void {
+		global $wpdb;
+		$repo   = new \BatchPilot\History\OperationRepository( $wpdb );
+		$empty  = $repo->create( \BatchPilot\History\Operation::newly_created( 'delete', 'post', 1, [], [ 'permanent' => false ] ) );
+		$worked = $repo->create( \BatchPilot\History\Operation::newly_created( 'delete', 'post', 1, [], [ 'permanent' => false ] ) );
+		$repo->mark_completed( $empty->id(), [] );
+		$repo->mark_completed( $worked->id(), [ 123 ] );
+
+		$undoable = static fn ( $r ) => $r->get_data()['undoable'];
+		$this->assertFalse( $undoable( $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/operations/' . $empty->id() ) ) ) );
+		$this->assertTrue( $undoable( $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/operations/' . $worked->id() ) ) ) );
+	}
+
 	public function test_single_404_when_missing(): void {
 		$response = $this->server->dispatch( new WP_REST_Request( 'GET', '/batchpilot/v1/operations/999999' ) );
 		$this->assertSame( 404, $response->get_status() );

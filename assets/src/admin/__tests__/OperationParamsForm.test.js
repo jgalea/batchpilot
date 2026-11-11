@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OperationParamsForm from '../components/OperationParamsForm';
+import { BuilderContext } from '../state/builderContext';
 
 describe( 'OperationParamsForm', () => {
 	it( 'renders boolean schema field as a toggle and emits onChange', async () => {
@@ -94,5 +95,41 @@ describe( 'OperationParamsForm', () => {
 		);
 		await userEvent.clear( screen.getByRole( 'textbox' ) );
 		expect( onChange ).toHaveBeenLastCalledWith( {} );
+	} );
+
+	it( 'lists only the statuses the schema allows for a post status field', () => {
+		const catalog = {
+			vocab: {
+				statuses: [
+					{ value: 'publish', label: 'Published' },
+					{ value: 'draft', label: 'Draft' },
+					{ value: 'auto-draft', label: 'Auto draft' },
+					{ value: 'trash', label: 'Trash' },
+				],
+			},
+		};
+		render(
+			<BuilderContext.Provider value={ { catalog } }>
+				<OperationParamsForm
+					schema={ {
+						type: 'object',
+						properties: {
+							set_status: {
+								type: 'string',
+								widget: 'post_status',
+								enum: [ 'draft', 'publish' ],
+								label: 'Set status to',
+							},
+						},
+					} }
+					value={ {} }
+					onChange={ jest.fn() }
+				/>
+			</BuilderContext.Provider>
+		);
+		const labels = screen
+			.getAllByRole( 'option' )
+			.map( ( o ) => o.textContent );
+		expect( labels ).toEqual( [ 'No change', 'Published', 'Draft' ] );
 	} );
 } );

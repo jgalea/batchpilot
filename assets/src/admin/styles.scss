@@ -640,6 +640,13 @@
 		}
 	}
 
+	.bp-op-field__remove-password {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-block-start: 6px;
+	}
+
 	.bp-op-field__user-search {
 		position: relative;
 	}
@@ -1157,8 +1164,13 @@
 		}
 	}
 
-	.bp-preview__warnings {
+	.bp-preview__warnings,
+	.bp-preview__info {
 		margin: 0 !important;
+	}
+
+	.bp-preview__info li {
+		overflow-wrap: anywhere;
 	}
 
 	.bp-preview__rows {
@@ -1353,6 +1365,21 @@
 		grid-template-columns: 1fr auto;
 	}
 
+	@media (max-width: 600px) {
+		.bp-filter-row {
+			grid-template-columns: 1fr auto;
+			gap: 8px 10px;
+		}
+
+		.bp-filter-row__label {
+			grid-column: 1 / -1;
+		}
+
+		.bp-filter-row__taxonomy {
+			grid-template-columns: 1fr;
+		}
+	}
+
 	.bp-filter-row__label {
 		font-size: 13px;
 		font-weight: 600;
@@ -1395,6 +1422,12 @@
 	.bp-filter-row__taxonomy {
 		display: grid;
 		grid-template-columns: minmax(120px, 200px) 1fr;
+		gap: 8px;
+	}
+
+	.bp-filter-row__meta {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		gap: 8px;
 	}
 

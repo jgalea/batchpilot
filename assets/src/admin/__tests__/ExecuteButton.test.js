@@ -65,4 +65,42 @@ describe( 'ExecuteButton', () => {
 		await userEvent.click( screen.getByRole( 'checkbox' ) );
 		expect( btn ).not.toBeDisabled();
 	} );
+
+	it( 'asks for confirmation before any destructive operation runs', async () => {
+		window.confirm = jest.fn( () => false );
+		const onExecute = jest.fn();
+		render(
+			<ExecuteButton
+				preview={ { count: 3, preview_token: 't' } }
+				operation="user-delete"
+				destructive
+				onExecute={ onExecute }
+				executing={ false }
+				hasFilters
+			/>
+		);
+		await userEvent.click( screen.getByRole( 'button' ) );
+		expect( window.confirm ).toHaveBeenCalled();
+		expect( onExecute ).not.toHaveBeenCalled();
+
+		window.confirm = jest.fn( () => true );
+		await userEvent.click( screen.getByRole( 'button' ) );
+		expect( onExecute ).toHaveBeenCalled();
+	} );
+
+	it( 'requires the checkbox for unfiltered destructive operations', () => {
+		render(
+			<ExecuteButton
+				preview={ { count: 3, preview_token: 't' } }
+				operation="term-delete"
+				destructive
+				onExecute={ () => {} }
+				executing={ false }
+				hasFilters={ false }
+			/>
+		);
+		expect(
+			screen.getByRole( 'button', { name: /run on 3/i } )
+		).toBeDisabled();
+	} );
 } );

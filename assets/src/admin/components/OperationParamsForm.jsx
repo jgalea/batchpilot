@@ -83,7 +83,7 @@ const StringField = ( { prop, value, onChange, label, description } ) => (
 
 const EnumField = ( { prop, value, onChange, label, description } ) => {
 	const options = [
-		{ label: __( '— No change —', 'batchpilot' ), value: '' },
+		{ label: __( 'No change', 'batchpilot' ), value: '' },
 		...( prop.enum || [] ).map( ( v ) => ( {
 			label: humanizeKey( String( v ) ),
 			value: String( v ),
@@ -110,10 +110,13 @@ const PostStatusField = ( {
 	onChange,
 	label,
 	description,
+	prop,
 } ) => {
-	const statuses = catalog?.vocab?.statuses || [];
+	const statuses = ( catalog?.vocab?.statuses || [] ).filter(
+		( s ) => ! prop?.enum || prop.enum.includes( s.value )
+	);
 	const options = [
-		{ label: __( '— No change —', 'batchpilot' ), value: '' },
+		{ label: __( 'No change', 'batchpilot' ), value: '' },
 		...statuses.map( ( s ) => ( { label: s.label, value: s.value } ) ),
 	];
 	return (
@@ -144,6 +147,7 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 					type={ reveal ? 'text' : 'password' }
 					autoComplete="new-password"
 					value={ value || '' }
+					disabled={ value === '' }
 					onChange={ ( v ) => onChange( v || undefined ) }
 				/>
 				<Button
@@ -156,6 +160,22 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 						: __( 'Show', 'batchpilot' ) }
 				</Button>
 			</div>
+			<label
+				className="bp-op-field__remove-password"
+				htmlFor="bp-op-field__remove-password-input"
+			>
+				<input
+					id="bp-op-field__remove-password-input"
+					type="checkbox"
+					checked={ value === '' }
+					onChange={ ( e ) =>
+						onChange( e.target.checked ? '' : undefined )
+					}
+				/>
+				<span>
+					{ __( 'Remove the existing password', 'batchpilot' ) }
+				</span>
+			</label>
 		</FieldShell>
 	);
 };
@@ -256,10 +276,7 @@ const UserField = ( { value, onChange, label, description } ) => {
 							) }
 							{ ! loading && results.length === 0 && (
 								<li className="bp-op-field__user-hint">
-									{ __(
-										'No matching users.',
-										'batchpilot'
-									) }
+									{ __( 'No matching users.', 'batchpilot' ) }
 								</li>
 							) }
 							{ results.map( ( u ) => (
@@ -349,7 +366,7 @@ const TaxonomyTermsField = ( {
 	};
 
 	const taxOptions = [
-		{ label: __( '— Pick a taxonomy —', 'batchpilot' ), value: '' },
+		{ label: __( 'Pick a taxonomy', 'batchpilot' ), value: '' },
 		...taxonomies.map( ( t ) => ( {
 			label: `${ t.label } (${ t.slug })`,
 			value: t.slug,

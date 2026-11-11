@@ -113,6 +113,88 @@ final class ExecutionServiceTest extends TestCase {
 		$this->assertSame( 'bp.target.unsupported_operation', $preview->get_error()->code() );
 	}
 
+	public function test_bulk_edit_password_is_never_stored_in_history_but_still_applied(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service_with_edit();
+		$ids  = self::factory()->post->create_many( 2, [ 'post_status' => 'draft' ] );
+
+		$op_id = $svc->record( 'post', 'edit', 0, [ 'ids' => $ids ], [ 'password' => 's3cret' ] );
+		$svc->snapshot_for_queue( $op_id, $ids );
+
+		$this->assertSame( '', $repo->find( $op_id )->params()['password'], 'A queued run must not keep the password in params_json.' );
+
+		$result = $svc->run_sync( $op_id );
+
+		$this->assertSame( 2, $result->succeeded() );
+		$this->assertSame( '', $repo->find( $op_id )->params()['password'] );
+		$this->assertSame( 's3cret', get_post( $ids[0] )->post_password );
+		$this->assertFalse( get_transient( 'batchpilot_op_secrets_' . $op_id ) );
+	}
+
+	public function test_bulk_edit_password_is_not_stored_when_the_run_fails(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service_with_edit();
+
+		$op_id = $svc->record( 'bogus', 'edit', 0, [], [ 'password' => 's3cret' ] );
+		$svc->run_sync( $op_id );
+
+		$row = $repo->find( $op_id );
+		$this->assertSame( 'failed', $row->status() );
+		$this->assertSame( '', $row->params()['password'] );
+	}
+
+	private function service_with_edit(): ExecutionService {
+		global $wpdb;
+		$targets    = new TargetRegistry();
+		$operations = new OperationRegistry();
+		$targets->register( new PostTarget( 'post' ) );
+		$operations->register(
+			new \BatchPilot\Operations\BulkEditOperation(
+				new TokenGenerator( 'salt' ),
+				new TokenStore( 300 ),
+				new OperationRepository( $wpdb ),
+				new SnapshotRepository( $wpdb )
+			)
+		);
+
+		return new ExecutionService(
+			$targets,
+			$operations,
+			new OperationRepository( $wpdb ),
+			new SnapshotRepository( $wpdb ),
+			new TokenGenerator( 'salt' ),
+			new TokenStore( 300 )
+		);
+	}
+
+	public function test_a_second_undo_while_one_is_running_is_refused(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service();
+		$id   = $svc->record( 'post', 'delete', 0, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$repo->mark_completed( $id, [] );
+
+		add_option( 'batchpilot_undo_lock_' . $id, time(), '', false );
+		$result = $svc->undo( $id );
+
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'bp.undo.in_progress', $result->get_error()->code() );
+		$this->assertSame( 'completed', $repo->find( $id )->status() );
+	}
+
+	public function test_undo_releases_its_lock(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service();
+		$id   = $svc->record( 'post', 'delete', 0, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$repo->mark_completed( $id, [] );
+
+		$this->assertTrue( $svc->undo( $id )->is_ok() );
+		$this->assertFalse( get_option( 'batchpilot_undo_lock_' . $id ) );
+	}
+
 	public function test_record_creates_history_row_and_returns_id(): void {
 		$id = $this->service()->record( 'post', 'delete', 1, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
 		$this->assertGreaterThan( 0, $id );
