@@ -58,6 +58,12 @@ final class BulkEditOperation implements OperationInterface {
 				'set_status'       => [
 					'type'        => 'string',
 					'widget'      => 'post_status',
+					'enum'        => array_values(
+						array_filter(
+							self::ALLOWED_STATUSES,
+							static fn ( string $status ) => 'trash' !== $status || current_user_can( 'delete_posts' )
+						)
+					),
 					'label'       => __( 'Set status to', 'batchpilot' ),
 					'description' => __( 'Change the publication status of every matched item.', 'batchpilot' ),
 				],

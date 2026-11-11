@@ -40,6 +40,22 @@ final class BulkEditOperationTest extends TestCase {
 		$this->assertSame( 'bp.params.invalid_status', $result->get_error()->code() );
 	}
 
+	public function test_status_choices_match_the_validator_and_trash_needs_delete_rights(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+		$admin_choices = $this->op()->get_params_schema()['properties']['set_status']['enum'];
+		foreach ( $admin_choices as $status ) {
+			$this->assertTrue( $this->op()->validate( QueryArgs::from_array( [] ), [ 'set_status' => $status ] )->is_ok(), $status );
+		}
+		$this->assertContains( 'trash', $admin_choices );
+
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
+		$choices = $this->op()->get_params_schema()['properties']['set_status']['enum'];
+		wp_set_current_user( 0 );
+
+		$this->assertNotContains( 'trash', $choices );
+		$this->assertSame( [ 'draft', 'pending', 'private', 'publish', 'future' ], $choices );
+	}
+
 	public function test_validate_rejects_non_editorial_statuses(): void {
 		foreach ( [ 'auto-draft', 'inherit' ] as $status ) {
 			$result = $this->op()->validate( QueryArgs::from_array( [] ), [ 'set_status' => $status ] );

@@ -110,8 +110,11 @@ const PostStatusField = ( {
 	onChange,
 	label,
 	description,
+	prop,
 } ) => {
-	const statuses = catalog?.vocab?.statuses || [];
+	const statuses = ( catalog?.vocab?.statuses || [] ).filter(
+		( s ) => ! prop?.enum || prop.enum.includes( s.value )
+	);
 	const options = [
 		{ label: __( 'No change', 'batchpilot' ), value: '' },
 		...statuses.map( ( s ) => ( { label: s.label, value: s.value } ) ),
