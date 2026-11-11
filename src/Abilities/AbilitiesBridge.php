@@ -225,6 +225,7 @@ final class AbilitiesBridge {
 					'type'       => 'object',
 					'properties' => [
 						'restored' => [ 'type' => 'integer' ],
+						'skipped'  => [ 'type' => 'integer' ],
 					],
 				],
 				'permission_callback' => static function ( $input = null ) use ( $execution, $cap_map ) {
@@ -243,10 +244,14 @@ final class AbilitiesBridge {
 							'bp.operation.not_found' => 404,
 							'bp.operation.unknown'   => 400,
 							'bp.undo.already_undone' => 409,
+							'bp.undo.in_progress'    => 409,
 						][ $error->code() ] ?? 422;
 						return new \WP_Error( $error->code(), $error->message(), array_merge( $error->context(), [ 'status' => $status ] ) );
 					}
-					return [ 'restored' => $result->restored() ];
+					return [
+						'restored' => $result->restored(),
+						'skipped'  => $result->skipped(),
+					];
 				},
 				'meta'                => [
 					'show_in_rest' => true,

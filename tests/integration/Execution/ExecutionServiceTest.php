@@ -169,6 +169,32 @@ final class ExecutionServiceTest extends TestCase {
 		);
 	}
 
+	public function test_a_second_undo_while_one_is_running_is_refused(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service();
+		$id   = $svc->record( 'post', 'delete', 0, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$repo->mark_completed( $id, [] );
+
+		add_option( 'batchpilot_undo_lock_' . $id, time(), '', false );
+		$result = $svc->undo( $id );
+
+		$this->assertFalse( $result->is_ok() );
+		$this->assertSame( 'bp.undo.in_progress', $result->get_error()->code() );
+		$this->assertSame( 'completed', $repo->find( $id )->status() );
+	}
+
+	public function test_undo_releases_its_lock(): void {
+		global $wpdb;
+		$repo = new OperationRepository( $wpdb );
+		$svc  = $this->service();
+		$id   = $svc->record( 'post', 'delete', 0, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
+		$repo->mark_completed( $id, [] );
+
+		$this->assertTrue( $svc->undo( $id )->is_ok() );
+		$this->assertFalse( get_option( 'batchpilot_undo_lock_' . $id ) );
+	}
+
 	public function test_record_creates_history_row_and_returns_id(): void {
 		$id = $this->service()->record( 'post', 'delete', 1, [ 'status' => [ 'draft' ] ], [ 'permanent' => false ] );
 		$this->assertGreaterThan( 0, $id );

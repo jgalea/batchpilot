@@ -28,11 +28,21 @@ const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 				const r = await api.undoOperation( row.id );
 				setNotice( {
 					status: 'success',
-					text: sprintf(
-						/* translators: %s: restored count or identifier */
-						__( 'Restored: %s', 'batchpilot' ),
-						r.restored
-					),
+					text: r.skipped
+						? sprintf(
+								/* translators: 1: number of items restored, 2: number of items skipped. */
+								__(
+									'Restored %1$d. Skipped %2$d that were edited after they were created.',
+									'batchpilot'
+								),
+								r.restored,
+								r.skipped
+						  )
+						: sprintf(
+								/* translators: %s: restored count or identifier */
+								__( 'Restored: %s', 'batchpilot' ),
+								r.restored
+						  ),
 				} );
 				setReloadKey( ( k ) => k + 1 );
 			} catch ( err ) {

@@ -19,6 +19,7 @@ final class PostCopier {
 		'_pingme',
 		'_encloseme',
 		'_bp_rewrite_*',
+		'_bp_copy_stamp',
 		'_dp_*',
 		'_yoast_wpseo_linkdex',
 		'_yoast_wpseo_content_score',

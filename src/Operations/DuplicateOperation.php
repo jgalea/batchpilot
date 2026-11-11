@@ -233,6 +233,7 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			}
 
 			$this->last_new_ids[] = (int) $new_id;
+			update_post_meta( (int) $new_id, '_bp_copy_stamp', get_post( (int) $new_id )->post_modified_gmt );
 			/**
 			 * Filters whether child posts are duplicated along with a source post.
 			 *
@@ -286,6 +287,7 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			}
 
 			$this->last_new_ids[] = (int) $new_id;
+			update_post_meta( (int) $new_id, '_bp_copy_stamp', get_post( (int) $new_id )->post_modified_gmt );
 			$this->copy_children( $child, (int) $new_id, $status, $author, $suffix, array_merge( $seen, [ $child_id ] ) );
 		}
 	}
@@ -307,9 +309,16 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 		}
 
 		$restored = 0;
+		$skipped  = 0;
 		foreach ( $op->affected_ids() as $id ) {
 			$id = (int) $id;
 			if ( get_current_user_id() > 0 && ! current_user_can( 'delete_post', $id ) ) {
+				continue;
+			}
+			$stamp = (string) get_post_meta( $id, '_bp_copy_stamp', true );
+			$copy  = get_post( $id );
+			if ( '' !== $stamp && null !== $copy && $copy->post_modified_gmt !== $stamp ) {
+				++$skipped;
 				continue;
 			}
 			if ( wp_delete_post( $id, true ) ) {
@@ -317,6 +326,6 @@ final class DuplicateOperation implements OperationInterface, TracksAffectedIds 
 			}
 		}
 
-		return UndoResult::of( $restored );
+		return UndoResult::of( $restored, $skipped );
 	}
 }

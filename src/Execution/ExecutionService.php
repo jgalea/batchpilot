@@ -184,9 +184,23 @@ final class ExecutionService {
 			return UndoResult::error( new BatchPilotError( 'bp.operation.unknown', 'Operation type no longer registered.', [ 'type' => $row->type() ] ) );
 		}
 
-		$result = $op->undo( $operation_id );
-		if ( $result->is_ok() ) {
-			$this->operations_repo->mark_undone( $operation_id );
+		// add_option() is atomic on the unique option name, so only one request wins; a lock
+		// older than five minutes belongs to a request that died and is taken over.
+		$lock = 'batchpilot_undo_lock_' . $operation_id;
+		if ( ! \add_option( $lock, time(), '', false ) ) {
+			if ( (int) \get_option( $lock ) > time() - 300 ) {
+				return UndoResult::error( new BatchPilotError( 'bp.undo.in_progress', __( 'This operation is already being undone.', 'batchpilot' ), [ 'id' => $operation_id ] ) );
+			}
+			\update_option( $lock, time(), false );
+		}
+
+		try {
+			$result = $op->undo( $operation_id );
+			if ( $result->is_ok() ) {
+				$this->operations_repo->mark_undone( $operation_id );
+			}
+		} finally {
+			\delete_option( $lock );
 		}
 
 		return $result;

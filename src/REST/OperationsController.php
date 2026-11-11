@@ -54,7 +54,7 @@ final class OperationsController extends RestController {
 		$user = $op->user_id() > 0 ? get_userdata( $op->user_id() ) : false;
 		$type = $this->registry->get( $op->type() );
 
-		$undoable = 'completed' === $op->status() && null !== $type && $type->supports_undo();
+		$undoable = 'completed' === $op->status() && $op->affected_count() > 0 && null !== $type && $type->supports_undo();
 		if ( $undoable && ( 'revision' === $op->target() || ( ! empty( $op->params()['permanent'] ) && in_array( $op->type(), [ 'delete', 'woo-order-delete' ], true ) ) ) ) {
 			$undoable = false;
 		}

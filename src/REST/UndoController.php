@@ -63,8 +63,13 @@ final class UndoController extends RestController {
 		if ( ! $result->is_ok() ) {
 			$error = $result->get_error();
 			$code  = null === $error ? '' : $error->code();
-			return $this->error_response( $error, 'bp.operation.not_found' === $code ? 404 : ( 'bp.operation.unknown' === $code ? 400 : 422 ) );
+			return $this->error_response( $error, 'bp.operation.not_found' === $code ? 404 : ( 'bp.operation.unknown' === $code ? 400 : ( 'bp.undo.in_progress' === $code ? 409 : 422 ) ) );
 		}
-		return new WP_REST_Response( [ 'restored' => $result->restored() ] );
+		return new WP_REST_Response(
+			[
+				'restored' => $result->restored(),
+				'skipped'  => $result->skipped(),
+			]
+		);
 	}
 }

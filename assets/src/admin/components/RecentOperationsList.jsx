@@ -29,11 +29,21 @@ const RecentOperationsList = ( { api } ) => {
 			const r = await api.undoOperation( id );
 			setNotice( {
 				status: 'success',
-				text: sprintf(
-					/* translators: %d: number of items restored. */
-					__( 'Restored %d', 'batchpilot' ),
-					r.restored
-				),
+				text: r.skipped
+					? sprintf(
+							/* translators: 1: number of items restored, 2: number of items skipped. */
+							__(
+								'Restored %1$d. Skipped %2$d that were edited after they were created.',
+								'batchpilot'
+							),
+							r.restored,
+							r.skipped
+					  )
+					: sprintf(
+							/* translators: %d: number of items restored. */
+							__( 'Restored %d', 'batchpilot' ),
+							r.restored
+					  ),
 			} );
 			reload();
 		} catch ( err ) {
