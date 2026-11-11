@@ -238,7 +238,13 @@ final class AbilitiesBridge {
 				'execute_callback'    => static function ( $input ) use ( $execution ) {
 					$result = $execution->undo( (int) ( $input['operation_id'] ?? 0 ) );
 					if ( ! $result->is_ok() ) {
-						return $result->get_error()->to_wp_error();
+						$error  = $result->get_error();
+						$status = [
+							'bp.operation.not_found' => 404,
+							'bp.operation.unknown'   => 400,
+							'bp.undo.already_undone' => 409,
+						][ $error->code() ] ?? 422;
+						return new \WP_Error( $error->code(), $error->message(), array_merge( $error->context(), [ 'status' => $status ] ) );
 					}
 					return [ 'restored' => $result->restored() ];
 				},
@@ -257,6 +263,7 @@ final class AbilitiesBridge {
 				'category'            => 'batchpilot',
 				'input_schema'        => [
 					'type'       => 'object',
+					'default'    => [],
 					'properties' => [
 						'limit'  => [
 							'type'    => 'integer',
