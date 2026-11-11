@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import RecentOperationsList from '../components/RecentOperationsList';
 
 describe( 'RecentOperationsList', () => {
+	beforeEach( () => {
+		window.confirm = jest.fn( () => true );
+	} );
+
 	it( 'renders last five operations with an undo action for delete', async () => {
 		const api = {
 			listOperations: jest.fn().mockResolvedValue( [

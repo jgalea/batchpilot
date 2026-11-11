@@ -640,6 +640,13 @@
 		}
 	}
 
+	.bp-op-field__remove-password {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		margin-block-start: 6px;
+	}
+
 	.bp-op-field__user-search {
 		position: relative;
 	}
@@ -1395,6 +1402,12 @@
 	.bp-filter-row__taxonomy {
 		display: grid;
 		grid-template-columns: minmax(120px, 200px) 1fr;
+		gap: 8px;
+	}
+
+	.bp-filter-row__meta {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 		gap: 8px;
 	}
 

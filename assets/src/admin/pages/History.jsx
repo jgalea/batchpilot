@@ -1,3 +1,4 @@
+/* eslint-disable no-alert */
 import { useState } from '@wordpress/element';
 import { Notice } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
@@ -16,6 +17,13 @@ const History = ( { api = defaultApi, bootstrap = getBootstrap() } ) => {
 			setViewing( row );
 		}
 		if ( action === 'undo' ) {
+			const confirmed = window.confirm(
+				// eslint-disable-line no-alert
+				__( 'Undo this operation?', 'batchpilot' )
+			);
+			if ( ! confirmed ) {
+				return;
+			}
 			try {
 				const r = await api.undoOperation( row.id );
 				setNotice( {

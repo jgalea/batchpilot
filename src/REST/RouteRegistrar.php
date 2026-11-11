@@ -129,7 +129,7 @@ final class RouteRegistrar {
 			]
 		);
 
-		$operations_ctrl = new OperationsController( $this->operations_repo );
+		$operations_ctrl = new OperationsController( $this->operations_repo, $this->operations );
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/operations',

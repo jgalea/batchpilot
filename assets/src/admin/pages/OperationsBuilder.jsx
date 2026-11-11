@@ -350,6 +350,9 @@ const OperationsBuilder = ( { api = defaultApi } ) => {
 								<ExecuteButton
 									preview={ preview }
 									operation={ state.operation }
+									destructive={
+										selectedOperation?.destructive
+									}
 									onExecute={ execute }
 									executing={ state.executing }
 									hasFilters={

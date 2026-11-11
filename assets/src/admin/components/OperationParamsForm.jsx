@@ -144,6 +144,7 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 					type={ reveal ? 'text' : 'password' }
 					autoComplete="new-password"
 					value={ value || '' }
+					disabled={ value === '' }
 					onChange={ ( v ) => onChange( v || undefined ) }
 				/>
 				<Button
@@ -156,6 +157,22 @@ const PasswordField = ( { value, onChange, label, description } ) => {
 						: __( 'Show', 'batchpilot' ) }
 				</Button>
 			</div>
+			<label
+				className="bp-op-field__remove-password"
+				htmlFor="bp-op-field__remove-password-input"
+			>
+				<input
+					id="bp-op-field__remove-password-input"
+					type="checkbox"
+					checked={ value === '' }
+					onChange={ ( e ) =>
+						onChange( e.target.checked ? '' : undefined )
+					}
+				/>
+				<span>
+					{ __( 'Remove the existing password', 'batchpilot' ) }
+				</span>
+			</label>
 		</FieldShell>
 	);
 };
@@ -256,10 +273,7 @@ const UserField = ( { value, onChange, label, description } ) => {
 							) }
 							{ ! loading && results.length === 0 && (
 								<li className="bp-op-field__user-hint">
-									{ __(
-										'No matching users.',
-										'batchpilot'
-									) }
+									{ __( 'No matching users.', 'batchpilot' ) }
 								</li>
 							) }
 							{ results.map( ( u ) => (

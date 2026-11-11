@@ -135,7 +135,10 @@ const IdsInput = ( { def, value, onChange } ) => {
 			__nextHasNoMarginBottom
 			hideLabelFromVision
 			label={ def.label }
-			placeholder={ __( 'comma-separated IDs, e.g. 12, 34, 56', 'batchpilot' ) }
+			placeholder={ __(
+				'comma-separated IDs, e.g. 12, 34, 56',
+				'batchpilot'
+			) }
 			value={ raw }
 			onChange={ ( v ) => {
 				setRaw( v );
@@ -192,6 +195,78 @@ const TaxonomyInput = ( { value, onChange } ) => {
 					emit( tax, v );
 				} }
 			/>
+		</div>
+	);
+};
+
+const TextInput = ( { def, value, onChange } ) => (
+	<TextControl
+		__next40pxDefaultSize
+		__nextHasNoMarginBottom
+		hideLabelFromVision
+		label={ def.label }
+		placeholder={ __( 'text to look for', 'batchpilot' ) }
+		value={ value || '' }
+		onChange={ onChange }
+	/>
+);
+
+const META_COMPARE_LABELS = {
+	'=': __( 'equals', 'batchpilot' ),
+	'!=': __( 'does not equal', 'batchpilot' ),
+	'>': __( 'greater than', 'batchpilot' ),
+	'>=': __( 'at least', 'batchpilot' ),
+	'<': __( 'less than', 'batchpilot' ),
+	'<=': __( 'at most', 'batchpilot' ),
+	LIKE: __( 'contains', 'batchpilot' ),
+	'NOT LIKE': __( 'does not contain', 'batchpilot' ),
+	EXISTS: __( 'exists', 'batchpilot' ),
+	'NOT EXISTS': __( 'does not exist', 'batchpilot' ),
+};
+
+const MetaInput = ( { def, value, onChange } ) => {
+	const current = { key: '', compare: '=', value: '', ...( value || {} ) };
+	const compares =
+		def.schema && Array.isArray( def.schema.compares )
+			? def.schema.compares
+			: Object.keys( META_COMPARE_LABELS );
+	const needsValue = ! [ 'EXISTS', 'NOT EXISTS' ].includes( current.compare );
+	const emit = ( patch ) => onChange( { ...current, ...patch } );
+
+	return (
+		<div className="bp-filter-row__meta">
+			<TextControl
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				hideLabelFromVision
+				label={ __( 'Custom field key', 'batchpilot' ) }
+				placeholder={ __( 'field key (e.g. price)', 'batchpilot' ) }
+				value={ current.key }
+				onChange={ ( key ) => emit( { key } ) }
+			/>
+			<SelectControl
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+				hideLabelFromVision
+				label={ __( 'Comparison', 'batchpilot' ) }
+				value={ current.compare }
+				options={ compares.map( ( c ) => ( {
+					label: META_COMPARE_LABELS[ c ] || c,
+					value: c,
+				} ) ) }
+				onChange={ ( compare ) => emit( { compare } ) }
+			/>
+			{ needsValue && (
+				<TextControl
+					__next40pxDefaultSize
+					__nextHasNoMarginBottom
+					hideLabelFromVision
+					label={ __( 'Custom field value', 'batchpilot' ) }
+					placeholder={ __( 'value', 'batchpilot' ) }
+					value={ current.value }
+					onChange={ ( v ) => emit( { value: v } ) }
+				/>
+			) }
 		</div>
 	);
 };
@@ -287,6 +362,24 @@ const FilterRow = ( { row, defs, onChange, onRemove } ) => {
 				) }
 				{ def.type === 'ids' && (
 					<IdsInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'text' && (
+					<TextInput
+						def={ def }
+						value={ row.value }
+						onChange={ ( value ) =>
+							onChange( { key: def.key, value } )
+						}
+					/>
+				) }
+				{ def.type === 'meta' && (
+					<MetaInput
 						def={ def }
 						value={ row.value }
 						onChange={ ( value ) =>

@@ -47,6 +47,20 @@ const statusLabel = {
 	running: __( 'Running', 'batchpilot' ),
 	failed: __( 'Failed', 'batchpilot' ),
 	queued: __( 'Queued', 'batchpilot' ),
+	pending: __( 'Pending', 'batchpilot' ),
+	undone: __( 'Undone', 'batchpilot' ),
+};
+
+const userLabel = ( row ) => {
+	if ( row.user_name ) {
+		return row.user_name;
+	}
+	if ( row.user_id && row.user_id > 0 ) {
+		return `#${ row.user_id }`;
+	}
+	return row.source === 'schedule'
+		? __( 'Schedule', 'batchpilot' )
+		: __( 'System', 'batchpilot' );
 };
 
 const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
@@ -160,9 +174,7 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 							</td>
 							<td>
 								<span className="bp-history__user">
-									{ r.user_id && r.user_id > 0
-										? `#${ r.user_id }`
-										: __( 'CLI', 'batchpilot' ) }
+									{ userLabel( r ) }
 								</span>
 							</td>
 							<td className="bp-history__col-actions">
@@ -176,17 +188,18 @@ const HistoryTable = ( { api, pageSize = 20, onRowAction } ) => {
 									>
 										{ __( 'Details', 'batchpilot' ) }
 									</Button>
-									{ r.status === 'completed' && (
-										<Button
-											variant="tertiary"
-											onClick={ () =>
-												onRowAction &&
-												onRowAction( 'undo', r )
-											}
-										>
-											{ __( 'Undo', 'batchpilot' ) }
-										</Button>
-									) }
+									{ r.status === 'completed' &&
+										r.undoable !== false && (
+											<Button
+												variant="tertiary"
+												onClick={ () =>
+													onRowAction &&
+													onRowAction( 'undo', r )
+												}
+											>
+												{ __( 'Undo', 'batchpilot' ) }
+											</Button>
+										) }
 									<Button
 										variant="tertiary"
 										onClick={ () =>

@@ -21,6 +21,10 @@ const RecentOperationsList = ( { api } ) => {
 	}, [] );
 
 	const undo = async ( id ) => {
+		// eslint-disable-next-line no-alert
+		if ( ! window.confirm( __( 'Undo this operation?', 'batchpilot' ) ) ) {
+			return;
+		}
 		try {
 			const r = await api.undoOperation( id );
 			setNotice( {
@@ -71,7 +75,7 @@ const RecentOperationsList = ( { api } ) => {
 								{ op.affected_count }{ ' ' }
 								{ __( 'items', 'batchpilot' ) } · { op.status }
 							</time>
-							{ UNDOABLE.includes( op.type ) &&
+							{ ( op.undoable ?? UNDOABLE.includes( op.type ) ) &&
 								op.status === 'completed' && (
 									<Button
 										variant="secondary"

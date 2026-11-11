@@ -161,4 +161,55 @@ describe( 'FilterRow extra types', () => {
 			value: { taxonomy: 'category', term_ids: [ 3, 5 ] },
 		} );
 	} );
+
+	it( 'edits a custom field filter as key, comparison and value', async () => {
+		const onChange = jest.fn();
+		render(
+			<FilterRow
+				row={ { id: '1', key: 'meta', value: null } }
+				defs={ [
+					{
+						key: 'meta',
+						label: 'Custom field',
+						type: 'meta',
+						schema: { compares: [ '=', 'EXISTS' ] },
+					},
+				] }
+				onChange={ onChange }
+				onRemove={ () => {} }
+			/>
+		);
+		await userEvent.type(
+			screen.getByRole( 'textbox', { name: /custom field key/i } ),
+			'c'
+		);
+		expect( onChange ).toHaveBeenLastCalledWith( {
+			key: 'meta',
+			value: { key: 'c', compare: '=', value: '' },
+		} );
+	} );
+
+	it( 'edits a text search filter', async () => {
+		const onChange = jest.fn();
+		render(
+			<FilterRow
+				row={ { id: '1', key: 'search', value: null } }
+				defs={ [
+					{
+						key: 'search',
+						label: 'Title or content contains',
+						type: 'text',
+						schema: {},
+					},
+				] }
+				onChange={ onChange }
+				onRemove={ () => {} }
+			/>
+		);
+		await userEvent.type( screen.getByRole( 'textbox' ), 's' );
+		expect( onChange ).toHaveBeenLastCalledWith( {
+			key: 'search',
+			value: 's',
+		} );
+	} );
 } );
