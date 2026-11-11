@@ -23,6 +23,8 @@ use BatchPilot\Registry\TargetRegistry;
 
 final class ExecutionService {
 
+	private const SECRET_PARAMS = [ 'password' ];
+
 	private TargetRegistry $targets;
 	private OperationRegistry $operations_registry;
 	private OperationRepository $operations_repo;
@@ -202,8 +204,23 @@ final class ExecutionService {
 	 * @param array<string, mixed> $params
 	 */
 	public function record( string $target_slug, string $operation_slug, int $user_id, array $filters, array $params ): int {
-		$op = Operation::newly_created( $operation_slug, $target_slug, $user_id, $filters, $params );
-		return $this->operations_repo->create( $op )->id();
+		// Secrets never reach the history table: they wait in a short-lived transient
+		// that run_sync() consumes, so queued, failed and completed rows are all clean.
+		$secrets = [];
+		foreach ( self::SECRET_PARAMS as $key ) {
+			if ( isset( $params[ $key ] ) && '' !== $params[ $key ] ) {
+				$secrets[ $key ] = $params[ $key ];
+				$params[ $key ]  = '';
+			}
+		}
+
+		$op      = Operation::newly_created( $operation_slug, $target_slug, $user_id, $filters, $params );
+		$next_id = $this->operations_repo->create( $op )->id();
+		if ( ! empty( $secrets ) ) {
+			\set_transient( 'batchpilot_op_secrets_' . $next_id, $secrets, DAY_IN_SECONDS );
+		}
+
+		return $next_id;
 	}
 
 	/**
@@ -249,7 +266,12 @@ final class ExecutionService {
 			$args    = QueryArgs::from_array( $row->filters() );
 			$all_ids = $target->query( $args );
 		}
-		$params                   = $row->params();
+		$params  = $row->params();
+		$secrets = \get_transient( 'batchpilot_op_secrets_' . $operation_id );
+		\delete_transient( 'batchpilot_op_secrets_' . $operation_id );
+		if ( is_array( $secrets ) ) {
+			$params = array_merge( $params, $secrets );
+		}
 		$params['__operation_id'] = $operation_id;
 
 		$total_processed = 0;
@@ -307,7 +329,6 @@ final class ExecutionService {
 		}
 
 		$this->operations_repo->mark_completed( $operation_id, $affected );
-		$this->operations_repo->redact_params( $operation_id, [ 'password' ] );
 
 		$result = BatchResult::of( $total_processed, $total_succeeded, $total_failed, $item_errors );
 

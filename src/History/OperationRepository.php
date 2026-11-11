@@ -97,37 +97,6 @@ final class OperationRepository {
 		);
 	}
 
-	/**
-	 * Blanks the named params once a run no longer needs them, so secrets such as a
-	 * bulk-edit password don't stay readable in the history table.
-	 *
-	 * @param string[] $keys
-	 */
-	public function redact_params( int $id, array $keys ): void {
-		$op = $this->find( $id );
-		if ( null === $op ) {
-			return;
-		}
-		$params = $op->params();
-		$dirty  = false;
-		foreach ( $keys as $key ) {
-			if ( isset( $params[ $key ] ) && '' !== $params[ $key ] ) {
-				$params[ $key ] = '';
-				$dirty          = true;
-			}
-		}
-		if ( ! $dirty ) {
-			return;
-		}
-		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			$this->table(),
-			[ 'params_json' => wp_json_encode( $params ) ],
-			[ 'id' => $id ],
-			[ '%s' ],
-			[ '%d' ]
-		);
-	}
-
 	public function mark_failed( int $id, string $error_message ): void {
 		$this->db->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$this->table(),
