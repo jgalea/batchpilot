@@ -158,6 +158,11 @@ final class RewriteOperation implements OperationInterface, TracksAffectedIds {
 					$item_errors[ $id ] = __( 'Insufficient permissions to rewrite this item.', 'batchpilot' );
 					continue;
 				}
+				if ( isset( $params['reassign_author'] ) && get_current_user_id() !== $author && ! current_user_can( $type->cap->edit_others_posts ) ) {
+					++$failed;
+					$item_errors[ $id ] = __( 'Insufficient permissions to assign another author.', 'batchpilot' );
+					continue;
+				}
 			}
 
 			$existing = RewriteLinks::copy_of( $id );

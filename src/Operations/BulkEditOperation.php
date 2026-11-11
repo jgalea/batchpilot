@@ -20,7 +20,8 @@ use BatchPilot\PreviewToken\TokenStore;
 
 final class BulkEditOperation implements OperationInterface {
 
-	private const SAMPLE_SIZE = 20;
+	private const SAMPLE_SIZE      = 20;
+	private const ALLOWED_STATUSES = [ 'draft', 'pending', 'private', 'publish', 'future', 'trash' ];
 
 	private TokenGenerator $token_generator;
 	private TokenStore $token_store;
@@ -108,7 +109,7 @@ final class BulkEditOperation implements OperationInterface {
 	 * @param array<string, mixed> $params
 	 */
 	public function validate( QueryArgs $args, array $params ): ValidationResult {
-		if ( isset( $params['set_status'] ) && null === get_post_status_object( (string) $params['set_status'] ) ) {
+		if ( isset( $params['set_status'] ) && ! in_array( $params['set_status'], self::ALLOWED_STATUSES, true ) ) {
 			return ValidationResult::error(
 				new BatchPilotError(
 					'bp.params.invalid_status',
@@ -228,6 +229,8 @@ final class BulkEditOperation implements OperationInterface {
 				if ( isset( $params['set_status'] ) && in_array( $params['set_status'], [ 'publish', 'future', 'private' ], true )
 					&& ! current_user_can( $post_type_object->cap->publish_posts ?? 'publish_posts' ) ) {
 					$denied = __( 'Insufficient permissions to publish this item.', 'batchpilot' );
+				} elseif ( isset( $params['set_status'] ) && 'trash' === $params['set_status'] && ! current_user_can( 'delete_post', $id ) ) {
+					$denied = __( 'Insufficient permissions to trash this item.', 'batchpilot' );
 				} elseif ( isset( $params['reassign_author'] ) && get_current_user_id() !== (int) $params['reassign_author']
 					&& ! current_user_can( $post_type_object->cap->edit_others_posts ?? 'edit_others_posts' ) ) {
 					$denied = __( 'Insufficient permissions to assign another author.', 'batchpilot' );

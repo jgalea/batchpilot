@@ -74,6 +74,24 @@ final class RewriteRepublishTest extends TestCase {
 		$this->assertSame( [ $copy_id ], $row->affected_ids() );
 	}
 
+	public function test_rewrite_cannot_reassign_to_another_author_without_edit_others_posts(): void {
+		$author = self::factory()->user->create( [ 'role' => 'author' ] );
+		$admin  = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		$id     = $this->published_post();
+		wp_update_post(
+			[
+				'ID'          => $id,
+				'post_author' => $author,
+			]
+		);
+		wp_set_current_user( $author );
+
+		$run = $this->run_op( 'rewrite', $id, [ 'reassign_author' => $admin ] );
+
+		$this->assertSame( 1, $run['result']->failed() );
+		$this->assertSame( 0, RewriteLinks::copy_of( $id ) );
+	}
+
 	public function test_second_rewrite_of_same_post_is_refused(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$id = $this->published_post();
